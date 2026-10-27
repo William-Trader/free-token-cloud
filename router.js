@@ -2000,9 +2000,15 @@ function responsesRequestToChat(body) {
   if (Number.isFinite(Number(body.max_output_tokens))) chat.max_tokens = Number(body.max_output_tokens);
   chat.__include = Array.isArray(body.include) ? body.include.slice() : [];
   chat.__store = body.store !== false;
+  // 纯对话池（toolPolicy=strip）不注入也不回传思维链
+  const definition = routeDefinition(chat.model);
+  const hideReasoning = definition
+    ? definition.toolPolicy === 'strip'
+    : chat.model === 'chat';
+  chat.__hideReasoning = hideReasoning;
   const reasoning = body.reasoning || {};
   const effort = typeof reasoning.effort === 'string' ? reasoning.effort : '';
-  if (effort && effort !== 'none') {
+  if (!hideReasoning && effort && effort !== 'none') {
     chat.messages.push({
       role: 'system',
       content:
@@ -2047,7 +2053,7 @@ function responseFromCompletion(completion, request, options = {}) {
     : new Set(options.customTools || []);
   const include = Array.isArray(options.include) ? options.include : [];
   const reasoningText = String(message.reasoning || message.reasoning_content || '').trim();
-  if (reasoningText) {
+  if (reasoningText && !options.hideReasoning) {
     const item = {
       type: 'reasoning',
       id: 'rs_' + crypto.randomUUID().replace(/-/g, ''),
@@ -2272,7 +2278,8 @@ async function handleResponses(req, res, body) {
       metrics.successes += 1;
       const response = responseFromCompletion(completion, body, {
         customTools: chat.__customTools,
-        include: chat.__include
+        include: chat.__include,
+        hideReasoning: chat.__hideReasoning
       });
       if (chat.__store) {
         const assistantMessage = { role: 'assistant', content: message.content || '' };

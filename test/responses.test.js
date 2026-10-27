@@ -8,6 +8,7 @@ const {
   streamResponses
 } = require('../router');
 
+
 test('responses request maps instructions, tool calls and tool outputs', () => {
   const chat = responsesRequestToChat({
     model: 'tools',
@@ -197,4 +198,25 @@ test('structured output and incomplete status are mapped', () => {
   }, { model: 'tools' });
   assert.equal(response.status, 'incomplete');
   assert.equal(response.incomplete_details.reason, 'max_output_tokens');
+});
+
+test('chat pool never exposes chain of thought', () => {
+  const chat = responsesRequestToChat({
+    model: 'chat',
+    reasoning: { effort: 'high', summary: 'auto' },
+    input: '你是什么模型'
+  });
+  assert.equal(chat.__hideReasoning, true);
+  assert.ok(!chat.messages.some(m => m.role === 'system' && m.content.includes('推理预算')));
+  const response = responseFromCompletion({
+    choices: [{ index: 0, message: { role: 'assistant', content: '我是中转聊天的模型', reasoning: '内部推理' } }]
+  }, { model: 'chat' }, { hideReasoning: true });
+  assert.equal(response.output.length, 1);
+  assert.equal(response.output[0].type, 'message');
+});
+
+test('tools pool still exposes reasoning', () => {
+  const chat = responsesRequestToChat({ model: 'tools', reasoning: { effort: 'low' }, input: 'x' });
+  assert.equal(chat.__hideReasoning, false);
+  assert.ok(chat.messages.some(m => m.role === 'system' && m.content.includes('推理预算')));
 });
