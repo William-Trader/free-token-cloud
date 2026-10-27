@@ -83,7 +83,7 @@ DSH Desktop / DeepSeek Harness 接入说明见 `docs/HARNESS.md`；Harness 默�
 | OVH AI Endpoints | `Qwen3.8-27B` | 不需要 | 是 | 文本桥 | 独立 2 RPM 配额 |
 | Pollinations | `openai-fast` | 可选 | 是 | 原生 | 最终兜底，匿名约 30 秒一次 |
 
-当前匿名池共有 **29 个对话槽位、19 个工具槽位**：
+当前配置共 **44 个 provider 条目**（含需要 key 的扩展槽，缺 key 自动禁用、不占重试时间）；匿名池实际可用 **29 个对话槽位、19 个工具槽位**：
 
 ```text
 # Kilo（共享账号额度，group=kilo）
@@ -202,6 +202,7 @@ kilo -> llm7 -> ovh-oss20 -> ovh-oss120 -> ovh-llama70
 
 ## 更新日志
 
+- **v3.4.3**：README 全面对齐实际状态——44 个 provider 条目 / 29 对话 / 19 工具槽位、Token 合并与分开视图、缓存口径与移动端说明；移除已删除的 Playground 描述。
 - **v3.4.2**：主 Token 卡拆成「读取 / 输出 / 缓存」三列 + 总计；缓存卡改为按请求的命中率；表格横向滚动、指标两列、池卡堆叠等移动端优化。
 - **v3.4.1**：控制台 Token 可视化改版——卡片内堆叠条（读取/缓存/输出）、合并视图 + 分开视图、日志显示 `in→out`、槽位表显示 `总量 (in→out)`。
 - **v3.4.0**：默认语言规则（`locale`）——仅对 `chat` 对话池注入「默认简体中文」，`tools`/编码链路不受影响；可用 `locale.routes` 调整范围。
@@ -288,12 +289,16 @@ kilo -> llm7 -> ovh-oss20 -> ovh-oss120 -> ovh-llama70
 - **实时指标**：总请求、成功率、平均延迟、可用槽位、流式计数
 - **流量图**：最近 30 分钟按分钟聚合的成功/失败柱状图
 - **双池面板**：tools / chat 分开显示，环形成功率、可用/熔断数、平均延迟、成员状态点，以及**当前选定 API**
-- **用量图**：最近 30 分钟按池堆叠（tools/chat/失败），接口拆分（`/v1/responses` vs `/v1/chat`），上游成功数 TOP
+- **用量图**：最近 30 分钟按池堆叠（tools/chat/失败），接口拆分（`/v1/responses` vs `/v1/chat`）
+- **Token 可视化**：主卡分「读取 / 输出 / 缓存」三列 + 总计与堆叠条；用量区提供**合并视图**（一条堆叠条 + 图例）与**分开视图**（四行独立条形）
+- **缓存命中**：按请求的命中率（`cacheHits / usageEvents`）+ 绝对 cached tokens；日志逐条显示 `in→out` 与 cached
 - **槽位表**：按池/状态筛选，熔断剩余时间、成功失败数、延迟条、最近错误
 - **实时日志**：最近 100 条，带 R/C 标记（Responses / Chat Completions）
 - **接入片段**：一键复制 curl，发给任何 OpenAI 兼容客户端
 
-页面与公开接口不含任何凭据；`/v1/*` 仍走 Bearer 鉴权。Playground 试跑需要单独填 token（只存本机 localStorage）。
+页面与公开接口不含任何凭据；`/v1/*` 仍走 Bearer 鉴权。移动端已适配：指标两列、池卡堆叠、表格横向滚动、日志精简。
+
+缓存口径：**只有上游上报缓存字段时才有数据**（`cached_tokens` / `prompt_cache_hit_tokens` / `cache_read_input_tokens` 都会归一化）。免费池多数不报，界面显示 0 不代表链路坏了；接了报缓存的厂商就会亮。
 
 ## 接口
 
