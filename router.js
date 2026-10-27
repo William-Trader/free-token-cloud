@@ -1285,18 +1285,43 @@ function openAIFromOllama(raw, logical) {
   };
 }
 
+
+function normalizeUsageFields(usage) {
+  if (!usage || typeof usage !== 'object') return usage;
+  const prompt = Number(usage.prompt_tokens != null ? usage.prompt_tokens : (usage.input_tokens || 0));
+  const completion = Number(usage.completion_tokens != null ? usage.completion_tokens : (usage.output_tokens || 0));
+  const details = usage.prompt_tokens_details || {};
+  const completionDetails = usage.completion_tokens_details || {};
+  const cached = Number(
+    details.cached_tokens != null ? details.cached_tokens :
+      usage.input_tokens_details && usage.input_tokens_details.cached_tokens != null ? usage.input_tokens_details.cached_tokens :
+        usage.prompt_cache_hit_tokens != null ? usage.prompt_cache_hit_tokens :
+          usage.cache_read_input_tokens != null ? usage.cache_read_input_tokens :
+            usage.cached_tokens != null ? usage.cached_tokens : 0
+  );
+  const reasoning = Number(
+    completionDetails.reasoning_tokens != null ? completionDetails.reasoning_tokens :
+      usage.output_tokens_details && usage.output_tokens_details.reasoning_tokens != null ? usage.output_tokens_details.reasoning_tokens :
+        usage.reasoning_tokens != null ? usage.reasoning_tokens : 0
+  );
+  return Object.assign({}, usage, {
+    prompt_tokens: prompt,
+    completion_tokens: completion,
+    total_tokens: Number(usage.total_tokens != null ? usage.total_tokens : (prompt + completion)),
+    prompt_tokens_details: Object.assign({}, details, { cached_tokens: cached }),
+    completion_tokens_details: Object.assign({}, completionDetails, { reasoning_tokens: reasoning })
+  });
+}
+
 function usageFromRaw(raw, body) {
   if (raw && raw.usage && Number.isFinite(Number(raw.usage.prompt_tokens))) {
     const prompt = Number(raw.usage.prompt_tokens) || 0;
     const completion = Number(raw.usage.completion_tokens) || 0;
-    const usage = {
+    return normalizeUsageFields(Object.assign({}, raw.usage, {
       prompt_tokens: prompt,
       completion_tokens: completion,
       total_tokens: Number(raw.usage.total_tokens) || prompt + completion
-    };
-    if (raw.usage.prompt_tokens_details) usage.prompt_tokens_details = raw.usage.prompt_tokens_details;
-    if (raw.usage.completion_tokens_details) usage.completion_tokens_details = raw.usage.completion_tokens_details;
-    return usage;
+    }));
   }
   return estimateUsage(body, messageText(raw));
 }
@@ -1318,6 +1343,8 @@ function estimateUsage(body, outputText) {
     prompt_tokens: promptTokens,
     completion_tokens: completionTokens,
     total_tokens: promptTokens + completionTokens,
+    prompt_tokens_details: { cached_tokens: 0 },
+    completion_tokens_details: { reasoning_tokens: 0 },
     estimated: true
   };
 }
@@ -1898,7 +1925,7 @@ function forwardOpenAIStream(res, prepared, logical, body, headers, options = {}
         }
         try {
           const chunk = JSON.parse(value);
-          if (chunk.usage) usage = chunk.usage;
+          if (chunk.usage) usage = normalizeUsageFields(chunk.usage);
           const choice = chunk.choices && chunk.choices[0];
           if (choice && choice.delta) {
             content += contentText(choice.delta.content);

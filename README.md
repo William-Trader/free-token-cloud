@@ -202,6 +202,7 @@ kilo -> llm7 -> ovh-oss20 -> ovh-oss120 -> ovh-llama70
 
 ## 更新日志
 
+- **v3.3.3**：usage 统一规范化——流式/非流式、OpenAI/Anthropic 都保证 `prompt_tokens_details.cached_tokens` 与 `completion_tokens_details.reasoning_tokens` 存在；兼容 `prompt_cache_hit_tokens`、`cache_read_input_tokens` 等厂商字段。
 - **v3.3.2**：Anthropic 流量 usage 补齐 `input_tokens / output_tokens / cache_read_input_tokens / cache_creation_input_tokens`（流式与非流式），OpenAI 侧保留 `prompt_tokens_details` / `completion_tokens_details`，harness 可区分读取、输出与缓存命中。
 - **v3.3.1**：新增 `docs/AGENT-HANDOFF.md`——给本地 agent 的部署交接（红线、Windows 适配、并存接入、验证与回滚）。
 - **v3.3.0**：缓存命中与明细 token 上线——全局/上游统计 `cachedTokens`、`reasoningTokens`、`cacheHits`；控制台新增缓存命中卡、Token 拆分（输入/输出/缓存/推理）、槽位与日志显示 cached。
