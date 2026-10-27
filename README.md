@@ -160,6 +160,7 @@ kilo -> llm7 -> ovh-oss20 -> ovh-oss120 -> ovh-llama70
 
 ## 更新日志
 
+- **v2.4.1**：控制台移除登录密码，改为公开只读 `/api/public`（`/v1/*` 仍鉴权）；Playground 单独填 token。
 - **v2.4.0**：新增 Web 控制台（`/`、`/dashboard`）：实时指标、30 分钟流量、槽位熔断状态、日志、流式 Playground。
 - **v2.2.2**：`chat` 池在 `/v1/chat/completions`（非流式与流式）也会剥离 `reasoning` 字段，OpenClaw 等上游客户端不会再看到思维链。
 - **v2.2.1**：对话池（`chat`）不再注入推理提示、不再返回 `reasoning` 条目，避免把思维链暴露给用户；工具池（`tools`）保持原行为。
@@ -205,7 +206,7 @@ kilo -> llm7 -> ovh-oss20 -> ovh-oss120 -> ovh-llama70
 
 ## 控制台（Dashboard）
 
-部署后直接打开 `http://<RELAY_HOST>:8080/`：首次输入 token（只存本机 localStorage），之后每 5 秒自动刷新。
+部署后直接打开 `http://<RELAY_HOST>:8080/`，**无需登录**，每 5 秒自动刷新；页面数据来自公开只读接口 `/api/public`。
 
 - **实时指标**：总请求、成功率、平均延迟、可用槽位、流式计数
 - **流量图**：最近 30 分钟按分钟聚合的成功/失败柱状图
@@ -214,7 +215,7 @@ kilo -> llm7 -> ovh-oss20 -> ovh-oss120 -> ovh-llama70
 - **Playground**：选 `tools`/`chat` 直接流式试一条，走同一套池与熔断
 - **接入片段**：一键复制 curl，发给任何 OpenAI 兼容客户端
 
-页面本身不含任何凭据；数据接口仍走 Bearer 鉴权。
+页面与公开接口不含任何凭据；`/v1/*` 仍走 Bearer 鉴权。Playground 试跑需要单独填 token（只存本机 localStorage）。
 
 ## 接口
 

@@ -159,7 +159,6 @@
     <div class="pill live" id="statusPill"><i class="dot" id="statusDot"></i><span id="statusText">连接中…</span></div>
     <div class="pill mono" id="uptime">uptime —</div>
     <button class="btn ghost" id="refreshBtn">刷新</button>
-    <button class="btn ghost" id="logoutBtn">退出</button>
   </div>
 </header>
 
@@ -229,6 +228,7 @@
       <div class="sec-head" style="margin:0 0 8px"><h2>试一条</h2><span class="hint">走同一套池与熔断</span></div>
       <div class="row" style="margin:0 0 8px">
         <select class="input" id="pgModel"><option>chat</option><option>tools</option></select>
+        <input class="input" id="pgToken" type="password" placeholder="token（试跑用）" style="min-width:150px" autocomplete="off">
         <button class="btn primary" id="pgSend">发送</button>
         <button class="btn ghost" id="pgClear">清空</button>
       </div>
@@ -249,23 +249,11 @@
   </section>
 </main>
 
-<div class="overlay" id="login" style="display:none">
-  <div class="login">
-    <h1>Relay Console</h1>
-    <p>输入中转 token（存在本机 localStorage，不上传）</p>
-    <input id="tokenInput" type="password" placeholder="Bearer token" autocomplete="off">
-    <div class="err" id="loginErr"></div>
-    <div style="display:flex;gap:8px;margin-top:6px">
-      <button class="btn primary" id="loginBtn" style="flex:1">进入</button>
-    </div>
-  </div>
-</div>
 <div class="toast" id="toast"></div>
 
 <script>
 (function(){
-  var TOKEN_KEY = 'relay_dashboard_token';
-  var token = localStorage.getItem(TOKEN_KEY) || '';
+  var STORE = 'relay_pg_token';
   var state = { providers: [], pools: {}, logs: [], metrics: null, health: null, timer: null };
   var $ = function(id){ return document.getElementById(id); };
 
@@ -281,23 +269,10 @@
   function ago(iso){
     if(!iso) return '—';
     var d = Date.now() - new Date(iso).getTime();
+    if(d < 0) d = 0;
     if(d < 60000) return Math.round(d/1000)+'s 前';
     if(d < 3600000) return Math.round(d/60000)+'m 前';
     return Math.round(d/3600000)+'h 前';
-  }
-  function api(path, opts){
-    opts = opts || {};
-    opts.headers = Object.assign({'authorization':'Bearer ' + token}, opts.headers || {});
-    return fetch(path, opts).then(function(r){
-      if(r.status === 401){ showLogin('token 无效或已轮换'); throw new Error('unauthorized'); }
-      if(!r.ok) throw new Error('HTTP ' + r.status);
-      return r.json();
-    });
-  }
-  function showLogin(msg){
-    $('login').style.display = 'grid';
-    $('loginErr').textContent = msg || '';
-    setTimeout(function(){ $('tokenInput').focus(); }, 50);
   }
 
   function renderStats(){
@@ -311,12 +286,12 @@
     var oks = state.logs.filter(function(l){ return l.ev === 'ok'; }).slice(-100);
     var lat = oks.length ? Math.round(oks.reduce(function(a,b){ return a + (b.ms||0); },0)/oks.length) : null;
     $('sLat').textContent = lat == null ? '—' : fmtMs(lat);
-    var total = state.providers.filter(function(p){ return p.enabled; }).length;
-    var open = state.providers.filter(function(p){ return p.enabled && p.circuit === 'open'; }).length;
+    var total = state.providers.filter(function(p){ return p.enabled !== false; }).length;
+    var open = state.providers.filter(function(p){ return p.enabled !== false && p.circuit === 'open'; }).length;
     $('sSlots').textContent = (total - open) + '/' + total;
     $('sOpen').textContent = open;
     $('sStream').textContent = fmtNum(m.streams || 0);
-    var upt = state.health && state.health.uptime_s || 0;
+    var upt = (state.health && state.health.uptime_s) || 0;
     $('uptime').textContent = 'uptime ' + (upt >= 86400 ? (upt/86400).toFixed(1)+'d' : upt >= 3600 ? (upt/3600).toFixed(1)+'h' : Math.round(upt/60)+'m');
 
     var okDot = $('statusDot');
@@ -374,11 +349,12 @@
   }
 
   function circuitLabel(p){
-    if(!p.enabled) return { cls:'open', text:'禁用' };
+    if(p.enabled === false) return { cls:'open', text:'禁用' };
     if(p.circuit === 'open') return { cls:'open', text:'熔断' };
     if(p.circuit === 'half-open') return { cls:'half', text:'半开' };
     return { cls:'closed', text:'正常' };
   }
+
   function renderProviders(){
     var q = ($('search').value || '').toLowerCase();
     var pool = $('poolFilter').value;
@@ -387,7 +363,7 @@
       if(q && (p.id + ' ' + (p.label||'')).toLowerCase().indexOf(q) < 0) return false;
       if(pool && (p.pools||[]).indexOf(pool) < 0) return false;
       var c = circuitLabel(p);
-      if(st === 'disabled' && p.enabled) return false;
+      if(st === 'disabled' && p.enabled !== false) return false;
       if(st && st !== 'disabled'){
         if(st === 'open' && c.cls !== 'open') return false;
         if(st === 'half' && c.cls !== 'half') return false;
@@ -402,7 +378,7 @@
       var lat = p.avg_latency_ms;
       var barW = lat ? Math.max(4, Math.round(lat / maxLat * 100)) : 0;
       var tags = (p.pools||[]).map(function(x){ return '<span class="tag ' + x + '">' + h(x) + '</span>'; }).join('');
-      var err = p.last_error ? '<span class="err" title="' + h(p.last_error) + '">' + h(p.last_error) + '</span>' : '<span class="dim">—</span>';
+      var err = p.last_error_code ? '<span class="err">' + h(p.last_error_code) + '</span>' : '<span class="dim">—</span>';
       return '<tr>' +
         '<td><div class="name"><b>' + h(p.id) + '</b><span>' + h(p.label||'') + '</span></div></td>' +
         '<td>' + tags + '</td>' +
@@ -442,25 +418,23 @@
 
   function renderCurl(){
     var host = location.origin;
-    $('curlSnippet').textContent = 'curl ' + host + '/v1/chat/completions \\\n  -H "Authorization: Bearer $TOKEN" \\\n  -d \'{"model":"chat","messages":[{"role":"user","content":"hi"}]}\'';
+    $('curlSnippet').textContent = 'curl ' + host + '/v1/chat/completions \
+  -H "Authorization: Bearer <YOUR_TOKEN>" \
+  -d \'{"model":"chat","messages":[{"role":"user","content":"hi"}]}\'';
   }
 
   function load(){
-    return Promise.all([
-      fetch('/health').then(function(r){ return r.json(); }).catch(function(){ return null; }),
-      api('/api/upstreams'),
-      api('/api/logs?n=200'),
-      api('/api/metrics')
-    ]).then(function(res){
-      state.health = res[0];
-      state.providers = (res[1].upstreams || []);
-      state.pools = res[1].pools || {};
-      state.logs = (res[2].logs || []);
-      state.metrics = res[3];
+    return fetch('/api/public', { cache: 'no-store' }).then(function(r){
+      if(!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    }).then(function(d){
+      state.health = { ok: d.ok, uptime_s: d.uptime_s };
+      state.providers = d.providers || [];
+      state.pools = d.pools || {};
+      state.logs = d.logs || [];
+      state.metrics = { metrics: d.metrics || {} };
       renderStats(); renderSpark(); renderTraffic(); renderProviders(); renderLogs();
-      $('login').style.display = 'none';
     }).catch(function(err){
-      if(err && err.message === 'unauthorized') return;
       toast('刷新失败：' + err.message);
     });
   }
@@ -471,26 +445,6 @@
     state.timer = setInterval(load, 5000);
   }
 
-  /* login */
-  $('loginBtn').addEventListener('click', function(){
-    var v = $('tokenInput').value.trim();
-    if(!v){ $('loginErr').textContent = '请填写 token'; return; }
-    token = v;
-    fetch('/api/metrics', { headers: { authorization: 'Bearer ' + token } }).then(function(r){
-      if(r.status === 401){ $('loginErr').textContent = 'token 无效'; return; }
-      localStorage.setItem(TOKEN_KEY, token);
-      $('loginErr').textContent = '';
-      start();
-    }).catch(function(){ $('loginErr').textContent = '网络错误'; });
-  });
-  $('tokenInput').addEventListener('keydown', function(e){ if(e.key === 'Enter') $('loginBtn').click(); });
-
-  $('logoutBtn').addEventListener('click', function(){
-    localStorage.removeItem(TOKEN_KEY);
-    token = '';
-    if(state.timer) clearInterval(state.timer);
-    showLogin('');
-  });
   $('refreshBtn').addEventListener('click', function(){ load(); toast('已刷新'); });
   ['search','poolFilter','stateFilter'].forEach(function(id){
     $(id).addEventListener('input', renderProviders);
@@ -501,9 +455,16 @@
   });
 
   /* playground */
+  function playgroundToken(){
+    var v = ($('pgToken').value || '').trim();
+    if(v){ try { localStorage.setItem(STORE, v); } catch(e){} return v; }
+    try { return localStorage.getItem(STORE) || ''; } catch(e){ return ''; }
+  }
   function send(){
     var prompt = $('pgPrompt').value.trim();
     if(!prompt) return;
+    var token = playgroundToken();
+    if(!token){ toast('试跑需要填 token'); $('pgToken').focus(); return; }
     var out = $('pgOut');
     out.textContent = '';
     var meta = document.createElement('span'); meta.className = 'meta';
@@ -514,15 +475,20 @@
       headers: { 'content-type':'application/json', authorization:'Bearer ' + token },
       body: JSON.stringify({ model: $('pgModel').value, stream: true, messages: [{ role:'user', content: prompt }] })
     }).then(function(res){
-      if(!res.ok) return res.text().then(function(t){ out.textContent = 'HTTP ' + res.status + '\n' + t; });
+      if(res.status === 401){ out.textContent = 'token 无效或已轮换'; return; }
+      if(!res.ok) return res.text().then(function(t){ out.textContent = 'HTTP ' + res.status + '
+' + t; });
       var reader = res.body.getReader(); var dec = new TextDecoder(); var buf = '';
       function pump(){
         return reader.read().then(function(r){
           if(r.done){ meta.textContent = '完成'; return; }
           buf += dec.decode(r.value, { stream: true });
-          var parts = buf.split('\n\n'); buf = parts.pop();
+          var parts = buf.split('
+
+'); buf = parts.pop();
           parts.forEach(function(part){
-            var line = part.split('\n').filter(function(x){ return x.indexOf('data:') === 0; })[0];
+            var line = part.split('
+').filter(function(x){ return x.indexOf('data:') === 0; })[0];
             if(!line) return;
             var payload = line.slice(5).trim();
             if(payload === '[DONE]') return;
@@ -543,11 +509,12 @@
   $('pgPrompt').addEventListener('keydown', function(e){
     if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); send(); }
   });
+  $('pgToken').addEventListener('change', function(){ playgroundToken(); });
 
-  /* boot */
-  if(token){ start(); } else { showLogin(''); }
+  start();
   renderCurl();
 })();
+
 </script>
 </body>
 </html>

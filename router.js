@@ -2765,6 +2765,42 @@ function routeModels() {
   });
 }
 
+function publicView() {
+  const health = healthView();
+  return {
+    ok: health.ok,
+    live: true,
+    uptime_s: health.uptime_s,
+    routes: health.routes,
+    metrics,
+    pools: poolView(),
+    providers: providers.filter(provider => provider.enabled).map(provider => {
+      const view = providerView(provider);
+      return {
+        id: view.id,
+        label: view.label,
+        pools: view.pools,
+        circuit: view.circuit,
+        retry_at: view.retry_at,
+        successes: view.successes,
+        failures: view.failures,
+        avg_latency_ms: view.avg_latency_ms,
+        last_latency_ms: view.last_latency_ms,
+        last_ok_at: view.last_ok_at,
+        last_error_code: view.last_error_code
+      };
+    }),
+    logs: logs.slice(-60).map(item => ({
+      ts: item.ts,
+      ev: item.ev,
+      api: item.api || null,
+      model: item.model || null,
+      provider: item.provider || null,
+      ms: item.ms || null
+    }))
+  };
+}
+
 async function handleRequest(req, res) {
   res.on('error', () => {});
   req.on('error', () => {});
@@ -2799,6 +2835,9 @@ async function handleRequest(req, res) {
     if (pathname === '/ready') {
       const health = healthView();
       return writeJson(res, health.ok ? 200 : 503, health);
+    }
+    if (pathname === '/api/public' && req.method === 'GET') {
+      return writeJson(res, 200, publicView());
     }
     if (!isAuthorized(req)) {
       log({ ev: 'auth_fail', path: pathname, ip: req.socket.remoteAddress });
