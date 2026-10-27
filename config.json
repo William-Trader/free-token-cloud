@@ -1509,5 +1509,12 @@
   "streamPacing": {
     "tokensPerSecond": 70,
     "maxDelayMs": 2500
+  },
+  "locale": {
+    "default": "zh-CN",
+    "routes": [
+      "chat"
+    ],
+    "prompt": "除非用户明确要求其他语言，否则一律使用简体中文回答。"
   }
 }

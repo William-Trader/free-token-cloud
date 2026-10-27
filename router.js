@@ -2093,12 +2093,30 @@ async function selectProvider(logical, body, wantStream) {
   };
 }
 
+
+function applyDefaultLocale(body, logical) {
+  const cfg = CFG && CFG.locale;
+  if (!cfg || !cfg.default) return;
+  const definition = routeDefinition(logical);
+  const enabledRoutes = Array.isArray(cfg.routes) && cfg.routes.length ? cfg.routes : ['chat'];
+  const isChatRoute = definition && definition.toolPolicy === 'strip';
+  const requested = enabledRoutes.indexOf(logical) >= 0 || (isChatRoute && enabledRoutes.indexOf('chat') >= 0);
+  if (!requested) return;
+  const prompt = cfg.prompt || '除非用户明确要求其他语言，否则一律使用简体中文回答。';
+  if (!Array.isArray(body.messages)) body.messages = [];
+  const already = body.messages.some(message =>
+    message && message.role === 'system' && typeof message.content === 'string' && message.content.indexOf(prompt) >= 0
+  );
+  if (!already) body.messages.push({ role: 'system', content: prompt });
+}
+
 async function handleChat(req, res, body, anthropic) {
   bumpMetric('requests');
   const logical = String(body.model || 'auto');
   const requestId = req.headers['x-request-id'] || 'relay-' + crypto.randomUUID();
   const wantStream = Boolean(body.stream);
   const started = Date.now();
+  applyDefaultLocale(body, logical);
   let selection;
 
   try {
@@ -2759,6 +2777,7 @@ async function handleResponses(req, res, body) {
     });
   }
   const logical = chat.model;
+  applyDefaultLocale(chat, logical);
   const started = Date.now();
   let selection;
   try {
