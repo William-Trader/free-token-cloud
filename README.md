@@ -1,10 +1,22 @@
-# ai-relay v2
+# Free Token Cloud
 
-OpenClaw 的独立 OpenAI/Anthropic 兼容路由层。目标是把多个允许程序调用的免费或自带 key 的模型服务聚合成一个稳定入口，并在限流、超时、错误或冷却时自动切换。
+一台 **2 核 1G** 的服务器，就能把一堆免费模型聚合成**你自己的** OpenAI / Anthropic 兼容入口，
+给远程设备、Agent、手机发 token 用——限流、超时、报错时自动换上游，客户端只认一个地址。
 
-当前远端：`http://<RELAY_HOST>:8080`（部署后在 `.env.local` 或 `RELAY_URL` 中填写）  
-OpenClaw provider：`ai-relay`  
-OpenClaw 模型：`ai-relay/tools`（默认）、`ai-relay/chat`
+## 面向需求
+
+| 你的处境 | 本项目怎么解 |
+|---|---|
+| 只买得起一台 2 核 1G 小机器 | 单进程 Node，无数据库、无 Redis，常驻内存几十 MB；nginx 开一个 8080 端口，其余端口只监听 `127.0.0.1` |
+| 想给远程设备／朋友发 token，而不是发 key | 服务器上 `token` 单文件 Bearer 鉴权，任何 OpenAI 兼容客户端填两行配置就能接入 |
+| 免费额度分散、随时 429 | 17 个免费/匿名上游槽位，按池（`tools` / `chat`）排队，熔断 + 冷却 + 半开探测自动切 |
+| 想按自己的路子"白嫖"更多 token | **可改造框架**：provider、池、路由链、超时、并发、冷却全在 `config.json`，改完调 `/api/reload` 热加载，不用改代码 |
+| 不想被许可条款绑住 | **Unlicense（公共领域，本仓库能给出的最高权限许可）**：随便用、随便改、可商用、可闭源分发、无需署名 |
+
+一句话：**你出机器和改造想法，框架已经把"多上游 + 故障切换 + 统一 token 入口"这部分写好了。**
+
+部署后把远端地址填进 `.env.local` 或 `RELAY_URL`，例如 `http://<RELAY_HOST>:8080`。  
+OpenClaw provider：`ai-relay`；模型：`ai-relay/tools`（默认）、`ai-relay/chat`。
 
 ## 当前实测状态
 
@@ -209,3 +221,8 @@ systemctl restart ai-relay
 - 不做验证码、登录态、付费墙、封禁或站点风控绕过。
 - 免费池会随上游策略变化；`/health`、探测和 smoke test 是运行时事实来源。
 - 不要把个人隐私、密钥或机密材料发给明确声明会记录/训练数据的免费上游。
+
+## 许可
+
+**Unlicense（公共领域）** —— 本仓库能给出的最高权限许可：可商用、可修改、可闭源分发、无需署名、无任何附加条件。
+见 [LICENSE](LICENSE)。
