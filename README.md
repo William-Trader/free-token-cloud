@@ -202,6 +202,7 @@ kilo -> llm7 -> ovh-oss20 -> ovh-oss120 -> ovh-llama70
 
 ## 更新日志
 
+- **v3.7.4**：仓库脱敏复查——移除个人路径（`piAgentCwd` 改占位符）、测试夹具统一为 `test-token`；确认工作区/历史/release 无真实 key、无服务器 IP。
 - **v3.7.3**：Ollama Cloud 接入池（`gpt-oss:20b`），凭据校验通过；新增隐藏路由 `ollama` 便于定向调用；chat 链把 ollama-cloud 排在 gemini 之后。
 - **v3.7.2**：README 增加 PiAgent 接入说明与兼容矩阵（仅接 `tools`、`anthropic-messages`、推理档位）。
 - **v3.7.1**：源健康重排（按实测 200 结果排序，移除 503/超时/429 的死槽位并重置熔断）；Anthropic `thinking` 与 `reasoning_effort` 会转成推理提示，PiAgent 等客户端开推理后真正生效。

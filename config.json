@@ -649,7 +649,7 @@
       "enabled": true,
       "baseUrl": "http://127.0.0.1:38472",
       "healthUrl": "http://127.0.0.1:38472/api/desktop/identity",
-      "piAgentCwd": "/Users/zhoujiale/.pi/agent/chats",
+      "piAgentCwd": "<PI_AGENT_HOME>/chats",
       "piAgentProvider": "ai-relay",
       "piAgentModel": "tools",
       "piAgentThinkingLevel": "high",

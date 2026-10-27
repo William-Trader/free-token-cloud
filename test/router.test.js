@@ -98,7 +98,7 @@ async function startMockUpstream() {
       return sendJson(res, 200, { object: 'list', data: [] });
     }
     if (req.url === '/validate/chat/completions') {
-      if (req.headers.authorization !== 'Bearer valid-chat-validation-key') {
+      if (req.headers.authorization !== 'Bearer test-token') {
         return sendJson(res, 401, { error: { message: 'invalid key' } });
       }
       return sendJson(res, 200, {
@@ -438,7 +438,7 @@ test('provider connection switches persist and reject unsafe activation', async 
   const goodCredential = await fetch(instance.baseUrl + '/api/provider-credentials', {
     method: 'POST',
     headers,
-    body: JSON.stringify({ providerId: 'chatvalidate', secret: 'valid-chat-validation-key' })
+    body: JSON.stringify({ providerId: 'chatvalidate', secret: 'test-token' })
   });
   await assertStatus(goodCredential, 200);
 
