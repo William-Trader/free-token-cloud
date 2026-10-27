@@ -45,7 +45,11 @@ const metrics = {
   successes: 0,
   failures: 0,
   streams: 0,
-  estimatedUsage: 0
+  estimatedUsage: 0,
+  promptTokens: 0,
+  completionTokens: 0,
+  totalTokens: 0,
+  usageEvents: 0
 };
 
 let CFG = null;
@@ -349,6 +353,7 @@ function newProviderState(id) {
     lastProbeOkAt: null,
     lastProbeError: null,
     probeFailures: 0,
+    tokens: { prompt: 0, completion: 0, total: 0 },
     openUntil: 0,
     probing: false,
     inFlight: 0,
@@ -555,8 +560,27 @@ function markFailure(provider, error, elapsedMs) {
   return failure;
 }
 
-function markSuccess(provider, elapsedMs) {
+function addUsage(providerId, usage) {
+  if (!usage) return;
+  const prompt = Number(usage.prompt_tokens || usage.input_tokens || 0);
+  const completion = Number(usage.completion_tokens || usage.output_tokens || 0);
+  const total = Number(usage.total_tokens || (prompt + completion));
+  if (!prompt && !completion && !total) return;
+  metrics.promptTokens += prompt;
+  metrics.completionTokens += completion;
+  metrics.totalTokens += total;
+  metrics.usageEvents += 1;
+  if (providerId) {
+    const state = stateFor(providerId);
+    state.tokens.prompt += prompt;
+    state.tokens.completion += completion;
+    state.tokens.total += total;
+  }
+}
+
+function markSuccess(provider, elapsedMs, usage) {
   const state = stateFor(provider.id);
+  addUsage(provider.id, usage);
   state.successes += 1;
   state.attempts += 1;
   state.failures = 0;
@@ -1527,6 +1551,7 @@ function forwardOpenAIStream(res, prepared, logical, body, headers, options = {}
       }
       if (containsDone) {
         if (!usage) usage = estimateUsage(body, content);
+        if (options.onUsage) options.onUsage(usage);
         const id = 'relay-' + crypto.randomUUID();
         safeWrite(res, 'data: ' + JSON.stringify(usageChunk(id, logical, usage)) + '\n\n');
         safeWrite(res, 'data: [DONE]\n\n');
@@ -1559,6 +1584,7 @@ function forwardOpenAIStream(res, prepared, logical, body, headers, options = {}
       if (!sawDone) {
         handleCompleteEvents(true);
         const finalUsage = usage || estimateUsage(body, content);
+        if (options.onUsage) options.onUsage(finalUsage);
         safeWrite(res, 'data: ' + JSON.stringify(usageChunk('relay-' + crypto.randomUUID(), logical, finalUsage)) + '\n\n');
         safeWrite(res, 'data: [DONE]\n\n');
       }
@@ -1738,7 +1764,8 @@ async function handleChat(req, res, body, anthropic) {
           ms: Date.now() - started
         });
         return forwardOpenAIStream(res, outcome.result, logical, body, responseHeaders, {
-          stripReasoning: selection.stripTools
+          stripReasoning: selection.stripTools,
+          onUsage: usage => addUsage(provider.id, usage)
         });
       }
 
@@ -1759,7 +1786,7 @@ async function handleChat(req, res, body, anthropic) {
       ) {
         throw new Error('empty tool response');
       }
-      markSuccess(provider, outcome.elapsedMs);
+      markSuccess(provider, outcome.elapsedMs, completion.usage);
       metrics.successes += 1;
       if (wantStream) metrics.streams += 1;
       if (completion.usage && completion.usage.estimated) metrics.estimatedUsage += 1;
@@ -1790,7 +1817,8 @@ async function handleChat(req, res, body, anthropic) {
           Array.isArray(completion.choices[0].message.tool_calls)
           ? completion.choices[0].message.tool_calls.length
           : 0,
-        usage_estimated: Boolean(completion.usage && completion.usage.estimated)
+        usage_estimated: Boolean(completion.usage && completion.usage.estimated),
+        tokens: completion.usage ? Number(completion.usage.total_tokens || 0) : undefined
       });
       if (anthropic) {
         if (wantStream) return fakeAnthropicStream(res, completion, logical, responseHeaders);
@@ -2341,7 +2369,7 @@ async function handleResponses(req, res, body) {
       ) {
         throw new Error('empty tool response');
       }
-      markSuccess(provider, outcome.elapsedMs);
+      markSuccess(provider, outcome.elapsedMs, completion.usage);
       metrics.successes += 1;
       const response = responseFromCompletion(completion, body, {
         customTools: chat.__customTools,
@@ -2368,7 +2396,8 @@ async function handleResponses(req, res, body) {
         stream: Boolean(body.stream),
         attempts: attempts.length,
         ms: Date.now() - started,
-        tool_calls: (message.tool_calls || []).length
+        tool_calls: (message.tool_calls || []).length,
+        tokens: completion.usage ? Number(completion.usage.total_tokens || 0) : undefined
       });
       if (body.stream) return streamResponses(res, response, headers);
       return writeJson(res, 200, response, headers);
@@ -2542,6 +2571,7 @@ function providerView(provider) {
     retry_at: state.openUntil > Date.now() ? new Date(state.openUntil).toISOString() : null,
     successes: state.successes,
     failures: state.failures,
+    tokens: state.tokens ? { prompt: state.tokens.prompt, completion: state.tokens.completion, total: state.tokens.total } : null,
     attempts: state.attempts,
     in_flight: state.inFlight,
     avg_latency_ms: state.avgLatencyMs,
@@ -2784,6 +2814,7 @@ function publicView() {
         retry_at: view.retry_at,
         successes: view.successes,
         failures: view.failures,
+        tokens: view.tokens,
         avg_latency_ms: view.avg_latency_ms,
         last_latency_ms: view.last_latency_ms,
         last_ok_at: view.last_ok_at,
@@ -2796,7 +2827,8 @@ function publicView() {
       api: item.api || null,
       model: item.model || null,
       provider: item.provider || null,
-      ms: item.ms || null
+      ms: item.ms || null,
+      tokens: item.tokens || null
     }))
   };
 }
