@@ -199,6 +199,7 @@ kilo -> llm7 -> ovh-oss20 -> ovh-oss120 -> ovh-llama70
 
 ## 更新日志
 
+- **v3.3.0**：缓存命中与明细 token 上线——全局/上游统计 `cachedTokens`、`reasoningTokens`、`cacheHits`；控制台新增缓存命中卡、Token 拆分（输入/输出/缓存/推理）、槽位与日志显示 cached。
 - **v3.2.1**：修复 harness 显示天文数字 tok/s——`/v1/messages` 流式改为真正的 Anthropic 事件回放（不再透传 OpenAI chunk），并按 `streamPacing` 节流到约 70 tok/s；正文为空时回退 reasoning，避免 0 时长。
 - **v3.2.0**：许可从 Unlicense 收紧为 **PolyForm Noncommercial 1.0.0**——非商用免费，商用需单独授权。
 - **v3.1.1**：修复 Provider 接入页禁用控件无反馈、登录链接无法打开时无备用路径；

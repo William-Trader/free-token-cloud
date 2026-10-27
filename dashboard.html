@@ -46,7 +46,7 @@
 
   main{padding:22px 0 60px}
   .grid{display:grid;gap:14px}
-  .stats{grid-template-columns:repeat(6,1fr)}
+  .stats{grid-template-columns:repeat(auto-fit,minmax(168px,1fr))}
   .card{background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,0)),var(--panel);
     border:1px solid var(--line);border-radius:var(--radius);padding:16px}
   .card h3{margin:0 0 2px;font-size:12px;color:var(--muted);font-weight:500;letter-spacing:.4px}
@@ -189,6 +189,7 @@
     <div class="card"><h3>可用槽位</h3><div class="big" id="sSlots">—</div><div class="sub">熔断中 <b id="sOpen">0</b></div></div>
     <div class="card"><h3>流式请求</h3><div class="big" id="sStream">—</div><div class="sub">SSE 计数</div></div>
     <div class="card"><h3>累计 Token 用量</h3><div class="big" id="sTok">—</div><div class="sub" id="sTokSub">in — / out — · 跨重启保留</div></div>
+    <div class="card"><h3>缓存命中</h3><div class="big" id="sCache">—</div><div class="sub" id="sCacheSub">cached — / 命中 — 次</div></div>
   </div>
 
   <section class="section">
@@ -285,6 +286,10 @@
     $('sStream').textContent = fmtNum(m.streams || 0);
     $('sTok').textContent = fmtNum(m.totalTokens || 0);
     $('sTokSub').textContent = 'in ' + fmtNum(m.promptTokens || 0) + ' / out ' + fmtNum(m.completionTokens || 0) + ' · 跨重启保留';
+    var cachedTok = m.cachedTokens || 0;
+    var inTok = m.promptTokens || 0;
+    $('sCache').textContent = inTok ? Math.round(cachedTok / inTok * 100) + '%' : '—';
+    $('sCacheSub').textContent = 'cached ' + fmtNum(cachedTok) + ' / 命中 ' + (m.cacheHits || 0) + ' 次';
     var upt = (state.health && state.health.uptime_s) || 0;
     $('uptime').textContent = 'uptime ' + (upt >= 86400 ? (upt/86400).toFixed(1)+'d' : upt >= 3600 ? (upt/3600).toFixed(1)+'h' : Math.round(upt/60)+'m');
     $('setupPending').textContent = (state.setup && state.setup.pending) || 0;
@@ -413,6 +418,8 @@
       '<div><div class="pool-title" style="margin-top:14px">Token 拆分</div>' +
         '<div class="api-row"><span class="mono">输入</span><div class="bar"><i style="width:' + pct(tIn, tAll) + '%"></i></div><span class="n">' + fmtNum(tIn) + '</span></div>' +
         '<div class="api-row"><span class="mono">输出</span><div class="bar"><i style="width:' + pct(tOut, tAll) + '%"></i></div><span class="n">' + fmtNum(tOut) + '</span></div>' +
+        '<div class="api-row"><span class="mono">缓存命中</span><div class="bar"><i style="width:' + pct(tm.cachedTokens || 0, tIn || 1) + '%"></i></div><span class="n">' + fmtNum(tm.cachedTokens || 0) + '</span></div>' +
+        '<div class="api-row"><span class="mono">推理 tokens</span><div class="bar"><i style="width:' + pct(tm.reasoningTokens || 0, tAll) + '%"></i></div><span class="n">' + fmtNum(tm.reasoningTokens || 0) + '</span></div>' +
       '</div>' +
       '<div><div class="pool-title" style="margin-top:14px">上游 Token TOP</div><div class="top-list">' +
         top.map(function(p){
@@ -456,7 +463,7 @@
         '<td>' + tags + '</td>' +
         '<td><span class="st ' + c.cls + '"><i class="dot ' + (c.cls==='closed'?'ok':c.cls==='open'?'bad':'warn') + '"></i>' + c.text + (p.retry_at ? ' · ' + h(ago(p.retry_at)) : '') + '</span></td>' +
         '<td class="mono">' + (p.successes||0) + ' / ' + (p.failures||0) + '</td>' +
-        '<td class="mono dim">' + fmtNum((p.tokens && p.tokens.total) || 0) + '</td>' +
+        '<td class="mono dim">' + fmtNum((p.tokens && p.tokens.total) || 0) + ((p.tokens && p.tokens.cached) ? ' / ' + fmtNum(p.tokens.cached) + 'c' : '') + '</td>' +
         '<td><div style="display:flex;align-items:center;gap:8px"><div class="bar-lat"><i style="width:' + barW + '%"></i></div><span class="mono dim">' + fmtMs(lat) + '</span></div></td>' +
         '<td>' + err + '</td>' +
       '</tr>';
@@ -479,7 +486,7 @@
         '<span class="ev ' + cls + '">' + h(ev) + '</span>' +
         '<span><span class="mono">' + h(model) + '</span> <span class="api">' + api + '</span></span>' +
         '<span class="p mono">' + h(detail) + '</span>' +
-        '<span class="m mono">' + (l.tokens ? fmtNum(l.tokens) + 't ' : '') + (l.ms != null ? l.ms + 'ms' : '—') + '</span>' +
+        '<span class="m mono">' + (l.tokens ? fmtNum(l.tokens) + 't ' : '') + (l.cached ? fmtNum(l.cached) + 'c ' : '') + (l.ms != null ? l.ms + 'ms' : '—') + '</span>' +
       '</div>';
     }).join('');
   }

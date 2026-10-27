@@ -62,6 +62,9 @@ const metrics = {
   promptTokens: 0,
   completionTokens: 0,
   totalTokens: 0,
+  cachedTokens: 0,
+  reasoningTokens: 0,
+  cacheHits: 0,
   usageEvents: 0
 };
 const usagePersistence = {
@@ -579,7 +582,7 @@ function newProviderState(id) {
     lastProbeOkAt: null,
     lastProbeError: null,
     probeFailures: 0,
-    tokens: { prompt: 0, completion: 0, total: 0 },
+    tokens: { prompt: 0, completion: 0, total: 0, cached: 0, reasoning: 0 },
     openUntil: 0,
     probing: false,
     inFlight: 0,
@@ -794,16 +797,30 @@ function addUsage(providerId, usage) {
   const completion = Number(usage.completion_tokens || usage.output_tokens || 0);
   const total = Number(usage.total_tokens || (prompt + completion));
   if (!prompt && !completion && !total) return;
+  const cached = Number(
+    usage.prompt_tokens_details && usage.prompt_tokens_details.cached_tokens ||
+    usage.input_tokens_details && usage.input_tokens_details.cached_tokens || 0
+  );
+  const reasoning = Number(
+    usage.completion_tokens_details && usage.completion_tokens_details.reasoning_tokens ||
+    usage.output_tokens_details && usage.output_tokens_details.reasoning_tokens || 0
+  );
   metrics.promptTokens += prompt;
   metrics.completionTokens += completion;
   metrics.totalTokens += total;
+  metrics.cachedTokens += cached;
+  metrics.reasoningTokens += reasoning;
+  if (cached > 0) metrics.cacheHits += 1;
   metrics.usageEvents += 1;
   scheduleUsageSave();
   if (providerId) {
     const state = stateFor(providerId);
-    state.tokens.prompt += prompt;
-    state.tokens.completion += completion;
-    state.tokens.total += total;
+    const tokens = state.tokens || (state.tokens = { prompt: 0, completion: 0, total: 0, cached: 0, reasoning: 0 });
+    tokens.prompt = Number(tokens.prompt || 0) + prompt;
+    tokens.completion = Number(tokens.completion || 0) + completion;
+    tokens.total = Number(tokens.total || 0) + total;
+    tokens.cached = Number(tokens.cached || 0) + cached;
+    tokens.reasoning = Number(tokens.reasoning || 0) + reasoning;
   }
 }
 
@@ -2931,7 +2948,7 @@ function providerView(provider) {
     retry_at: state.openUntil > Date.now() ? new Date(state.openUntil).toISOString() : null,
     successes: state.successes,
     failures: state.failures,
-    tokens: state.tokens ? { prompt: state.tokens.prompt, completion: state.tokens.completion, total: state.tokens.total } : null,
+    tokens: state.tokens ? { prompt: state.tokens.prompt, completion: state.tokens.completion, total: state.tokens.total, cached: state.tokens.cached, reasoning: state.tokens.reasoning } : null,
     attempts: state.attempts,
     in_flight: state.inFlight,
     avg_latency_ms: state.avgLatencyMs,
