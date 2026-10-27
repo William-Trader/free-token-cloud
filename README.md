@@ -202,6 +202,7 @@ kilo -> llm7 -> ovh-oss20 -> ovh-oss120 -> ovh-llama70
 
 ## 更新日志
 
+- **v3.7.2**：README 增加 PiAgent 接入说明与兼容矩阵（仅接 `tools`、`anthropic-messages`、推理档位）。
 - **v3.7.1**：源健康重排（按实测 200 结果排序，移除 503/超时/429 的死槽位并重置熔断）；Anthropic `thinking` 与 `reasoning_effort` 会转成推理提示，PiAgent 等客户端开推理后真正生效。
 - **v3.7.0**：Provider 支持 `proxy`（HTTP CONNECT 隧道），Gemini 经本机代理可直连；Gemini 模型更新为 `gemini-3.5-flash-lite`，校验改用 chat 模式；GitHub 仓库清除服务器地址痕迹。
 - **v3.6.1**：Cloudflare Workers AI 正式可接入——支持 `<account_id>:<api_token>` 形式（地址模板自动替换 account id），`/setup` 页对应行出现 Key 输入框；校验走 `/models`。
@@ -237,7 +238,7 @@ kilo -> llm7 -> ovh-oss20 -> ovh-oss120 -> ovh-llama70
 - **v2.1.0**：`/v1/responses` 支持逐轮长思考（推理预算、思考摘要回填、reasoning 事件）；工具池与对话池同源头。
 - **v2.0.0**：首个公开版（已脱敏，Unlicense）。
 
-## 客户端兼容矩阵（Codex / OpenClaw）
+## 客户端兼容矩阵（Codex / OpenClaw / PiAgent）
 
 **Codex（`wire_api = "responses"`）**
 
@@ -265,6 +266,16 @@ kilo -> llm7 -> ovh-oss20 -> ovh-oss120 -> ovh-llama70
 | 多上游熔断 / 冷却 / 半开 | ✅ 两个入口共用一套路由 |
 | Anthropic 兼容 | ✅ `/v1/messages`（含流式事件合成） |
 | usage / 估算 token | ✅ 上游缺失时补齐 |
+
+**PiAgent（`api: anthropic-messages`）**
+
+| 能力 | 状态 |
+|---|---|
+| 只接 `tools` 一个模型 | ✅ `~/.pi/agent/models.json` 里 provider `ai-relay` 仅挂 `tools` |
+| 工具调用 | ✅ 走 `/v1/messages`，与 Harness 同一条链路 |
+| 推理开关 | ✅ `reasoning: true` + `defaultThinkingLevel: medium`；中转把 `thinking` 转成推理提示 |
+| 默认模型 | ✅ `defaultProvider = ai-relay`，`defaultModel = tools` |
+| usage / 缓存命中 | ✅ Anthropic usage 含 `input/output/cache_read_input_tokens` |
 
 ## 默认语言
 
@@ -361,6 +372,49 @@ http_headers = { "Authorization" = "Bearer <RELAY_TOKEN>" }
 
 然后 `codex exec -c model_provider=ai-relay -m tools "..."` 即可；`tools` 走工具池，
 `chat` 只对话。实测 Codex 能经由免费池完成读文件、跑命令这类真实工具调用。
+
+## 接 PiAgent
+
+Pi Agent 的配置在 `~/.pi/agent/`，`models.json` 里只保留我们的 provider 和一个 `tools` 模型：
+
+```json
+{
+  "providers": {
+    "ai-relay": {
+      "name": "Free Token Cloud",
+      "baseUrl": "http://<RELAY_HOST>:8080",
+      "api": "anthropic-messages",
+      "apiKey": "<RELAY_TOKEN>",
+      "models": [
+        {
+          "id": "tools",
+          "name": "AI Relay Tools",
+          "reasoning": true,
+          "input": ["text"],
+          "contextWindow": 200000,
+          "maxTokens": 8192
+        }
+      ]
+    }
+  }
+}
+```
+
+`settings.json` 里设默认值与推理档位：
+
+```json
+{
+  "defaultProvider": "ai-relay",
+  "defaultModel": "tools",
+  "defaultThinkingLevel": "medium"
+}
+```
+
+要点：
+- **只接 `tools`**，不要加 `chat` 或其他模型，避免 PiAgent 选错池。
+- `api` 必须是 `anthropic-messages`，走 `/v1/messages`。
+- `reasoning: true` 配合 `defaultThinkingLevel`，中转会把 `thinking` / `reasoning_effort` 转成推理提示。
+- 改完 **重启 Pi Agent 应用** 才会生效。
 
 ## 本地验证
 
