@@ -1,0 +1,7 @@
+[Unit]
+Description=ai-relay health watchdog
+After=ai-relay.service
+
+[Service]
+Type=oneshot
+ExecStart=/opt/ai-relay/watchdog.sh

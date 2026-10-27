@@ -1,0 +1,17 @@
+# 本地部署配置与凭据，绝不入库
+.env.local
+.env
+*.key
+keys/
+token
+
+# 内部协作记录（不含在公开发布版）
+legacy/
+AGENTS.local.md
+
+# 运行时产物
+node_modules/
+*.log
+logs/
+.DS_Store
+__pycache__/

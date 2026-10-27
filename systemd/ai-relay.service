@@ -1,0 +1,18 @@
+[Unit]
+Description=ai-relay multi-provider AI router
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/ai-relay
+ExecStart=/usr/local/bin/node /opt/ai-relay/router.js
+Restart=always
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+StandardOutput=append:/opt/ai-relay/logs/service.log
+StandardError=append:/opt/ai-relay/logs/service.log
+
+[Install]
+WantedBy=multi-user.target

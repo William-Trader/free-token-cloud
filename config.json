@@ -1,0 +1,741 @@
+{
+  "port": 8801,
+  "host": "127.0.0.1",
+  "tokenFile": "/opt/ai-relay/token",
+  "logFile": "/opt/ai-relay/logs/relay.jsonl",
+  "timeouts": {
+    "firstEventMs": 45000,
+    "providerMs": 90000
+  },
+  "healthProbeIntervalMs": 120000,
+  "healthProbeFailThreshold": 3,
+  "tools": {
+    "forceNonStream": true
+  },
+  "providerGroups": {
+    "kilo": {
+      "rpm": 3,
+      "maxConcurrency": 2
+    }
+  },
+  "circuit": {
+    "failThreshold": 3,
+    "openMs": 60000,
+    "maxOpenMs": 300000
+  },
+  "routes": {
+    "tools": {
+      "chain": [
+        "openrouter",
+        "gemini",
+        "groq",
+        "nvidia",
+        "mistral",
+        "kilo",
+        "kilo-nemotron",
+        "kilo-beam",
+        "kilo-glyph",
+        "kilo-dots",
+        "kilo-cohere",
+        "kilo-openrouter",
+        "llm7",
+        "ovh-oss20",
+        "ovh-oss120",
+        "ovh-llama70",
+        "ovh-nemo",
+        "ovh-small",
+        "ovh-qwen36",
+        "ovh-qwen397",
+        "ovh-qwen-vl",
+        "pollinations"
+      ],
+      "toolPolicy": "strict",
+      "strategy": "ordered",
+      "allowLastResort": true,
+      "contextWindow": 200000
+    },
+    "auto": {
+      "alias": "tools",
+      "hidden": true
+    },
+    "chat": {
+      "chain": [
+        "openrouter",
+        "gemini",
+        "groq",
+        "nvidia",
+        "mistral",
+        "kilo",
+        "kilo-nemotron",
+        "kilo-beam",
+        "kilo-glyph",
+        "kilo-dots",
+        "kilo-cohere",
+        "kilo-openrouter",
+        "llm7",
+        "ovh-oss20",
+        "ovh-oss120",
+        "ovh-llama70",
+        "ovh-nemo",
+        "ovh-small",
+        "ovh-qwen36",
+        "ovh-qwen397",
+        "ovh-qwen-vl",
+        "pollinations"
+      ],
+      "toolPolicy": "strip",
+      "strategy": "ordered",
+      "allowLastResort": true,
+      "contextWindow": 200000
+    },
+    "fast": {
+      "hidden": true,
+      "chain": [
+        "kilo",
+        "kilo-nemotron",
+        "kilo-beam",
+        "kilo-glyph",
+        "kilo-dots",
+        "kilo-cohere",
+        "kilo-openrouter",
+        "llm7",
+        "ovh-oss20",
+        "ovh-oss120",
+        "ovh-llama70",
+        "ovh-nemo",
+        "ovh-small",
+        "ovh-qwen36",
+        "ovh-qwen397",
+        "ovh-qwen-vl",
+        "pollinations",
+        "groq",
+        "gemini"
+      ],
+      "toolPolicy": "strict",
+      "strategy": "ordered",
+      "allowLastResort": true,
+      "contextWindow": 128000
+    },
+    "smart": {
+      "hidden": true,
+      "chain": [
+        "openrouter",
+        "gemini",
+        "nvidia",
+        "mistral",
+        "groq",
+        "kilo",
+        "kilo-nemotron",
+        "kilo-beam",
+        "kilo-glyph",
+        "kilo-dots",
+        "kilo-cohere",
+        "kilo-openrouter",
+        "llm7",
+        "ovh-oss20",
+        "ovh-oss120",
+        "ovh-llama70",
+        "ovh-nemo",
+        "ovh-small",
+        "ovh-qwen36",
+        "ovh-qwen397",
+        "ovh-qwen-vl",
+        "pollinations"
+      ],
+      "toolPolicy": "strict",
+      "strategy": "ordered",
+      "allowLastResort": true,
+      "contextWindow": 200000
+    }
+  },
+  "providers": [
+    {
+      "id": "openrouter",
+      "type": "openai-compatible",
+      "label": "OpenRouter free models",
+      "enabled": true,
+      "baseUrl": "https://openrouter.ai/api/v1",
+      "healthUrl": "https://openrouter.ai/api/v1/models",
+      "apiKeyFile": "/opt/ai-relay/keys/openrouter.key",
+      "modelMap": {
+        "auto": "openai/gpt-oss-120b:free",
+        "chat": "openai/gpt-oss-120b:free",
+        "fast": "liquid/lfm-2.5-2.6b:free",
+        "smart": "openai/gpt-oss-120b:free"
+      },
+      "pools": ["chat"],
+      "headers": {
+        "HTTP-Referer": "http://127.0.0.1",
+        "X-Title": "OpenClaw ai-relay"
+      },
+      "capabilities": {
+        "tools": true,
+        "stream": true,
+        "usage": true
+      },
+      "timeoutMs": 90000,
+      "maxConcurrency": 4,
+      "rpm": 20,
+      "priority": 20
+    },
+    {
+      "id": "gemini",
+      "type": "openai-compatible",
+      "label": "Google Gemini API free tier",
+      "enabled": true,
+      "baseUrl": "https://generativelanguage.googleapis.com/v1beta/openai",
+      "healthUrl": "https://generativelanguage.googleapis.com/v1beta/openai/models",
+      "apiKeyFile": "/opt/ai-relay/keys/gemini.key",
+      "modelMap": {
+        "auto": "gemini-2.5-flash-lite",
+        "chat": "gemini-2.5-flash-lite",
+        "fast": "gemini-2.5-flash-lite",
+        "smart": "gemini-2.5-flash"
+      },
+      "pools": ["chat"],
+      "capabilities": {
+        "tools": true,
+        "stream": true,
+        "usage": true,
+        "vision": true
+      },
+      "timeoutMs": 90000,
+      "maxConcurrency": 2,
+      "rpm": 10,
+      "priority": 30
+    },
+    {
+      "id": "groq",
+      "type": "openai-compatible",
+      "label": "Groq free tier",
+      "enabled": true,
+      "baseUrl": "https://api.groq.com/openai/v1",
+      "healthUrl": "https://api.groq.com/openai/v1/models",
+      "apiKeyFile": "/opt/ai-relay/keys/groq.key",
+      "modelMap": {
+        "auto": "openai/gpt-oss-120b",
+        "chat": "openai/gpt-oss-120b",
+        "fast": "openai/gpt-oss-20b",
+        "smart": "openai/gpt-oss-120b"
+      },
+      "pools": ["chat"],
+      "capabilities": {
+        "tools": true,
+        "stream": true,
+        "usage": true
+      },
+      "timeoutMs": 60000,
+      "maxConcurrency": 4,
+      "rpm": 30,
+      "priority": 40
+    },
+    {
+      "id": "nvidia",
+      "type": "openai-compatible",
+      "label": "NVIDIA NIM free tier",
+      "enabled": true,
+      "baseUrl": "https://integrate.api.nvidia.com/v1",
+      "healthUrl": "https://integrate.api.nvidia.com/v1/models",
+      "apiKeyFile": "/opt/ai-relay/keys/nvidia.key",
+      "modelMap": {
+        "auto": "openai/gpt-oss-20b",
+        "chat": "openai/gpt-oss-20b",
+        "fast": "openai/gpt-oss-20b",
+        "smart": "openai/gpt-oss-20b"
+      },
+      "pools": ["chat"],
+      "capabilities": {
+        "tools": true,
+        "stream": true,
+        "usage": true
+      },
+      "timeoutMs": 90000,
+      "maxConcurrency": 2,
+      "rpm": 40,
+      "priority": 50
+    },
+    {
+      "id": "mistral",
+      "type": "openai-compatible",
+      "label": "Mistral API free tier",
+      "enabled": true,
+      "baseUrl": "https://api.mistral.ai/v1",
+      "healthUrl": "https://api.mistral.ai/v1/models",
+      "apiKeyFile": "/opt/ai-relay/keys/mistral.key",
+      "modelMap": {
+        "auto": "mistral-small-latest",
+        "chat": "mistral-small-latest",
+        "fast": "ministral-8b-latest",
+        "smart": "mistral-medium-latest"
+      },
+      "pools": ["chat"],
+      "capabilities": {
+        "tools": true,
+        "stream": true,
+        "usage": true,
+        "vision": true
+      },
+      "timeoutMs": 90000,
+      "maxConcurrency": 1,
+      "rpm": 30,
+      "priority": 60
+    },
+    {
+      "id": "kilo",
+      "type": "openai-compatible",
+      "label": "Kilo anonymous free pool",
+      "enabled": true,
+      "group": "kilo",
+      "baseUrl": "https://api.kilo.ai/api/gateway/v1",
+      "healthUrl": "https://api.kilo.ai/api/gateway/v1/models",
+      "modelMap": {
+        "auto": "kilo-auto/free",
+        "chat": "kilo-auto/free",
+        "fast": "kilo-auto/free",
+        "smart": "kilo-auto/free"
+      },
+      "pools": ["tools", "chat"],
+      "capabilities": {
+        "tools": true,
+        "stream": true,
+        "usage": true
+      },
+      "timeoutMs": 75000,
+      "maxConcurrency": 1,
+      "rpm": 3,
+      "priority": 100,
+      "toolPriority": 5
+    },
+    {
+      "id": "kilo-nemotron",
+      "type": "openai-compatible",
+      "label": "Kilo NVIDIA Nemotron 3.5 Super",
+      "enabled": true,
+      "group": "kilo",
+      "baseUrl": "https://api.kilo.ai/api/gateway/v1",
+      "healthUrl": "https://api.kilo.ai/api/gateway/v1/models",
+      "modelMap": {
+        "auto": "nvidia/nemotron-3.5-super-vl:free",
+        "chat": "nvidia/nemotron-3.5-super-vl:free",
+        "fast": "nvidia/nemotron-3.5-super-vl:free",
+        "smart": "nvidia/nemotron-3.5-super-vl:free"
+      },
+      "pools": ["tools", "chat"],
+      "capabilities": {
+        "tools": false,
+        "toolBridge": true,
+        "stream": true,
+        "usage": true,
+        "vision": true
+      },
+      "timeoutMs": 90000,
+      "maxConcurrency": 1,
+      "rpm": 2,
+      "priority": 101,
+      "toolPriority": 10
+    },
+    {
+      "id": "kilo-beam",
+      "type": "openai-compatible",
+      "label": "Kilo Reflection Beam 1.0",
+      "enabled": true,
+      "group": "kilo",
+      "baseUrl": "https://api.kilo.ai/api/gateway/v1",
+      "healthUrl": "https://api.kilo.ai/api/gateway/v1/models",
+      "modelMap": {
+        "auto": "reflection/beam-free",
+        "chat": "reflection/beam-free",
+        "fast": "reflection/beam-free",
+        "smart": "reflection/beam-free"
+      },
+      "pools": ["tools", "chat"],
+      "capabilities": {
+        "tools": false,
+        "toolBridge": true,
+        "stream": true,
+        "usage": true
+      },
+      "timeoutMs": 90000,
+      "maxConcurrency": 1,
+      "rpm": 2,
+      "priority": 102,
+      "toolPriority": 8
+    },
+    {
+      "id": "kilo-glyph",
+      "type": "openai-compatible",
+      "label": "Kilo Stealth Glyph Cluster",
+      "enabled": true,
+      "group": "kilo",
+      "baseUrl": "https://api.kilo.ai/api/gateway/v1",
+      "healthUrl": "https://api.kilo.ai/api/gateway/v1/models",
+      "modelMap": {
+        "auto": "stealth/glyph-cluster",
+        "chat": "stealth/glyph-cluster",
+        "fast": "stealth/glyph-cluster",
+        "smart": "stealth/glyph-cluster"
+      },
+      "pools": ["tools", "chat"],
+      "capabilities": {
+        "tools": false,
+        "toolBridge": true,
+        "stream": true,
+        "usage": true
+      },
+      "timeoutMs": 90000,
+      "maxConcurrency": 1,
+      "rpm": 2,
+      "priority": 103,
+      "toolPriority": 9
+    },
+    {
+      "id": "kilo-dots",
+      "type": "openai-compatible",
+      "label": "Kilo Dots3 Note Preview",
+      "enabled": true,
+      "group": "kilo",
+      "baseUrl": "https://api.kilo.ai/api/gateway/v1",
+      "healthUrl": "https://api.kilo.ai/api/gateway/v1/models",
+      "modelMap": {
+        "auto": "dots-studio/dots-3-note-preview:free",
+        "chat": "dots-studio/dots-3-note-preview:free",
+        "fast": "dots-studio/dots-3-note-preview:free",
+        "smart": "dots-studio/dots-3-note-preview:free"
+      },
+      "pools": ["tools", "chat"],
+      "capabilities": {
+        "tools": false,
+        "toolBridge": true,
+        "stream": true,
+        "usage": true,
+        "vision": true
+      },
+      "timeoutMs": 90000,
+      "maxConcurrency": 1,
+      "rpm": 2,
+      "priority": 104,
+      "toolPriority": 7
+    },
+    {
+      "id": "kilo-cohere",
+      "type": "openai-compatible",
+      "label": "Kilo Cohere North Mini Code",
+      "enabled": true,
+      "group": "kilo",
+      "baseUrl": "https://api.kilo.ai/api/gateway/v1",
+      "healthUrl": "https://api.kilo.ai/api/gateway/v1/models",
+      "modelMap": {
+        "auto": "cohere/north-mini-code:free",
+        "chat": "cohere/north-mini-code:free",
+        "fast": "cohere/north-mini-code:free",
+        "smart": "cohere/north-mini-code:free"
+      },
+      "pools": ["tools", "chat"],
+      "capabilities": {
+        "tools": false,
+        "toolBridge": true,
+        "stream": true,
+        "usage": true
+      },
+      "timeoutMs": 90000,
+      "maxConcurrency": 1,
+      "rpm": 2,
+      "priority": 105,
+      "toolPriority": 6
+    },
+    {
+      "id": "kilo-openrouter",
+      "type": "openai-compatible",
+      "label": "Kilo OpenRouter Free Router",
+      "enabled": true,
+      "group": "kilo",
+      "baseUrl": "https://api.kilo.ai/api/gateway/v1",
+      "healthUrl": "https://api.kilo.ai/api/gateway/v1/models",
+      "modelMap": {
+        "auto": "openrouter/free",
+        "chat": "openrouter/free",
+        "fast": "openrouter/free",
+        "smart": "openrouter/free"
+      },
+      "pools": ["tools", "chat"],
+      "capabilities": {
+        "tools": false,
+        "toolBridge": true,
+        "stream": true,
+        "usage": true,
+        "vision": true
+      },
+      "timeoutMs": 90000,
+      "maxConcurrency": 1,
+      "rpm": 2,
+      "priority": 106,
+      "toolPriority": 11
+    },
+    {
+      "id": "llm7",
+      "type": "openai-compatible",
+      "label": "LLM7 anonymous free tier",
+      "enabled": true,
+      "baseUrl": "https://api.llm7.io/v1",
+      "healthUrl": "https://api.llm7.io/v1/models",
+      "apiKeyFile": "/opt/ai-relay/keys/llm7.key",
+      "optionalAuth": true,
+      "modelMap": {
+        "auto": "gpt-oss:20b",
+        "chat": "gpt-oss:20b",
+        "fast": "gpt-oss:20b",
+        "smart": "nemotron-3-nano:30b"
+      },
+      "pools": ["tools", "chat"],
+      "capabilities": {
+        "tools": true,
+        "stream": true,
+        "usage": true
+      },
+      "timeoutMs": 75000,
+      "maxConcurrency": 1,
+      "rpm": 30,
+      "priority": 110,
+      "toolPriority": 70
+    },
+    {
+      "id": "ovh-oss20",
+      "type": "openai-compatible",
+      "label": "OVH AI Endpoints anonymous tier",
+      "enabled": true,
+      "baseUrl": "https://oai.endpoints.kepler.ai.cloud.ovh.net/v1",
+      "healthUrl": "https://oai.endpoints.kepler.ai.cloud.ovh.net/v1/models",
+      "modelMap": {
+        "auto": "gpt-oss-20b",
+        "chat": "gpt-oss-20b",
+        "fast": "gpt-oss-20b",
+        "smart": "gpt-oss-20b"
+      },
+      "pools": ["tools", "chat"],
+      "capabilities": {
+        "tools": false,
+        "toolBridge": true,
+        "stream": true,
+        "usage": true
+      },
+      "timeoutMs": 75000,
+      "maxConcurrency": 1,
+      "rpm": 2,
+      "priority": 120,
+      "toolPriority": 20
+    },
+    {
+      "id": "ovh-oss120",
+      "type": "openai-compatible",
+      "label": "OVH gpt-oss-120b anonymous",
+      "enabled": true,
+      "baseUrl": "https://oai.endpoints.kepler.ai.cloud.ovh.net/v1",
+      "healthUrl": "https://oai.endpoints.kepler.ai.cloud.ovh.net/v1/models",
+      "modelMap": {
+        "auto": "gpt-oss-120b",
+        "chat": "gpt-oss-120b",
+        "fast": "gpt-oss-120b",
+        "smart": "gpt-oss-120b"
+      },
+      "pools": ["tools", "chat"],
+      "capabilities": {
+        "tools": false,
+        "toolBridge": true,
+        "stream": true,
+        "usage": true
+      },
+      "timeoutMs": 75000,
+      "maxConcurrency": 1,
+      "rpm": 2,
+      "priority": 121,
+      "toolPriority": 10
+    },
+    {
+      "id": "ovh-llama70",
+      "type": "openai-compatible",
+      "label": "OVH Llama 3.3 70B anonymous",
+      "enabled": true,
+      "baseUrl": "https://oai.endpoints.kepler.ai.cloud.ovh.net/v1",
+      "healthUrl": "https://oai.endpoints.kepler.ai.cloud.ovh.net/v1/models",
+      "modelMap": {
+        "auto": "Meta-Llama-3_3-70B-Instruct",
+        "chat": "Meta-Llama-3_3-70B-Instruct",
+        "fast": "Meta-Llama-3_3-70B-Instruct",
+        "smart": "Meta-Llama-3_3-70B-Instruct"
+      },
+      "pools": ["tools", "chat"],
+      "capabilities": {
+        "tools": false,
+        "toolBridge": true,
+        "stream": true,
+        "usage": true
+      },
+      "timeoutMs": 75000,
+      "maxConcurrency": 1,
+      "rpm": 2,
+      "priority": 122,
+      "toolPriority": 50
+    },
+    {
+      "id": "ovh-nemo",
+      "type": "openai-compatible",
+      "label": "OVH Mistral Nemo anonymous",
+      "enabled": true,
+      "baseUrl": "https://oai.endpoints.kepler.ai.cloud.ovh.net/v1",
+      "healthUrl": "https://oai.endpoints.kepler.ai.cloud.ovh.net/v1/models",
+      "modelMap": {
+        "auto": "Mistral-Nemo-Instruct-2407",
+        "chat": "Mistral-Nemo-Instruct-2407",
+        "fast": "Mistral-Nemo-Instruct-2407",
+        "smart": "Mistral-Nemo-Instruct-2407"
+      },
+      "pools": ["tools", "chat"],
+      "capabilities": {
+        "tools": false,
+        "toolBridge": true,
+        "stream": true,
+        "usage": true
+      },
+      "timeoutMs": 75000,
+      "maxConcurrency": 1,
+      "rpm": 2,
+      "priority": 123,
+      "toolPriority": 30
+    },
+    {
+      "id": "ovh-small",
+      "type": "openai-compatible",
+      "label": "OVH Mistral Small anonymous",
+      "enabled": true,
+      "baseUrl": "https://oai.endpoints.kepler.ai.cloud.ovh.net/v1",
+      "healthUrl": "https://oai.endpoints.kepler.ai.cloud.ovh.net/v1/models",
+      "modelMap": {
+        "auto": "Mistral-Small-3.2-24B-Instruct-2506",
+        "chat": "Mistral-Small-3.2-24B-Instruct-2506",
+        "fast": "Mistral-Small-3.2-24B-Instruct-2506",
+        "smart": "Mistral-Small-3.2-24B-Instruct-2506"
+      },
+      "pools": ["tools", "chat"],
+      "capabilities": {
+        "tools": false,
+        "toolBridge": true,
+        "stream": true,
+        "usage": true
+      },
+      "timeoutMs": 75000,
+      "maxConcurrency": 1,
+      "rpm": 2,
+      "priority": 124,
+      "toolPriority": 40
+    },
+    {
+      "id": "ovh-qwen36",
+      "type": "openai-compatible",
+      "label": "OVH Qwen3.6 27B anonymous",
+      "enabled": true,
+      "baseUrl": "https://oai.endpoints.kepler.ai.cloud.ovh.net/v1",
+      "healthUrl": "https://oai.endpoints.kepler.ai.cloud.ovh.net/v1/models",
+      "modelMap": {
+        "auto": "Qwen3.6-27B",
+        "chat": "Qwen3.6-27B",
+        "fast": "Qwen3.6-27B",
+        "smart": "Qwen3.6-27B"
+      },
+      "pools": ["tools", "chat"],
+      "capabilities": {
+        "tools": false,
+        "toolBridge": true,
+        "stream": true,
+        "usage": true
+      },
+      "timeoutMs": 90000,
+      "maxConcurrency": 1,
+      "rpm": 2,
+      "priority": 125,
+      "toolPriority": 15
+    },
+    {
+      "id": "ovh-qwen397",
+      "type": "openai-compatible",
+      "label": "OVH Qwen3.5 397B A17B anonymous",
+      "enabled": true,
+      "baseUrl": "https://oai.endpoints.kepler.ai.cloud.ovh.net/v1",
+      "healthUrl": "https://oai.endpoints.kepler.ai.cloud.ovh.net/v1/models",
+      "modelMap": {
+        "auto": "Qwen3.5-397B-A17B",
+        "chat": "Qwen3.5-397B-A17B",
+        "fast": "Qwen3.5-397B-A17B",
+        "smart": "Qwen3.5-397B-A17B"
+      },
+      "pools": ["tools", "chat"],
+      "capabilities": {
+        "tools": false,
+        "toolBridge": true,
+        "stream": true,
+        "usage": true
+      },
+      "timeoutMs": 90000,
+      "maxConcurrency": 1,
+      "rpm": 2,
+      "priority": 126,
+      "toolPriority": 25
+    },
+    {
+      "id": "ovh-qwen-vl",
+      "type": "openai-compatible",
+      "label": "OVH Qwen2.5 VL 72B anonymous",
+      "enabled": true,
+      "baseUrl": "https://oai.endpoints.kepler.ai.cloud.ovh.net/v1",
+      "healthUrl": "https://oai.endpoints.kepler.ai.cloud.ovh.net/v1/models",
+      "modelMap": {
+        "auto": "Qwen2.5-VL-72B-Instruct",
+        "chat": "Qwen2.5-VL-72B-Instruct",
+        "fast": "Qwen2.5-VL-72B-Instruct",
+        "smart": "Qwen2.5-VL-72B-Instruct"
+      },
+      "pools": ["tools", "chat"],
+      "capabilities": {
+        "tools": false,
+        "toolBridge": true,
+        "stream": true,
+        "usage": true,
+        "vision": true
+      },
+      "timeoutMs": 90000,
+      "maxConcurrency": 1,
+      "rpm": 2,
+      "priority": 127,
+      "toolPriority": 35
+    },
+    {
+      "id": "pollinations",
+      "type": "openai-compatible",
+      "label": "Pollinations free tier",
+      "enabled": true,
+      "endpoint": "https://text.pollinations.ai/openai",
+      "apiKeyFile": "/opt/ai-relay/keys/pollinations.key",
+      "optionalAuth": true,
+      "modelMap": {
+        "auto": "openai-fast",
+        "chat": "openai-fast",
+        "fast": "openai-fast",
+        "smart": "openai-fast"
+      },
+      "pools": ["tools", "chat"],
+      "headers": {
+        "referer": "https://pollinations.ai/"
+      },
+      "capabilities": {
+        "tools": true,
+        "stream": true,
+        "usage": false
+      },
+      "timeoutMs": 60000,
+      "maxTokens": 4096,
+      "maxConcurrency": 1,
+      "rpm": 2,
+      "priority": 130,
+      "toolPriority": 80
+    }
+  ]
+}

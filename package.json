@@ -1,0 +1,16 @@
+{
+  "name": "openclaw-ai-relay",
+  "version": "2.0.0",
+  "private": true,
+  "description": "OpenAI-compatible multi-provider failover relay for OpenClaw",
+  "type": "commonjs",
+  "scripts": {
+    "test": "node --test test/router.test.js",
+    "check": "node --check router.js && node -e \"JSON.parse(require('node:fs').readFileSync('config.json','utf8'))\"",
+    "smoke": "node smoke.mjs",
+    "deploy": "./deploy.sh"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
