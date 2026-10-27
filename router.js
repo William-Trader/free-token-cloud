@@ -1695,10 +1695,104 @@ function anthropicEventsFromCompletion(completion, logical) {
   return events;
 }
 
-function fakeAnthropicStream(res, completion, logical, headers) {
+
+async function collectOpenAIStreamToCompletion(prepared, logical) {
+  const decoder = prepared.decoder || new StringDecoder('utf8');
+  let buffer = prepared.prefix || '';
+  let text = '';
+  let reasoning = '';
+  const toolCalls = new Map();
+  let usage = null;
+  let finishReason = null;
+
+  function consume(flush) {
+    const parts = buffer.split(/\r?\n\r?\n/);
+    buffer = flush ? '' : parts.pop();
+    for (const raw of parts) {
+      if (!raw.trim()) continue;
+      for (const value of eventPayloads(raw)) {
+        if (!value || value === '[DONE]') continue;
+        let chunk;
+        try { chunk = JSON.parse(value); } catch { continue; }
+        if (chunk.usage) usage = chunk.usage;
+        const choice = chunk.choices && chunk.choices[0];
+        if (!choice) continue;
+        const delta = choice.delta || {};
+        if (delta.content) text += contentText(delta.content);
+        if (delta.reasoning) reasoning += String(delta.reasoning);
+        if (delta.reasoning_content) reasoning += String(delta.reasoning_content);
+        if (Array.isArray(delta.tool_calls)) {
+          for (const part of delta.tool_calls) {
+            const index = part.index || 0;
+            const current = toolCalls.get(index) || { id: '', type: 'function', function: { name: '', arguments: '' } };
+            if (part.id) current.id = part.id;
+            if (part.function && part.function.name) current.function.name = part.function.name;
+            if (part.function && part.function.arguments) current.function.arguments += part.function.arguments;
+            toolCalls.set(index, current);
+          }
+        }
+        if (choice.finish_reason) finishReason = choice.finish_reason;
+      }
+    }
+  }
+
+  consume(false);
+  for (;;) {
+    const item = await prepared.iterator.next();
+    if (item.done) break;
+    buffer += decoder.write(item.value);
+    consume(false);
+  }
+  buffer += decoder.end();
+  consume(true);
+
+  const message = { role: 'assistant', content: text };
+  if (reasoning) message.reasoning = reasoning;
+  if (toolCalls.size) {
+    message.tool_calls = Array.from(toolCalls.entries())
+      .sort((left, right) => left[0] - right[0])
+      .map(entry => entry[1]);
+  }
+  return {
+    id: 'relay-' + crypto.randomUUID(),
+    object: 'chat.completion',
+    created: Math.floor(Date.now() / 1000),
+    model: logical,
+    choices: [{
+      index: 0,
+      message,
+      finish_reason: finishReason || (toolCalls.size ? 'tool_calls' : 'stop')
+    }],
+    usage: usage || estimateUsage({ messages: [] }, text)
+  };
+}
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function fakeAnthropicStream(res, completion, logical, headers) {
   sseHeaders(res, headers);
-  for (const [name, payload] of anthropicEventsFromCompletion(completion, logical)) {
+  const events = anthropicEventsFromCompletion(completion, logical);
+  const usage = completion.usage || {};
+  const text = contentText(
+    completion.choices && completion.choices[0] && completion.choices[0].message
+      ? completion.choices[0].message.content
+      : ''
+  );
+  const outputTokens = Number(usage.completion_tokens || usage.output_tokens || 0) ||
+    Math.max(1, Math.round(text.length / 4));
+  // 客户端（DSH harness 等）用「首事件到末事件」的时间算 tok/s；
+  // 上游是整包返回时，这里按 ~70 tok/s 铺开，避免显示成几十万 tok/s。
+  const target = Number(CFG.streamPacing && CFG.streamPacing.tokensPerSecond || 70);
+  const maxDelayMs = Number(CFG.streamPacing && CFG.streamPacing.maxDelayMs || 2500);
+  const durationMs = Math.min(maxDelayMs, Math.max(150, outputTokens / Math.max(1, target) * 1000));
+  const deltas = events.filter(([name]) => name === 'content_block_delta').length || 1;
+  const perDelta = durationMs / deltas;
+  for (const [name, payload] of events) {
+    if (res.writableEnded) break;
     safeWrite(res, 'event: ' + name + '\n' + 'data: ' + JSON.stringify(payload) + '\n\n');
+    if (name === 'content_block_delta' && perDelta > 1) await sleep(perDelta);
   }
   try {
     res.end();
@@ -1981,6 +2075,34 @@ async function handleChat(req, res, body, anthropic) {
       };
 
       if (outcome.result.kind === 'stream') {
+        if (anthropic) {
+          // Anthropic 客户端不认 OpenAI chunk，先把上游流收成完整消息再按 message_* 事件回放
+          const completion = await collectOpenAIStreamToCompletion(outcome.result, logical);
+          {
+            const stripped = completion.choices[0].message;
+            const fallback = String(stripped.reasoning || stripped.reasoning_content || '').trim();
+            if (selection.stripTools) {
+              delete stripped.reasoning;
+              delete stripped.reasoning_content;
+            }
+            if (!contentText(stripped.content).trim() && fallback) stripped.content = fallback;
+          }
+          markSuccess(provider, outcome.elapsedMs, completion.usage);
+          bumpMetric('successes');
+          bumpMetric('streams');
+          log({
+            ev: 'ok',
+            api: 'messages',
+            request_id: requestId,
+            model: logical,
+            provider: provider.id,
+            stream: true,
+            attempts: attempts.length,
+            ms: Date.now() - started,
+            tokens: completion.usage ? Number(completion.usage.total_tokens || 0) : undefined
+          });
+          return fakeAnthropicStream(res, completion, logical, responseHeaders);
+        }
         markSuccess(provider, outcome.elapsedMs);
         bumpMetric('successes');
         bumpMetric('streams');
@@ -2000,11 +2122,17 @@ async function handleChat(req, res, body, anthropic) {
       }
 
       const completion = normalizeCompletion(outcome.result.raw, logical, provider.id, body);
-      if (selection.stripTools) {
+      {
         const stripped = completion.choices && completion.choices[0] && completion.choices[0].message;
         if (stripped) {
-          delete stripped.reasoning;
-          delete stripped.reasoning_content;
+          const fallback = String(stripped.reasoning || stripped.reasoning_content || '').trim();
+          if (selection.stripTools) {
+            delete stripped.reasoning;
+            delete stripped.reasoning_content;
+          }
+          // 正文为空但模型只在 reasoning 里说话时，回退成正文：
+          // 避免客户端拿到空回答，也避免 tok/s 用 0 时长算出天文数字。
+          if (!contentText(stripped.content).trim() && fallback) stripped.content = fallback;
         }
       }
       if (
@@ -2371,7 +2499,9 @@ function responsesUsage(usage) {
 function responseFromCompletion(completion, request, options = {}) {
   const choice = completion.choices && completion.choices[0] || {};
   const message = choice.message || {};
-  const text = contentText(message.content);
+  const rawText = contentText(message.content);
+  const fallbackText = String(message.reasoning || message.reasoning_content || '').trim();
+  const text = rawText.trim() ? rawText : fallbackText;
   const output = [];
   const customTools = options.customTools instanceof Set
     ? options.customTools

@@ -376,7 +376,9 @@
         "fast": "command-r7b-12-2024",
         "smart": "command-r-plus-08-2024"
       },
-      "pools": ["chat"],
+      "pools": [
+        "chat"
+      ],
       "capabilities": {
         "tools": false,
         "stream": true,
@@ -402,7 +404,9 @@
         "fast": "Qwen/Qwen3.5-27B",
         "smart": "Qwen/Qwen3.5-27B"
       },
-      "pools": ["chat"],
+      "pools": [
+        "chat"
+      ],
       "capabilities": {
         "tools": false,
         "stream": true,
@@ -428,7 +432,9 @@
         "fast": "gpt-oss:20b",
         "smart": "gpt-oss:20b"
       },
-      "pools": ["chat"],
+      "pools": [
+        "chat"
+      ],
       "capabilities": {
         "tools": false,
         "stream": true,
@@ -453,7 +459,9 @@
         "fast": "Qwen/Qwen3-8B",
         "smart": "Qwen/Qwen3-8B"
       },
-      "pools": ["chat"],
+      "pools": [
+        "chat"
+      ],
       "capabilities": {
         "tools": false,
         "stream": true,
@@ -479,7 +487,9 @@
         "fast": "meta-llama/Llama-3.1-8B-Instruct",
         "smart": "meta-llama/Llama-3.1-8B-Instruct"
       },
-      "pools": ["chat"],
+      "pools": [
+        "chat"
+      ],
       "capabilities": {
         "tools": false,
         "stream": true,
@@ -504,7 +514,9 @@
         "fast": "qwen3.8-flash",
         "smart": "qwen3.8-max"
       },
-      "pools": ["chat"],
+      "pools": [
+        "chat"
+      ],
       "capabilities": {
         "tools": false,
         "stream": true,
@@ -530,7 +542,10 @@
         "fast": "qwen-3.8-27b",
         "smart": "gpt-oss-120b"
       },
-      "pools": ["tools", "chat"],
+      "pools": [
+        "tools",
+        "chat"
+      ],
       "capabilities": {
         "tools": true,
         "stream": true,
@@ -558,7 +573,9 @@
         "fast": "Meta-Llama-3.3-70B-Instruct",
         "smart": "gpt-oss-120b"
       },
-      "pools": ["chat"],
+      "pools": [
+        "chat"
+      ],
       "capabilities": {
         "tools": false,
         "stream": true,
@@ -584,7 +601,9 @@
         "fast": "Qwen/Qwen3-14B",
         "smart": "Qwen/Qwen3.7-Max"
       },
-      "pools": ["chat"],
+      "pools": [
+        "chat"
+      ],
       "capabilities": {
         "tools": false,
         "stream": true,
@@ -611,7 +630,9 @@
         "fast": "zai-org/glm-5.3-flash",
         "smart": "qwen/qwen3.8-max"
       },
-      "pools": ["chat"],
+      "pools": [
+        "chat"
+      ],
       "capabilities": {
         "tools": false,
         "stream": true,
@@ -1112,7 +1133,10 @@
         "fast": "Qwen3.5-9B",
         "smart": "Qwen3.5-9B"
       },
-      "pools": ["tools", "chat"],
+      "pools": [
+        "tools",
+        "chat"
+      ],
       "capabilities": {
         "tools": false,
         "toolBridge": true,
@@ -1138,7 +1162,10 @@
         "fast": "Qwen3.8-27B",
         "smart": "Qwen3.8-27B"
       },
-      "pools": ["tools", "chat"],
+      "pools": [
+        "tools",
+        "chat"
+      ],
       "capabilities": {
         "tools": false,
         "toolBridge": true,
@@ -1344,7 +1371,9 @@
         "fast": "nvidia/nemotron-3.5-lightning:free",
         "smart": "nvidia/nemotron-3.5-lightning:free"
       },
-      "pools": ["chat"],
+      "pools": [
+        "chat"
+      ],
       "capabilities": {
         "tools": false,
         "toolBridge": true,
@@ -1371,7 +1400,9 @@
         "fast": "poolside/laguna-xs-2.1:free",
         "smart": "poolside/laguna-xs-2.1:free"
       },
-      "pools": ["chat"],
+      "pools": [
+        "chat"
+      ],
       "capabilities": {
         "tools": false,
         "toolBridge": true,
@@ -1474,5 +1505,9 @@
       "priority": 118,
       "toolPriority": 80
     }
-  ]
+  ],
+  "streamPacing": {
+    "tokensPerSecond": 70,
+    "maxDelayMs": 2500
+  }
 }

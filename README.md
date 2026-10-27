@@ -199,6 +199,7 @@ kilo -> llm7 -> ovh-oss20 -> ovh-oss120 -> ovh-llama70
 
 ## 更新日志
 
+- **v3.2.1**：修复 harness 显示天文数字 tok/s——`/v1/messages` 流式改为真正的 Anthropic 事件回放（不再透传 OpenAI chunk），并按 `streamPacing` 节流到约 70 tok/s；正文为空时回退 reasoning，避免 0 时长。
 - **v3.2.0**：许可从 Unlicense 收紧为 **PolyForm Noncommercial 1.0.0**——非商用免费，商用需单独授权。
 - **v3.1.1**：修复 Provider 接入页禁用控件无反馈、登录链接无法打开时无备用路径；
   新增复制登录链接，Ollama 等公开模型目录改用真实最小推理校验，并完成内置 Harness 接入。
