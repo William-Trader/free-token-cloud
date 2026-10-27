@@ -216,7 +216,9 @@
       "pool": "agent",
       "loginUrl": "http://127.0.0.1:38471",
       "docsUrl": "https://github.com/abcwyc/pi-agent-desktop",
-      "models": ["piagent"],
+      "models": [
+        "piagent"
+      ],
       "quota": "Local agent execution bridge",
       "note": "Only available while Pi Agent Desktop and its SSH interface tunnel are running. Inside Pi Agent, the sole configured model is ai-relay/tools."
     },
@@ -430,6 +432,34 @@
       ],
       "quota": "按量",
       "note": "OpenAI 兼容"
+    },
+    {
+      "id": "airforce",
+      "name": "Airforce",
+      "kind": "api-key",
+      "pool": "chat",
+      "loginUrl": "https://api.airforce/",
+      "docsUrl": "https://api.airforce/",
+      "models": [
+        "gpt-oss-120b",
+        "mistral-large-latest"
+      ],
+      "quota": "free tier",
+      "note": "多人合租式网关，匿名 chat 需 key"
+    },
+    {
+      "id": "voidai",
+      "name": "VoidAI",
+      "kind": "api-key",
+      "pool": "chat",
+      "loginUrl": "https://voidai.app/",
+      "docsUrl": "https://voidai.app/",
+      "models": [
+        "gpt-oss-120b",
+        "mistral-large-latest"
+      ],
+      "quota": "free tier",
+      "note": "匿名 chat 会 500，需 key"
     }
   ]
 }

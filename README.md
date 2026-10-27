@@ -202,6 +202,7 @@ kilo -> llm7 -> ovh-oss20 -> ovh-oss120 -> ovh-llama70
 
 ## 更新日志
 
+- **v3.8.0**：全球免费源复查（5 个候选）——Airforce / VoidAI 匿名不可用，已作为 keyed 槽位预置；匿名池按实测收敛为 26 对话 / 17 工具（淘汰 503/429/超时），provider 条目 58、目录 34；链按实测健康度排序。
 - **v3.7.4**：仓库脱敏复查——移除个人路径（`piAgentCwd` 改占位符）、测试夹具统一为 `test-token`；确认工作区/历史/release 无真实 key、无服务器 IP。
 - **v3.7.3**：Ollama Cloud 接入池（`gpt-oss:20b`），凭据校验通过；新增隐藏路由 `ollama` 便于定向调用；chat 链把 ollama-cloud 排在 gemini 之后。
 - **v3.7.2**：README 增加 PiAgent 接入说明与兼容矩阵（仅接 `tools`、`anthropic-messages`、推理档位）。
