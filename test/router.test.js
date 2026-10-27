@@ -7,7 +7,19 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const { spawn } = require('child_process');
-const { applyBridgeToolCalls, parseBridgeToolCalls, selectBridgeTools } = require('../router');
+const {
+  applyBridgeToolCalls,
+  decryptCredentialStore,
+  deleteCredentialValue,
+  loadConfiguration,
+  loadUsageState,
+  parseBridgeToolCalls,
+  saveUsageState,
+  selectBridgeTools,
+  stateFor,
+  usageSnapshot,
+  writeCredentialValue
+} = require('../router');
 
 const ROOT = path.resolve(__dirname, '..');
 const TOKEN = 'test-token';
@@ -82,6 +94,25 @@ async function startMockUpstream() {
         usage: { prompt_tokens: 4, completion_tokens: 2, total_tokens: 6 }
       });
     }
+    if (req.url === '/public/models') {
+      return sendJson(res, 200, { object: 'list', data: [] });
+    }
+    if (req.url === '/validate/chat/completions') {
+      if (req.headers.authorization !== 'Bearer valid-chat-validation-key') {
+        return sendJson(res, 401, { error: { message: 'invalid key' } });
+      }
+      return sendJson(res, 200, {
+        id: 'validation-id',
+        object: 'chat.completion',
+        model: 'fixed-model',
+        choices: [{
+          index: 0,
+          message: { role: 'assistant', content: 'OK' },
+          finish_reason: 'stop'
+        }],
+        usage: { prompt_tokens: 2, completion_tokens: 1, total_tokens: 3 }
+      });
+    }
     if (req.url === '/bridge/chat/completions') {
       return sendJson(res, 200, {
         id: 'bridge-id',
@@ -145,8 +176,20 @@ async function startRouter() {
   const tokenFile = path.join(temp, 'token');
   const keyFile = path.join(temp, 'provider.key');
   const configFile = path.join(temp, 'config.json');
+  const providerCatalogFile = path.join(temp, 'provider-catalog.json');
+  const providerSettingsFile = path.join(temp, 'state', 'provider-settings.json');
+  const credentialsFile = path.join(temp, 'credentials.enc.json');
+  const credentialsKeyFile = path.join(temp, 'master.key');
   fs.writeFileSync(tokenFile, TOKEN + '\n', { mode: 0o600 });
   fs.writeFileSync(keyFile, API_KEY + '\n', { mode: 0o600 });
+  fs.writeFileSync(providerCatalogFile, JSON.stringify({
+    providers: [
+      { id: 'fixed', name: 'Fixed', kind: 'optional-token', loginUrl: 'https://example.com' },
+      { id: 'tools', name: 'Tools', kind: 'api-key', loginUrl: 'https://example.com' },
+      { id: 'secure', name: 'Secure', kind: 'api-key', loginUrl: 'https://example.com' },
+      { id: 'guide', name: 'Guide', kind: 'guide', loginUrl: 'https://example.com' }
+    ]
+  }));
 
   const upstream = await startMockUpstream();
   const port = await freePort();
@@ -155,6 +198,10 @@ async function startRouter() {
     host: '127.0.0.1',
     tokenFile,
     logFile: path.join(temp, 'relay.log'),
+    credentialsFile,
+    credentialsKeyFile,
+    providerCatalogFile,
+    providerSettingsFile,
     timeouts: { firstEventMs: 3000 },
     circuit: { failThreshold: 3, openMs: 60000, maxOpenMs: 300000 },
     routes: {
@@ -201,6 +248,23 @@ async function startRouter() {
         endpoint: upstream.url + '/bridge/chat/completions',
         apiKeyFile: keyFile,
         capabilities: { tools: false, toolBridge: true, stream: true, usage: true }
+      },
+      {
+        id: 'secure',
+        type: 'openai-compatible',
+        endpoint: upstream.url + '/fixed/chat/completions',
+        credentialId: 'secure',
+        capabilities: { tools: false, stream: true, usage: false }
+      },
+      {
+        id: 'chatvalidate',
+        type: 'openai-compatible',
+        endpoint: upstream.url + '/validate/chat/completions',
+        healthUrl: upstream.url + '/public/models',
+        credentialId: 'chatvalidate',
+        validationMode: 'chat',
+        modelMap: { auto: 'fixed-model' },
+        capabilities: { tools: false, stream: true, usage: true }
       }
     ]
   };
@@ -226,6 +290,7 @@ async function startRouter() {
   return {
     baseUrl,
     configFile,
+    providerSettingsFile,
     upstream,
     child,
     async close() {
@@ -325,6 +390,69 @@ test('router fails over, preserves usage, and routes tools safely', async t => {
   assert.match(bridgeCall.body.messages[0].content, /\[Tool bridge protocol\]/);
 });
 
+test('provider connection switches persist and reject unsafe activation', async t => {
+  const instance = await startRouter();
+  t.after(() => instance.close());
+  const headers = {
+    authorization: 'Bearer ' + TOKEN,
+    'content-type': 'application/json'
+  };
+
+  const initial = await fetch(instance.baseUrl + '/api/provider-setup', { headers });
+  await assertStatus(initial, 200);
+  const initialData = await initial.json();
+  const fixed = initialData.providers.find(item => item.id === 'fixed');
+  const secure = initialData.providers.find(item => item.id === 'secure');
+  assert.equal(fixed.enabled, true);
+  assert.equal(fixed.toggleable, true);
+  assert.equal(secure.enabled, false);
+  assert.equal(secure.toggleable, false);
+
+  const publicCatalog = await fetch(instance.baseUrl + '/api/provider-catalog');
+  await assertStatus(publicCatalog, 200);
+  assert.equal((await publicCatalog.json()).providers.length, 4);
+
+  const disabled = await fetch(instance.baseUrl + '/api/provider-settings/fixed', {
+    method: 'PATCH',
+    headers,
+    body: JSON.stringify({ enabled: false })
+  });
+  await assertStatus(disabled, 200);
+  const disabledData = await disabled.json();
+  assert.equal(disabledData.provider.enabled, false);
+
+  const missingKey = await fetch(instance.baseUrl + '/api/provider-settings/secure', {
+    method: 'PATCH',
+    headers,
+    body: JSON.stringify({ enabled: true })
+  });
+  await assertStatus(missingKey, 409);
+
+  const badCredential = await fetch(instance.baseUrl + '/api/provider-credentials', {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ providerId: 'chatvalidate', secret: 'wrong-validation-key' })
+  });
+  await assertStatus(badCredential, 422);
+
+  const goodCredential = await fetch(instance.baseUrl + '/api/provider-credentials', {
+    method: 'POST',
+    headers,
+    body: JSON.stringify({ providerId: 'chatvalidate', secret: 'valid-chat-validation-key' })
+  });
+  await assertStatus(goodCredential, 200);
+
+  const guideOnly = await fetch(instance.baseUrl + '/api/provider-settings/guide', {
+    method: 'PATCH',
+    headers,
+    body: JSON.stringify({ enabled: true })
+  });
+  await assertStatus(guideOnly, 404);
+
+  const saved = JSON.parse(fs.readFileSync(instance.providerSettingsFile, 'utf8'));
+  assert.equal(saved.providers.fixed.enabled, false);
+});
+
 test('streaming waits for a usable upstream and injects usage', async t => {
   const instance = await startRouter();
   t.after(() => instance.close());
@@ -410,4 +538,112 @@ test('text tool bridge validates and normalizes web-model tool calls', () => {
     messages: [{ role: 'user', content: '请调用 exec 运行命令' }]
   }, manyTools);
   assert.deepEqual(selected.map(tool => tool.function.name), ['exec']);
+});
+
+test('provider credentials are encrypted, reloadable and removable', () => {
+  const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'relay-credentials-'));
+  const store = path.join(temp, 'credentials.enc.json');
+  const key = path.join(temp, 'master.key');
+  try {
+    writeCredentialValue(store, key, 'groq', 'secret-provider-key');
+    const encrypted = fs.readFileSync(store, 'utf8');
+    assert.equal(encrypted.includes('secret-provider-key'), false);
+    assert.equal(decryptCredentialStore(store, key).get('groq'), 'secret-provider-key');
+    assert.equal(deleteCredentialValue(store, 'groq'), true);
+    assert.equal(decryptCredentialStore(store, key).has('groq'), false);
+  } finally {
+    fs.rmSync(temp, { recursive: true, force: true });
+  }
+});
+
+test('usage and provider totals survive router reloads', () => {
+  const temp = fs.mkdtempSync(path.join(os.tmpdir(), 'relay-usage-'));
+  const tokenFile = path.join(temp, 'token');
+  const configFile = path.join(temp, 'config.json');
+  const usageStateFile = path.join(temp, 'state', 'usage.json');
+  try {
+    fs.writeFileSync(tokenFile, TOKEN + '\n', { mode: 0o600 });
+    fs.mkdirSync(path.dirname(usageStateFile), { recursive: true, mode: 0o700 });
+    fs.writeFileSync(usageStateFile, JSON.stringify({
+      version: 1,
+      updatedAt: '2026-10-27T09:00:00.000Z',
+      metrics: {
+        requests: 21,
+        successes: 18,
+        failures: 3,
+        promptTokens: 1200,
+        completionTokens: 800,
+        totalTokens: 2000,
+        usageEvents: 18
+      },
+      providers: {
+        persisted: {
+          successes: 18,
+          failures: 3,
+          attempts: 21,
+          avgLatencyMs: 240,
+          lastOkAt: '2026-10-27T08:59:00.000Z',
+          tokens: { prompt: 1200, completion: 800, total: 2000 }
+        }
+      }
+    }));
+    fs.writeFileSync(configFile, JSON.stringify({
+      port: 8801,
+      host: '127.0.0.1',
+      tokenFile,
+      usageStateFile,
+      routes: {
+        chat: { chain: ['persisted'], toolPolicy: 'strip' }
+      },
+      providers: [{
+        id: 'persisted',
+        type: 'openai-compatible',
+        endpoint: 'http://127.0.0.1:9/v1/chat/completions'
+      }]
+    }));
+
+    loadConfiguration(configFile);
+    loadUsageState();
+
+    const state = stateFor('persisted');
+    assert.equal(state.successes, 18);
+    assert.equal(state.attempts, 21);
+    assert.deepEqual(state.tokens, { prompt: 1200, completion: 800, total: 2000 });
+    const snapshot = usageSnapshot();
+    assert.equal(snapshot.metrics.totalTokens, 2000);
+    assert.equal(snapshot.providers.persisted.tokens.total, 2000);
+    assert.equal(saveUsageState(), true);
+
+    const saved = JSON.parse(fs.readFileSync(usageStateFile, 'utf8'));
+    assert.equal(saved.metrics.requests, 21);
+    assert.equal(saved.providers.persisted.successes, 18);
+  } finally {
+    fs.rmSync(temp, { recursive: true, force: true });
+  }
+});
+
+test('cloud catalog exposes expanded providers without local-only models', () => {
+  const config = JSON.parse(fs.readFileSync(path.join(ROOT, 'config.json'), 'utf8'));
+  const catalog = JSON.parse(fs.readFileSync(path.join(ROOT, 'provider-catalog.json'), 'utf8'));
+  const providerIds = new Set(config.providers.map(provider => provider.id));
+
+  for (const id of [
+    'qwen',
+    'cerebras',
+    'sambanova',
+    'deepinfra',
+    'novita',
+    'kilo-lightning',
+    'kilo-laguna-xs',
+    'ovh-qwen35-9b',
+    'ovh-qwen38-27b'
+  ]) {
+    assert.equal(providerIds.has(id), true, 'missing cloud provider: ' + id);
+  }
+  assert.equal(
+    [...providerIds].some(id => id.toLowerCase().includes('deepseek')),
+    false,
+    'DeepSeek must remain local-only'
+  );
+  assert.ok(catalog.providers.length >= 24);
 });

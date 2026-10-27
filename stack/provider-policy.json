@@ -1,0 +1,48 @@
+{
+  "policyVersion": 1,
+  "recommendedOrder": [
+    "gemini",
+    "groq",
+    "nvidia",
+    "mistral",
+    "openrouter",
+    "cerebras",
+    "qwen",
+    "sambanova",
+    "cohere",
+    "modelscope",
+    "ollama-cloud",
+    "deepinfra",
+    "novita",
+    "llm7",
+    "pollinations"
+  ],
+  "subscriptionOAuth": [
+    "kimi-code",
+    "claude-code",
+    "github-copilot",
+    "codex-chatgpt",
+    "cursor",
+    "qoder"
+  ],
+  "optionalWebSessions": [
+    "chatgpt-web",
+    "claude-web",
+    "gemini-web",
+    "perplexity-web"
+  ],
+  "excludedByDefault": [
+    "kiro",
+    "providers marked tos:avoid",
+    "providers requiring captcha bypass",
+    "providers requiring credential sharing"
+  ],
+  "rules": [
+    "Prefer official free API keys over browser sessions.",
+    "Use subscription OAuth only when the user owns the subscription.",
+    "Browser sessions are optional and may be revoked by the provider.",
+    "Never bypass CAPTCHA, paywalls, bans or regional controls.",
+    "Connect at least one chat provider and one tool-capable provider.",
+    "Record only account labels; never copy provider cookies into source control."
+  ]
+}

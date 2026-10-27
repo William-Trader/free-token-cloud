@@ -20,7 +20,9 @@ const crypto = require('crypto');
 const { StringDecoder } = require('string_decoder');
 
 const DASHBOARD_FILE = path.join(__dirname, 'dashboard.html');
+const PROVIDER_SETUP_FILE = path.join(__dirname, 'provider-setup.html');
 let dashboardHtml = null;
+let providerSetupHtml = null;
 
 function dashboardPage() {
   if (dashboardHtml == null) {
@@ -31,6 +33,17 @@ function dashboardPage() {
     }
   }
   return dashboardHtml;
+}
+
+function providerSetupPage() {
+  if (providerSetupHtml == null) {
+    try {
+      providerSetupHtml = fs.readFileSync(PROVIDER_SETUP_FILE, 'utf8');
+    } catch {
+      providerSetupHtml = '<!doctype html><meta charset="utf-8"><title>Provider Setup</title><h1>Provider Setup</h1><p>provider-setup.html 未上传。</p>';
+    }
+  }
+  return providerSetupHtml;
 }
 
 const ROOT = __dirname;
@@ -51,6 +64,12 @@ const metrics = {
   totalTokens: 0,
   usageEvents: 0
 };
+const usagePersistence = {
+  timer: null,
+  updatedAt: null,
+  loadedAt: null,
+  startedAt: new Date(STARTED_AT).toISOString()
+};
 
 let CFG = null;
 let TOKEN = '';
@@ -59,6 +78,9 @@ let providerById = new Map();
 let routes = {};
 let stateById = new Map();
 let groupStates = new Map();
+let credentialValues = new Map();
+let providerCatalog = [];
+let providerSettings = new Map();
 
 let modelsCache = { at: 0, data: null };
 
@@ -102,6 +124,199 @@ function readTextFile(file) {
 
 function readJsonFile(file) {
   return JSON.parse(fs.readFileSync(file, 'utf8'));
+}
+
+function readJsonIfExists(file, fallback) {
+  try {
+    return readJsonFile(file);
+  } catch {
+    return fallback;
+  }
+}
+
+function finiteNumber(value) {
+  const number = Number(value);
+  return Number.isFinite(number) && number >= 0 ? number : 0;
+}
+
+function loadUsageState() {
+  if (!CFG || !CFG.usageStateFile) return null;
+  const saved = readJsonIfExists(CFG.usageStateFile, null);
+  if (!saved || typeof saved !== 'object') return null;
+
+  for (const key of Object.keys(metrics)) {
+    if (saved.metrics && saved.metrics[key] !== undefined) {
+      metrics[key] = finiteNumber(saved.metrics[key]);
+    }
+  }
+
+  for (const [id, providerState] of Object.entries(saved.providers || {})) {
+    if (!providerState || typeof providerState !== 'object') continue;
+    const state = stateFor(id);
+    state.successes = finiteNumber(providerState.successes);
+    state.failures = finiteNumber(providerState.failures);
+    state.attempts = finiteNumber(providerState.attempts);
+    state.avgLatencyMs = providerState.avgLatencyMs == null
+      ? null
+      : finiteNumber(providerState.avgLatencyMs);
+    state.lastOkAt = providerState.lastOkAt || null;
+    state.tokens = {
+      prompt: finiteNumber(providerState.tokens && providerState.tokens.prompt),
+      completion: finiteNumber(providerState.tokens && providerState.tokens.completion),
+      total: finiteNumber(providerState.tokens && providerState.tokens.total)
+    };
+  }
+
+  usagePersistence.updatedAt = saved.updatedAt || null;
+  usagePersistence.loadedAt = nowIso();
+  usagePersistence.startedAt = saved.startedAt || usagePersistence.startedAt;
+  return saved;
+}
+
+function usageSnapshot() {
+  const providers = {};
+  for (const [id, state] of stateById.entries()) {
+    providers[id] = {
+      successes: state.successes,
+      failures: state.failures,
+      attempts: state.attempts,
+      avgLatencyMs: state.avgLatencyMs,
+      lastOkAt: state.lastOkAt,
+      tokens: Object.assign({}, state.tokens)
+    };
+  }
+  return {
+    version: 1,
+    startedAt: usagePersistence.startedAt,
+    updatedAt: nowIso(),
+    metrics: Object.assign({}, metrics),
+    providers
+  };
+}
+
+function saveUsageState() {
+  if (!CFG || !CFG.usageStateFile) return false;
+  if (usagePersistence.timer) {
+    clearTimeout(usagePersistence.timer);
+    usagePersistence.timer = null;
+  }
+  try {
+    const file = CFG.usageStateFile;
+    const temp = file + '.' + process.pid + '.tmp';
+    fs.mkdirSync(path.dirname(file), { recursive: true, mode: 0o700 });
+    const snapshot = usageSnapshot();
+    fs.writeFileSync(temp, JSON.stringify(snapshot, null, 2) + '\n', { mode: 0o600 });
+    fs.renameSync(temp, file);
+    usagePersistence.updatedAt = snapshot.updatedAt;
+    return true;
+  } catch (error) {
+    log({ ev: 'usage_persist_failed', error: String(error.message || error) });
+    return false;
+  }
+}
+
+function scheduleUsageSave() {
+  if (!CFG || !CFG.usageStateFile || usagePersistence.timer) return;
+  usagePersistence.timer = setTimeout(() => {
+    usagePersistence.timer = null;
+    saveUsageState();
+  }, 250);
+  usagePersistence.timer.unref();
+}
+
+function bumpMetric(name, delta = 1) {
+  if (!Object.prototype.hasOwnProperty.call(metrics, name)) return;
+  metrics[name] += delta;
+  scheduleUsageSave();
+}
+
+function readCredentialKey(keyFile) {
+  fs.mkdirSync(path.dirname(keyFile), { recursive: true, mode: 0o700 });
+  let value = readTextFile(keyFile);
+  if (!value) {
+    value = crypto.randomBytes(32).toString('hex');
+    fs.writeFileSync(keyFile, value + '\n', { mode: 0o600 });
+  }
+  const key = Buffer.from(value, 'hex');
+  if (key.length !== 32) {
+    throw new Error('credential key must be 32 bytes of hex');
+  }
+  return key;
+}
+
+function decryptCredentialStore(storeFile, keyFile) {
+  const key = readCredentialKey(keyFile);
+  const store = readJsonIfExists(storeFile, { version: 1, entries: {} });
+  const values = new Map();
+  for (const [id, entry] of Object.entries(store.entries || {})) {
+    try {
+      const decipher = crypto.createDecipheriv(
+        'aes-256-gcm',
+        key,
+        Buffer.from(entry.iv, 'base64')
+      );
+      decipher.setAAD(Buffer.from(id));
+      decipher.setAuthTag(Buffer.from(entry.tag, 'base64'));
+      const plaintext = Buffer.concat([
+        decipher.update(Buffer.from(entry.data, 'base64')),
+        decipher.final()
+      ]).toString('utf8');
+      if (plaintext) values.set(id, plaintext);
+    } catch {}
+  }
+  return values;
+}
+
+function writeCredentialValue(storeFile, keyFile, id, secret) {
+  const key = readCredentialKey(keyFile);
+  const store = readJsonIfExists(storeFile, { version: 1, entries: {} });
+  const iv = crypto.randomBytes(12);
+  const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
+  cipher.setAAD(Buffer.from(id));
+  const data = Buffer.concat([cipher.update(String(secret), 'utf8'), cipher.final()]);
+  store.version = 1;
+  store.entries = store.entries || {};
+  store.entries[id] = {
+    iv: iv.toString('base64'),
+    tag: cipher.getAuthTag().toString('base64'),
+    data: data.toString('base64'),
+    updatedAt: nowIso()
+  };
+  fs.mkdirSync(path.dirname(storeFile), { recursive: true, mode: 0o700 });
+  const temp = storeFile + '.tmp-' + process.pid;
+  fs.writeFileSync(temp, JSON.stringify(store, null, 2) + '\n', { mode: 0o600 });
+  fs.renameSync(temp, storeFile);
+  fs.chmodSync(storeFile, 0o600);
+}
+
+function deleteCredentialValue(storeFile, id) {
+  const store = readJsonIfExists(storeFile, { version: 1, entries: {} });
+  if (!store.entries || !store.entries[id]) return false;
+  delete store.entries[id];
+  fs.writeFileSync(storeFile, JSON.stringify(store, null, 2) + '\n', { mode: 0o600 });
+  fs.chmodSync(storeFile, 0o600);
+  return true;
+}
+
+function readProviderSettings(file) {
+  if (!file) return new Map();
+  const saved = readJsonIfExists(file, { version: 1, providers: {} });
+  return new Map(Object.entries(saved && saved.providers || {}));
+}
+
+function writeProviderSetting(file, id, enabled) {
+  const saved = readJsonIfExists(file, { version: 1, providers: {} });
+  saved.version = 1;
+  saved.providers = saved.providers || {};
+  saved.providers[id] = {
+    enabled: Boolean(enabled),
+    updatedAt: nowIso()
+  };
+  fs.mkdirSync(path.dirname(file), { recursive: true, mode: 0o700 });
+  const temp = file + '.tmp-' + process.pid;
+  fs.writeFileSync(temp, JSON.stringify(saved, null, 2) + '\n', { mode: 0o600 });
+  fs.renameSync(temp, file);
+  fs.chmodSync(file, 0o600);
 }
 
 function isPlainObject(value) {
@@ -278,13 +493,19 @@ function normalizeProvider(raw) {
   provider.headers = Object.assign({}, raw.headers || {});
   provider.timeoutMs = Number(raw.timeoutMs || 120000);
   provider.healthUrl = raw.healthUrl || '';
+  provider.validationMode = raw.validationMode === 'chat' ? 'chat' : 'health';
+  provider.validationMaxTokens = Math.max(1, Number(raw.validationMaxTokens || 8));
   provider.priority = Number.isFinite(raw.priority) ? raw.priority : 100;
   provider.toolPriority = Number.isFinite(raw.toolPriority) ? raw.toolPriority : provider.priority;
   provider.maxConcurrency = Math.max(1, Number(raw.maxConcurrency || 4));
   provider.rpm = Math.max(0, Number(raw.rpm || 0));
   provider.group = raw.group ? String(raw.group) : '';
   provider.maxKeyAttempts = Math.max(1, Number(raw.maxKeyAttempts || 3));
-  provider.enabled = raw.enabled !== false;
+  provider.optionalAuth = raw.optionalAuth === true;
+  const setting = providerSettings.get(raw.id);
+  const hasEnabledSetting = setting && typeof setting.enabled === 'boolean';
+  provider.enabled = hasEnabledSetting ? setting.enabled : raw.enabled !== false;
+  provider.hasUserEnabledSetting = Boolean(hasEnabledSetting);
   provider.pools = Array.isArray(raw.pools)
     ? [...new Set(raw.pools.filter(pool => pool === 'tools' || pool === 'chat'))]
     : [provider.capabilities.tools || provider.capabilities.toolBridge ? 'tools' : 'chat', 'chat'];
@@ -293,9 +514,11 @@ function normalizeProvider(raw) {
     ? Boolean(raw.authConfigured)
     : hasConfiguredAuth(raw);
 
-  if (!provider.enabled) provider.disabledReason = 'disabled_in_config';
+  if (!provider.enabled) {
+    provider.disabledReason = hasEnabledSetting ? 'disabled_by_user' : 'disabled_in_config';
+  }
   else if (!provider.endpoint) provider.disabledReason = 'missing_endpoint';
-  else if (provider.authConfigured && !provider.keys.length && raw.optionalAuth !== true) {
+  else if (provider.authConfigured && !provider.keys.length && !provider.optionalAuth) {
     provider.disabledReason = 'missing_api_key';
   }
   if (provider.disabledReason) provider.enabled = false;
@@ -304,6 +527,7 @@ function normalizeProvider(raw) {
 
 function hasConfiguredAuth(raw) {
   return Boolean(
+    raw.credentialId ||
     raw.apiKey ||
     raw.apiKeys ||
     raw.apiKeyFile ||
@@ -322,6 +546,8 @@ function envValues(name) {
 
 function loadProviderKeys(raw) {
   const keys = [];
+  const stored = credentialValues.get(raw.credentialId || raw.id);
+  if (stored) keys.push(stored);
   if (raw.apiKey) keys.push(String(raw.apiKey));
   for (const key of raw.apiKeys || []) keys.push(String(key));
   for (const value of envValues(raw.apiKeyEnv)) keys.push(value);
@@ -548,6 +774,7 @@ function markFailure(provider, error, elapsedMs) {
 
   if (failure.code === 'request') {
     state.failures = Math.max(0, state.failures - 1);
+    scheduleUsageSave();
     return failure;
   }
   const immediate = failure.code === 'auth' || failure.code === 'rate_limit' || failure.code === 'model_unavailable';
@@ -557,6 +784,7 @@ function markFailure(provider, error, elapsedMs) {
     const base = Number(circuit.openMs || 60000);
     openCircuit(state, provider, Math.min(Number(circuit.maxOpenMs || 300000), base * 2 ** Math.max(0, state.failures - 1)));
   }
+  scheduleUsageSave();
   return failure;
 }
 
@@ -570,6 +798,7 @@ function addUsage(providerId, usage) {
   metrics.completionTokens += completion;
   metrics.totalTokens += total;
   metrics.usageEvents += 1;
+  scheduleUsageSave();
   if (providerId) {
     const state = stateFor(providerId);
     state.tokens.prompt += prompt;
@@ -596,6 +825,7 @@ function markSuccess(provider, elapsedMs, usage) {
   state.avgLatencyMs = state.avgLatencyMs == null
     ? elapsedMs
     : Math.round(state.avgLatencyMs * 0.7 + elapsedMs * 0.3);
+  scheduleUsageSave();
 }
 
 function beginProviderAttempt(provider) {
@@ -1709,7 +1939,7 @@ async function selectProvider(logical, body, wantStream) {
 }
 
 async function handleChat(req, res, body, anthropic) {
-  metrics.requests += 1;
+  bumpMetric('requests');
   const logical = String(body.model || 'auto');
   const requestId = req.headers['x-request-id'] || 'relay-' + crypto.randomUUID();
   const wantStream = Boolean(body.stream);
@@ -1719,7 +1949,7 @@ async function handleChat(req, res, body, anthropic) {
   try {
     selection = await selectProvider(logical, body, wantStream);
   } catch (error) {
-    metrics.failures += 1;
+    bumpMetric('failures');
     log({
       ev: 'relay_unavailable',
       request_id: requestId,
@@ -1752,8 +1982,8 @@ async function handleChat(req, res, body, anthropic) {
 
       if (outcome.result.kind === 'stream') {
         markSuccess(provider, outcome.elapsedMs);
-        metrics.successes += 1;
-        metrics.streams += 1;
+        bumpMetric('successes');
+        bumpMetric('streams');
         log({
           ev: 'ok',
           request_id: requestId,
@@ -1787,9 +2017,9 @@ async function handleChat(req, res, body, anthropic) {
         throw new Error('empty tool response');
       }
       markSuccess(provider, outcome.elapsedMs, completion.usage);
-      metrics.successes += 1;
-      if (wantStream) metrics.streams += 1;
-      if (completion.usage && completion.usage.estimated) metrics.estimatedUsage += 1;
+      bumpMetric('successes');
+      if (wantStream) bumpMetric('streams');
+      if (completion.usage && completion.usage.estimated) bumpMetric('estimatedUsage');
       log({
         ev: 'ok',
         request_id: requestId,
@@ -1850,7 +2080,7 @@ async function handleChat(req, res, body, anthropic) {
     ms: Date.now() - started,
     attempts
   });
-  metrics.failures += 1;
+  bumpMetric('failures');
   tryAgainLater(res, new Error('All providers failed'), attempts);
 }
 
@@ -2329,7 +2559,7 @@ function streamResponses(res, response, headers) {
 }
 
 async function handleResponses(req, res, body) {
-  metrics.requests += 1;
+  bumpMetric('requests');
   const requestId = req.headers['x-request-id'] || 'relay-' + crypto.randomUUID();
   const chat = responsesRequestToChat(body);
   if (!chat.messages.length) {
@@ -2343,7 +2573,7 @@ async function handleResponses(req, res, body) {
   try {
     selection = await selectProvider(logical, chat, false);
   } catch (error) {
-    metrics.failures += 1;
+    bumpMetric('failures');
     log({ ev: 'relay_unavailable', api: 'responses', request_id: requestId, model: logical });
     return writeJson(res, 503, {
       error: {
@@ -2370,7 +2600,7 @@ async function handleResponses(req, res, body) {
         throw new Error('empty tool response');
       }
       markSuccess(provider, outcome.elapsedMs, completion.usage);
-      metrics.successes += 1;
+      bumpMetric('successes');
       const response = responseFromCompletion(completion, body, {
         customTools: chat.__customTools,
         include: chat.__include,
@@ -2417,7 +2647,7 @@ async function handleResponses(req, res, body) {
     }
   }
 
-  metrics.failures += 1;
+  bumpMetric('failures');
   log({ ev: 'relay_error', api: 'responses', request_id: requestId, model: logical, attempts });
   return writeJson(res, 503, {
     error: {
@@ -2600,6 +2830,93 @@ function poolView() {
   return providersByPool;
 }
 
+function providerSetupView() {
+  return providerCatalog.map(item => {
+    const provider = providerById.get(item.id);
+    const requiresKey = Boolean(provider && provider.authConfigured && !provider.optionalAuth);
+    const credentialReady = Boolean(provider && (!requiresKey || provider.keys.length));
+    return Object.assign({}, item, {
+      providerExists: Boolean(provider),
+      configured: Boolean(provider && provider.keys.length),
+      requiresKey,
+      credentialReady,
+      toggleable: Boolean(provider && provider.endpoint && credentialReady),
+      enabled: Boolean(provider && provider.enabled),
+      disabledReason: provider ? provider.disabledReason || null : 'catalog_only',
+      pools: provider ? provider.pools : item.pools || ['chat']
+    });
+  });
+}
+
+function providerSetupSummary() {
+  const items = providerSetupView();
+  return {
+    total: items.length,
+    implemented: items.filter(item => item.providerExists).length,
+    configured: items.filter(item => item.configured).length,
+    active: items.filter(item => item.enabled).length,
+    pending: items.filter(item => item.providerExists && !item.enabled).length,
+    guideOnly: items.filter(item => !item.providerExists).length
+  };
+}
+
+async function validateProviderCredential(provider) {
+  if (!provider || !provider.enabled || !provider.keys.length) {
+    return { status: 'not_enabled', ok: false };
+  }
+  if (provider.validationMode === 'chat') {
+    try {
+      const validationBody = {
+        model: provider.modelMap.auto || provider.defaultModel || provider.modelMap.chat,
+        messages: [{
+          role: 'user',
+          content: 'Reply with OK.'
+        }],
+        max_tokens: provider.validationMaxTokens,
+        stream: false
+      };
+      const response = await request(provider.endpoint, {
+        method: 'POST',
+        headers: headersWithContentType(authHeaders(provider, provider.keys[0])),
+        body: JSON.stringify(validationBody),
+        timeoutMs: Math.min(45000, provider.timeoutMs),
+        family: provider.family || 4
+      });
+      const text = await readAll(response.stream, 2 * 1024 * 1024);
+      if (response.status < 200 || response.status >= 300) {
+        return { status: 'failed', ok: false, httpStatus: response.status, message: text.slice(0, 300) };
+      }
+      return {
+        status: 'ready',
+        ok: true,
+        httpStatus: response.status,
+        mode: 'chat',
+        model: validationBody.model
+      };
+    } catch (error) {
+      return { status: 'failed', ok: false, message: String(error.message || error).slice(0, 300) };
+    }
+  }
+  if (!provider.healthUrl) {
+    return { status: 'unverified', ok: true };
+  }
+  try {
+    const response = await request(provider.healthUrl, {
+      method: 'GET',
+      headers: authHeaders(provider, provider.keys[0]),
+      timeoutMs: Math.min(30000, provider.timeoutMs),
+      family: provider.family || 4
+    });
+    const text = await readAll(response.stream, 2 * 1024 * 1024);
+    if (response.status < 200 || response.status >= 300) {
+      return { status: 'failed', ok: false, httpStatus: response.status, message: text.slice(0, 300) };
+    }
+    return { status: 'ready', ok: true, httpStatus: response.status };
+  } catch (error) {
+    return { status: 'failed', ok: false, message: String(error.message || error).slice(0, 300) };
+  }
+}
+
 function healthView() {
   const upstreams = providers.map(providerView);
   const ready = upstreams.some(provider => provider.enabled && provider.circuit !== 'open');
@@ -2607,7 +2924,7 @@ function healthView() {
     ok: ready,
     live: true,
     service: 'ai-relay',
-    version: 2,
+    version: 3,
     uptime_s: Math.floor((Date.now() - STARTED_AT) / 1000),
     routes: Object.keys(routes),
     upstreams
@@ -2619,6 +2936,15 @@ function loadConfiguration(file = DEFAULT_CONFIG) {
   if (!next || !Number.isFinite(Number(next.port))) throw new Error('config.port must be numeric');
   if (!next.routes || typeof next.routes !== 'object') throw new Error('config.routes is required');
   if (!Array.isArray(next.providers)) throw new Error('config.providers is required');
+
+  credentialValues = next.credentialsFile && next.credentialsKeyFile
+    ? decryptCredentialStore(next.credentialsFile, next.credentialsKeyFile)
+    : new Map();
+  const catalog = next.providerCatalogFile
+    ? readJsonIfExists(next.providerCatalogFile, { providers: [] })
+    : { providers: [] };
+  providerCatalog = Array.isArray(catalog.providers) ? catalog.providers : [];
+  providerSettings = readProviderSettings(next.providerSettingsFile);
 
   const nextProviders = next.providers.map(normalizeProvider);
   const seen = new Set();
@@ -2804,6 +3130,7 @@ function publicView() {
     routes: health.routes,
     metrics,
     pools: poolView(),
+    providerSetup: providerSetupSummary(),
     providers: providers.filter(provider => provider.enabled).map(provider => {
       const view = providerView(provider);
       return {
@@ -2853,11 +3180,20 @@ async function handleRequest(req, res) {
       });
       return res.end(html);
     }
+    if (pathname === '/setup' && req.method === 'GET') {
+      const html = providerSetupPage();
+      res.writeHead(200, {
+        'content-type': 'text/html; charset=utf-8',
+        'content-length': Buffer.byteLength(html),
+        'cache-control': 'no-cache'
+      });
+      return res.end(html);
+    }
     if (pathname === '/api/info' && req.method === 'GET') {
       return writeJson(res, 200, {
         service: 'ai-relay',
         version: 3,
-        endpoints: ['/health', '/ready', '/v1/models', '/v1/chat/completions', '/v1/messages', '/v1/responses', '/dashboard']
+        endpoints: ['/health', '/ready', '/v1/models', '/v1/chat/completions', '/v1/messages', '/v1/responses', '/dashboard', '/setup']
       });
     }
     if (pathname === '/favicon.ico' || pathname === '/apple-touch-icon.png' || pathname === '/apple-touch-icon-precomposed.png') {
@@ -2870,6 +3206,12 @@ async function handleRequest(req, res) {
     }
     if (pathname === '/api/public' && req.method === 'GET') {
       return writeJson(res, 200, publicView());
+    }
+    if (pathname === '/api/provider-catalog' && req.method === 'GET') {
+      return writeJson(res, 200, {
+        providers: providerSetupView(),
+        readOnly: true
+      });
     }
     if (!isAuthorized(req)) {
       log({ ev: 'auth_fail', path: pathname, ip: req.socket.remoteAddress });
@@ -2892,6 +3234,96 @@ async function handleRequest(req, res) {
         pools: poolView(),
         routes
       });
+    }
+    if (pathname === '/api/provider-setup' && req.method === 'GET') {
+      return writeJson(res, 200, {
+        providers: providerSetupView(),
+        encrypted: true
+      });
+    }
+    if (pathname === '/api/provider-credentials' && req.method === 'POST') {
+      const body = await readRequestBody(req, 256 * 1024);
+      const providerId = String(body.providerId || '').trim();
+      const secret = String(body.secret || '').trim();
+      if (!providerId || secret.length < 8) {
+        return writeJson(res, 400, {
+          error: { message: 'providerId and a secret of at least 8 characters are required' }
+        });
+      }
+      if (!providerById.has(providerId)) {
+        return writeJson(res, 400, {
+          error: { message: 'This catalog entry is guide-only and has no built-in provider adapter yet.' }
+        });
+      }
+      writeCredentialValue(
+        CFG.credentialsFile,
+        CFG.credentialsKeyFile,
+        providerId,
+        secret
+      );
+      loadConfiguration(DEFAULT_CONFIG);
+      const provider = providerById.get(providerId);
+      const validation = await validateProviderCredential(provider);
+      if (validation.status === 'failed') {
+        deleteCredentialValue(CFG.credentialsFile, providerId);
+        loadConfiguration(DEFAULT_CONFIG);
+      }
+      log({
+        ev: 'provider_credential_saved',
+        provider: providerId,
+        validation: validation.status,
+        http_status: validation.httpStatus || null
+      });
+      return writeJson(res, validation.status === 'failed' ? 422 : 200, {
+        ok: validation.status !== 'failed',
+        provider: providerId,
+        validation
+      });
+    }
+    if (pathname.startsWith('/api/provider-credentials/') && req.method === 'DELETE') {
+      const providerId = decodeURIComponent(pathname.slice('/api/provider-credentials/'.length));
+      const removed = deleteCredentialValue(CFG.credentialsFile, providerId);
+      loadConfiguration(DEFAULT_CONFIG);
+      log({ ev: 'provider_credential_deleted', provider: providerId, removed });
+      return writeJson(res, removed ? 200 : 404, { ok: removed, provider: providerId });
+    }
+    if (pathname.startsWith('/api/provider-settings/') && req.method === 'PATCH') {
+      const providerId = decodeURIComponent(pathname.slice('/api/provider-settings/'.length));
+      const provider = providerById.get(providerId);
+      if (!provider) {
+        return writeJson(res, 404, {
+          error: { message: 'Provider adapter not found', type: 'provider_not_found' }
+        });
+      }
+      const body = await readRequestBody(req, 16 * 1024);
+      if (typeof body.enabled !== 'boolean') {
+        return writeJson(res, 400, {
+          error: { message: 'enabled must be a boolean', type: 'invalid_request' }
+        });
+      }
+      if (body.enabled && !provider.endpoint) {
+        return writeJson(res, 409, {
+          error: { message: 'Provider endpoint is not configured', type: 'missing_endpoint' }
+        });
+      }
+      if (
+        body.enabled &&
+        provider.authConfigured &&
+        !provider.keys.length &&
+        !provider.optionalAuth
+      ) {
+        return writeJson(res, 409, {
+          error: {
+            message: 'Add and validate an API key before enabling this provider',
+            type: 'missing_credentials'
+          }
+        });
+      }
+      writeProviderSetting(CFG.providerSettingsFile, providerId, body.enabled);
+      loadConfiguration(DEFAULT_CONFIG);
+      const updated = providerSetupView().find(item => item.id === providerId);
+      log({ ev: 'provider_setting_changed', provider: providerId, enabled: body.enabled });
+      return writeJson(res, 200, { ok: true, provider: updated || null });
     }
     if (pathname === '/api/pools' && req.method === 'GET') {
       return writeJson(res, 200, {
@@ -2976,6 +3408,7 @@ async function handleRequest(req, res) {
 
 function startServer() {
   loadConfiguration(DEFAULT_CONFIG);
+  loadUsageState();
   const server = http.createServer(handleRequest);
   server.on('clientError', (error, socket) => {
     try {
@@ -2999,6 +3432,7 @@ function startServer() {
 
   const shutdown = signal => {
     log({ ev: 'shutdown', signal });
+    saveUsageState();
     server.close(() => process.exit(0));
     setTimeout(() => process.exit(0), 5000).unref();
   };
@@ -3013,9 +3447,11 @@ function startServer() {
     }
   });
   process.on('uncaughtException', error => {
+    saveUsageState();
     log({ ev: 'uncaught', error: String(error && error.message || error) });
   });
   process.on('unhandledRejection', error => {
+    saveUsageState();
     log({ ev: 'unhandled_rejection', error: String(error && error.message || error) });
   });
   return server;
@@ -3031,10 +3467,13 @@ module.exports = {
   applyBridgeToolCalls,
   buildCandidates,
   classifyFailure,
+  decryptCredentialStore,
+  deleteCredentialValue,
   estimateUsage,
   eventHasMeaningfulDelta,
   fakeOpenAIStream,
   loadConfiguration,
+  loadUsageState,
   messagesWithToolBridge,
   normalizeCompletion,
   openAIFromAnthropic,
@@ -3046,7 +3485,10 @@ module.exports = {
   parseBridgeToolCalls,
   parseSseEvent,
   routeDefinition,
+  saveUsageState,
   selectBridgeTools,
   startServer,
-  stateFor
+  stateFor,
+  usageSnapshot,
+  writeCredentialValue
 };

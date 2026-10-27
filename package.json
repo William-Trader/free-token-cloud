@@ -1,6 +1,6 @@
 {
   "name": "free-token-cloud",
-  "version": "2.6.0",
+  "version": "3.1.1",
   "description": "2C1G 服务器上的免费模型聚合中转：OpenAI/Anthropic 兼容入口 + token 分发 + 自动故障切换",
   "license": "Unlicense",
   "type": "commonjs",
@@ -8,7 +8,9 @@
     "test": "node --test test/router.test.js",
     "check": "node --check router.js && node -e \"JSON.parse(require('node:fs').readFileSync('config.json','utf8'))\"",
     "smoke": "node smoke.mjs",
-    "deploy": "./deploy.sh"
+    "providers:probe": "node scripts/probe-providers.mjs",
+    "deploy": "./deploy.sh",
+    "stack:deploy": "./deploy-stack.sh"
   },
   "engines": {
     "node": ">=20"

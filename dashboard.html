@@ -175,6 +175,8 @@
     <div class="spacer"></div>
     <div class="pill live" id="statusPill"><i class="dot" id="statusDot"></i><span id="statusText">加载中…</span></div>
     <div class="pill mono" id="uptime">uptime —</div>
+    <div class="pill" id="setupPill">待接入 <b id="setupPending">0</b></div>
+    <a class="btn" href="/setup">Provider 接入</a>
     <button class="btn" id="refreshBtn">刷新</button>
   </div>
 </header>
@@ -186,7 +188,7 @@
     <div class="card"><h3>平均延迟</h3><div class="big" id="sLat">—</div><div class="sub">最近成功请求</div></div>
     <div class="card"><h3>可用槽位</h3><div class="big" id="sSlots">—</div><div class="sub">熔断中 <b id="sOpen">0</b></div></div>
     <div class="card"><h3>流式请求</h3><div class="big" id="sStream">—</div><div class="sub">SSE 计数</div></div>
-    <div class="card"><h3>Token 用量</h3><div class="big" id="sTok">—</div><div class="sub" id="sTokSub">in — / out —</div></div>
+    <div class="card"><h3>累计 Token 用量</h3><div class="big" id="sTok">—</div><div class="sub" id="sTokSub">in — / out — · 跨重启保留</div></div>
   </div>
 
   <section class="section">
@@ -243,7 +245,7 @@
 
 <script>
 (function(){
-  var state = { providers: [], pools: {}, logs: [], metrics: null, health: null, timer: null };
+  var state = { providers: [], pools: {}, logs: [], metrics: null, health: null, setup: null, timer: null };
   var $ = function(id){ return document.getElementById(id); };
 
   function toast(msg){
@@ -282,9 +284,10 @@
     $('sOpen').textContent = open;
     $('sStream').textContent = fmtNum(m.streams || 0);
     $('sTok').textContent = fmtNum(m.totalTokens || 0);
-    $('sTokSub').textContent = 'in ' + fmtNum(m.promptTokens || 0) + ' / out ' + fmtNum(m.completionTokens || 0);
+    $('sTokSub').textContent = 'in ' + fmtNum(m.promptTokens || 0) + ' / out ' + fmtNum(m.completionTokens || 0) + ' · 跨重启保留';
     var upt = (state.health && state.health.uptime_s) || 0;
     $('uptime').textContent = 'uptime ' + (upt >= 86400 ? (upt/86400).toFixed(1)+'d' : upt >= 3600 ? (upt/3600).toFixed(1)+'h' : Math.round(upt/60)+'m');
+    $('setupPending').textContent = (state.setup && state.setup.pending) || 0;
 
     $('statusDot').className = 'dot ' + (state.health && state.health.ok ? 'ok' : 'bad');
     $('statusText').textContent = state.health && state.health.ok ? '服务正常' : '上游不可用';
@@ -491,6 +494,7 @@
       state.pools = d.pools || {};
       state.logs = d.logs || [];
       state.metrics = { metrics: d.metrics || {} };
+      state.setup = d.providerSetup || null;
       renderStats(); renderSpark(); renderPools(); renderUsage(); renderProviders(); renderLogs();
     }).catch(function(err){
       $('statusDot').className = 'dot bad';

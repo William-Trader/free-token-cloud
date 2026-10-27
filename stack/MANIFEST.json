@@ -1,0 +1,49 @@
+{
+  "name": "free-token-cloud",
+  "version": "3.1.1",
+  "license": "Unlicense",
+  "description": "A free, self-hosted token cloud composed of a routing core and a login-capable provider hub.",
+  "components": {
+    "relay-core": {
+      "path": "/opt/ai-relay",
+      "service": "ai-relay.service",
+      "internalPort": 8801,
+      "publicPort": 8080,
+      "role": "OpenAI, Anthropic and Responses compatible routing, tool bridging, cooldowns and metrics"
+    },
+    "credential-vault": {
+      "path": "/opt/ai-relay/secrets",
+      "role": "AES-256-GCM encrypted provider credentials"
+    },
+    "provider-setup": {
+      "path": "/opt/ai-relay/provider-setup.html",
+      "endpoint": "/setup",
+      "catalog": "/opt/ai-relay/provider-catalog.json",
+      "role": "Self-owned login links, API-key entry, validation and activation guidance"
+    },
+    "edge": {
+      "service": "nginx.service",
+      "path": "/etc/nginx/sites-available/ai-relay",
+      "port": 8080,
+      "role": "Authenticated public entry, body limits, rate limits and stream-safe proxying"
+    },
+    "control": {
+      "localLabel": "none",
+      "role": "No third-party runtime or local relay; clients use the relay API directly"
+    }
+  },
+  "automation": {
+    "watchdog": "ai-relay-watchdog.timer",
+    "providerActivation": "Encrypted credential save triggers config reload and provider activation"
+  },
+  "data": {
+    "providerSecrets": "/opt/ai-relay/keys",
+    "relayToken": "/opt/ai-relay/token",
+    "relayLogs": "/opt/ai-relay/logs",
+    "usageState": "/opt/ai-relay/state/usage.json",
+    "providerSettings": "/opt/ai-relay/state/provider-settings.json",
+    "credentialStore": "/opt/ai-relay/secrets/credentials.enc.json",
+    "credentialMasterKey": "/opt/ai-relay/secrets/master.key",
+    "providerCatalog": "/opt/ai-relay/provider-catalog.json"
+  }
+}

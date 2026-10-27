@@ -9,11 +9,40 @@
 |---|---|
 | 只买得起一台 2 核 1G 小机器 | 单进程 Node，无数据库、无 Redis，常驻内存几十 MB；nginx 开一个 8080 端口，其余端口只监听 `127.0.0.1` |
 | 想给远程设备／朋友发 token，而不是发 key | 服务器上 `token` 单文件 Bearer 鉴权，任何 OpenAI 兼容客户端填两行配置就能接入 |
-| 免费额度分散、随时 429 | 17 个免费/匿名上游槽位，按池（`tools` / `chat`）排队，熔断 + 冷却 + 半开探测自动切 |
+| 免费额度分散、随时 429 | 19 个免费/匿名工具槽位、29 个对话槽位，按池排队，熔断 + 冷却 + 半开探测自动切 |
 | 想按自己的路子"白嫖"更多 token | **可改造框架**：provider、池、路由链、超时、并发、冷却全在 `config.json`，改完调 `/api/reload` 热加载，不用改代码 |
 | 不想被许可条款绑住 | **Unlicense（公共领域，本仓库能给出的最高权限许可）**：随便用、随便改、可商用、可闭源分发、无需署名 |
 
 一句话：**你出机器和改造想法，框架已经把"多上游 + 故障切换 + 统一 token 入口"这部分写好了。**
+
+## 3.0 关键组件
+
+Free Token Cloud 是独立自有组合产品：
+
+| 组件 | 101 上的位置 | 职责 |
+|---|---|---|
+| `relay-core` | `/opt/ai-relay` | tools/chat 双池、工具桥、Responses/OpenAI/Anthropic 入口、控制台 |
+| `credential-vault` | `/opt/ai-relay/secrets` | AES-256-GCM 加密 Provider Key |
+| `provider-setup` | `/setup` | 登录链接、Key 粘贴、校验、自动启用 |
+| `edge` | nginx `:8080` | Bearer 鉴权入口、限流、流式反代 |
+
+统一组合根目录部署在 `/opt/free-token-cloud`，包含组件清单、Provider 登录策略、
+Docker Compose、架构文档和 `stackctl`。
+
+```bash
+npm run stack:deploy
+ssh <RELAY_HOST> /opt/free-token-cloud/bin/stackctl status
+ssh <RELAY_HOST> /opt/free-token-cloud/bin/stackctl login
+```
+
+Provider 接入页：
+
+```text
+http://<RELAY_HOST>:8080/setup
+```
+
+登录厂商获取 API Key 后，在页面输入 relay master token，再粘贴 Key。密钥会加密保存，
+路由会请求厂商 `/models` 验证，成功后才启用。未登录或失败时继续落到匿名池。
 
 也可以直接让你的 agent（Codex / Claude Code / OpenClaw 等）把本项目部署到你的**本地电脑**上，
 给自己提供免费 token。但先说好：**别要求太高**，工程还在持续开发中，能跑通、能切换、能干活，
@@ -21,6 +50,9 @@
 
 部署后把远端地址填进 `.env.local` 或 `RELAY_URL`，例如 `http://<RELAY_HOST>:8080`。  
 OpenClaw provider：`ai-relay`；模型：`ai-relay/tools`（默认）、`ai-relay/chat`。
+
+DSH Desktop / DeepSeek Harness 接入说明见 `docs/HARNESS.md`；Harness 默认使用
+`ai-relay/tools`，同时保留本地 DeepSeek 路由供手动切换。
 
 ## 当前实测状态
 
@@ -44,19 +76,21 @@ OpenClaw provider：`ai-relay`；模型：`ai-relay/tools`（默认）、`ai-rel
 | OVH AI Endpoints | `Qwen3.6-27B` | 不需要 | 是 | 文本桥 | 独立 2 RPM 配额 |
 | OVH AI Endpoints | `Qwen3.5-397B-A17B` | 不需要 | 是 | 文本桥 | 独立 2 RPM 配额 |
 | OVH AI Endpoints | `Qwen2.5-VL-72B-Instruct` | 不需要 | 是 | 文本桥 | 独立 2 RPM 配额 |
+| OVH AI Endpoints | `Qwen3.5-9B` | 不需要 | 是 | 文本桥 | 独立 2 RPM 配额 |
+| OVH AI Endpoints | `Qwen3.8-27B` | 不需要 | 是 | 文本桥 | 独立 2 RPM 配额 |
 | Pollinations | `openai-fast` | 可选 | 是 | 原生 | 最终兜底，匿名约 30 秒一次 |
 
-当前匿名池共有 **25 个对话槽位、17 个工具槽位**：
+当前匿名池共有 **29 个对话槽位、19 个工具槽位**：
 
 ```text
 # Kilo（共享账号额度，group=kilo）
 kilo, kilo-nemotron, kilo-beam, kilo-glyph, kilo-dots, kilo-cohere, kilo-openrouter,
-kilo-lfm, kilo-omni, kilo-ultra, kilo-laguna, kilo-flint,
+kilo-lfm, kilo-omni, kilo-ultra, kilo-laguna, kilo-flint, kilo-lightning, kilo-laguna-xs,
 # LLM7（匿名可用）
 llm7, llm7-minimax, llm7-nemo, llm7-nemotron,
 # OVH（按模型独立限额）
 ovh-oss20, ovh-oss120, ovh-llama70, ovh-nemo, ovh-small,
-ovh-qwen36, ovh-qwen397, ovh-qwen-vl,
+ovh-qwen36, ovh-qwen397, ovh-qwen-vl, ovh-qwen35-9b, ovh-qwen38-27b,
 # 兜底
 pollinations
 ```
@@ -77,6 +111,11 @@ Kilo 的多个模型共享账号级额度，路由器用 provider group 统一�
 | Groq | `openai/gpt-oss-120b` | `/opt/ai-relay/keys/groq.key` |
 | NVIDIA NIM | `openai/gpt-oss-20b` | `/opt/ai-relay/keys/nvidia.key` |
 | Mistral | `mistral-small-latest` | `/opt/ai-relay/keys/mistral.key` |
+| Qwen / Bailian | `qwen3.8-flash` | 加密凭据仓 |
+| Cerebras | `gpt-oss-120b` | 加密凭据仓 |
+| SambaNova | `gpt-oss-120b` | 加密凭据仓 |
+| DeepInfra | `Qwen/Qwen3.8-Flash` | 加密凭据仓 |
+| Novita | `qwen/qwen3.8-flash` | 加密凭据仓 |
 | LLM7 token | 提高限额 | `/opt/ai-relay/keys/llm7.key` |
 | Pollinations key | 提高限额 | `/opt/ai-relay/keys/pollinations.key` |
 
@@ -160,6 +199,12 @@ kilo -> llm7 -> ovh-oss20 -> ovh-oss120 -> ovh-llama70
 
 ## 更新日志
 
+- **v3.1.1**：修复 Provider 接入页禁用控件无反馈、登录链接无法打开时无备用路径；
+  新增复制登录链接，Ollama 等公开模型目录改用真实最小推理校验，并完成内置 Harness 接入。
+- **v3.1.0**：新增 Qwen/百炼、Cerebras、SambaNova、DeepInfra、Novita 五个官方
+  Provider 适配，并将匿名池扩到 19 个工具槽位、29 个对话槽位；加入端点探测与来源审计。
+- **v3.0.0**：抽取关键组件为自有 `free-token-cloud` 产品；新增 AES-256-GCM 凭据仓、
+  Provider 登录目录、Web 接入页、Key 校验与自动启用、101 统一 stack 和 `stackctl`。
 - **v2.6.0**：全链路 Token 用量统计——指标卡、双池、槽位表、用量图表、日志逐条显示 prompt/completion/total。
 - **v2.5.0**：控制台改版——移除试跑器，新增双池面板（环形成功率、当前选定 API、成员状态）、30 分钟用量堆叠图、接口拆分与上游 TOP。
 - **v2.4.2**：修复控制台脚本语法错误（换行转义），状态栏不再卡在「连接中」；刷新失败会明确提示并在 5 秒后重试。
@@ -235,6 +280,9 @@ kilo -> llm7 -> ovh-oss20 -> ovh-oss120 -> ovh-llama70
 | POST | `/v1/messages` | Anthropic 兼容对话 |
 | GET | `/api/upstreams` | 详细上游状态 |
 | GET | `/api/pools` | 工具池与对话池成员 |
+| GET | `/api/provider-setup` | Provider 目录、Key 状态与接入说明，需 master token |
+| POST | `/api/provider-credentials` | 加密保存并校验 Provider Key |
+| DELETE | `/api/provider-credentials/:id` | 删除加密 Provider Key |
 | GET | `/api/logs?n=50` | 最近请求日志 |
 | GET | `/api/metrics` | JSON 指标 |
 | GET | `/metrics` | Prometheus 文本指标 |

@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Free Token Cloud · Provider Setup</title>
+<style>
+  :root{
+    --bg:#081018;--panel:#0f1822;--panel2:#121e2a;--line:#213244;
+    --ink:#e9f0f7;--muted:#8da0b5;--dim:#61758b;
+    --mint:#44d7a8;--cyan:#3fc8df;--amber:#eabf5a;--red:#ef7b7b;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.55 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif}
+  button,input,select{font:inherit}
+  button{cursor:pointer}
+  .wrap{max-width:1180px;margin:auto;padding:0 20px}
+  header{height:62px;border-bottom:1px solid var(--line);background:rgba(8,16,24,.94);position:sticky;top:0;z-index:10;backdrop-filter:blur(10px)}
+  .bar{display:flex;align-items:center;gap:12px;height:62px}
+  .brand{font-weight:700}.brand small{font-weight:500;color:var(--muted);margin-left:8px}
+  .spacer{flex:1}
+  .status{font-size:12px;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:5px 10px}
+  .status.ok{color:#a9f0d6;border-color:#235443}.status.bad{color:#ffc1c1;border-color:#572c2c}
+  main{padding:22px 0 70px}
+  .toolbar{display:flex;flex-wrap:wrap;gap:9px;align-items:center;margin:0 0 16px}
+  .input{background:var(--panel2);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px 10px;min-width:210px}
+  .input:focus{outline:none;border-color:#3b5b70}
+  .btn{border:1px solid var(--line);background:var(--panel2);color:var(--ink);border-radius:8px;padding:7px 11px}
+  .btn:hover{border-color:#3b5b70}.btn.primary{background:#173c35;border-color:#286351;color:#c8ffeb}
+  .btn.danger{background:#351d21;border-color:#5b3036;color:#ffd2d2}
+  .tokenbar{display:none;gap:9px;align-items:center;margin:0 0 16px;padding:12px;border:1px solid var(--line);background:var(--panel);border-radius:10px}
+  .tokenbar.show{display:flex}.tokenbar .input{flex:1}
+  .summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}
+  .stat{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px 14px}
+  .stat span{display:block;color:var(--dim);font-size:11px}.stat b{font-size:20px}
+  .group-title{font-size:13px;color:var(--muted);margin:18px 0 8px;letter-spacing:.3px}
+  .table{border:1px solid var(--line);background:var(--panel);border-radius:8px;overflow:hidden}
+  .row{display:grid;grid-template-columns:190px 110px 1fr 210px;gap:12px;align-items:center;padding:12px 14px;border-bottom:1px solid var(--line)}
+  .row:last-child{border-bottom:0}.row:hover{background:rgba(255,255,255,.015)}
+  .name b{display:block;font-size:13px}.name span{color:var(--dim);font-size:11px}
+  .tag{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:2px 8px;color:var(--muted);font-size:11px}
+  .tag.ready{color:#a9f0d6;border-color:#235443}.tag.failed{color:#ffc1c1;border-color:#572c2c}
+  .tag.guide{color:#f4dda2;border-color:#5b4b25}.tag.oauth{color:#b9d9ff;border-color:#294e76}
+  .switch{display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-size:11px;cursor:pointer;user-select:none}
+  .switch input{position:absolute;opacity:0;pointer-events:none}
+  .switch i{position:relative;width:34px;height:18px;border-radius:999px;background:#263545;border:1px solid #33485c;transition:.16s}
+  .switch i:after{content:"";position:absolute;left:2px;top:2px;width:12px;height:12px;border-radius:50%;background:#8da0b5;transition:.16s}
+  .switch input:checked + i{background:#173c35;border-color:#286351}
+  .switch input:checked + i:after{left:17px;background:#61e2b7}
+  .switch input:disabled + i{opacity:.45}
+  .switch input:disabled ~ span{opacity:.55}
+  .meta{min-width:0}.meta p{margin:0;color:var(--muted);font-size:12px}.meta code{color:#bfe9f2;background:#0b141d;padding:1px 5px;border-radius:4px}
+  .models{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}.models span{font:11px ui-monospace,SFMono-Regular,Menlo,monospace;border:1px solid var(--line);border-radius:5px;padding:1px 5px;color:var(--dim)}
+  .actions{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}
+  .keybox{display:none;grid-column:1/-1;padding-top:10px;border-top:1px solid var(--line)}
+  .keybox.show{display:flex;gap:8px}.keybox .input{flex:1;min-width:0}
+  .result{grid-column:1/-1;font-size:12px;color:var(--muted)}.result.ok{color:#a9f0d6}.result.bad{color:#ffc1c1}
+  .empty{padding:22px;text-align:center;color:var(--dim)}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#17212c;border:1px solid var(--line);border-radius:8px;padding:8px 13px;opacity:0;pointer-events:none;transition:.2s}
+  .toast.show{opacity:1}
+  @media(max-width:900px){.row{grid-template-columns:1fr 1fr}.meta{grid-column:1/-1}.actions{grid-column:1/-1;justify-content:flex-start}}
+  @media(max-width:620px){.summary{grid-template-columns:1fr}.row{grid-template-columns:1fr}.tokenbar{flex-direction:column;align-items:stretch}.keybox{flex-direction:column}}
+</style>
+</head>
+<body>
+<header><div class="wrap bar">
+  <div class="brand">Free Token Cloud <small>Provider Setup</small></div>
+  <div class="spacer"></div>
+  <span class="status" id="status">等待鉴权</span>
+  <a class="btn" href="/">返回控制台</a>
+</div></header>
+<main class="wrap">
+  <div class="tokenbar" id="tokenbar">
+    <input class="input" id="token" type="password" autocomplete="off" placeholder="输入 relay master token">
+    <span class="status" id="tokenHint">粘贴 token 后连接，才能填写 Key 和切换接入</span>
+    <button class="btn primary" id="connect">连接</button>
+  </div>
+  <div class="toolbar">
+    <input class="input" id="search" placeholder="搜索 Provider">
+    <select class="input" id="kind">
+      <option value="">全部类型</option>
+      <option value="api-key">API Key</option>
+      <option value="optional-token">可选 Token</option>
+      <option value="subscription-oauth">订阅 OAuth</option>
+      <option value="guide">自定义接入</option>
+    </select>
+    <button class="btn" id="refresh">刷新</button>
+  </div>
+  <div class="summary">
+    <div class="stat"><span>已接入</span><b id="countReady">0</b></div>
+    <div class="stat"><span>待登录或填 Key</span><b id="countPending">0</b></div>
+    <div class="stat"><span>仅配置引导</span><b id="countGuide">0</b></div>
+  </div>
+  <div class="group-title">可直接接入</div>
+  <div class="table" id="implemented"></div>
+  <div class="group-title">自定义 Adapter / 订阅 OAuth</div>
+  <div class="table" id="guides"></div>
+</main>
+<div class="toast" id="toast"></div>
+<script>
+const $ = id => document.getElementById(id);
+let token = sessionStorage.getItem('relayToken') || '';
+let items = [];
+let connected = false;
+
+function toast(text, bad) {
+  const el = $('toast');
+  el.textContent = text;
+  el.style.color = bad ? '#ffc1c1' : '#d9f8ec';
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+async function api(path, options = {}) {
+  const headers = Object.assign({ Authorization: 'Bearer ' + token }, options.headers || {});
+  const response = await fetch(path, Object.assign({}, options, { headers }));
+  if (response.status === 401) {
+    $('tokenbar').classList.add('show');
+    throw new Error('Token 无效');
+  }
+  return response;
+}
+
+function el(tag, className, text) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text !== undefined) node.textContent = text;
+  return node;
+}
+
+function requireConnection() {
+  if (connected) return true;
+  $('tokenbar').classList.add('show');
+  $('status').textContent = '先连接 relay master token';
+  $('status').className = 'status bad';
+  $('tokenbar').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  setTimeout(() => $('token').focus(), 180);
+  toast('先在上方粘贴 relay master token 并点“连接”', true);
+  return false;
+}
+
+async function copyText(value) {
+  if (navigator.clipboard && window.isSecureContext) {
+    await navigator.clipboard.writeText(value);
+    return;
+  }
+  const area = document.createElement('textarea');
+  area.value = value;
+  area.style.position = 'fixed';
+  area.style.opacity = '0';
+  document.body.appendChild(area);
+  area.select();
+  const copied = document.execCommand('copy');
+  area.remove();
+  if (!copied) throw new Error('复制失败');
+}
+
+function render() {
+  const q = $('search').value.trim().toLowerCase();
+  const kind = $('kind').value;
+  const filtered = items.filter(item =>
+    (!q || (item.name + ' ' + item.id + ' ' + (item.models || []).join(' ')).toLowerCase().includes(q)) &&
+    (!kind || item.kind === kind)
+  );
+  const direct = filtered.filter(item => item.providerExists);
+  const guide = filtered.filter(item => !item.providerExists);
+  $('implemented').replaceChildren();
+  $('guides').replaceChildren();
+  for (const item of direct) $('implemented').appendChild(row(item, false));
+  for (const item of guide) $('guides').appendChild(row(item, true));
+  if (!direct.length) $('implemented').appendChild(el('div', 'empty', '没有匹配项'));
+  if (!guide.length) $('guides').appendChild(el('div', 'empty', '没有匹配项'));
+  $('countReady').textContent = items.filter(item => item.enabled).length;
+  $('countPending').textContent = items.filter(item => item.providerExists && !item.enabled).length;
+  $('countGuide').textContent = items.filter(item => !item.providerExists).length;
+}
+
+function row(item, guideOnly) {
+  const row = el('div', 'row');
+  const name = el('div', 'name');
+  name.append(el('b', '', item.name), el('span', '', item.id));
+  row.appendChild(name);
+
+  const tags = el('div');
+  const kind = el('span', 'tag ' + (item.kind === 'guide' ? 'guide' : item.kind === 'subscription-oauth' ? 'oauth' : ''), item.kind);
+  tags.appendChild(kind);
+  if (item.providerExists) {
+    const stateText = item.enabled ? '运行中' : item.credentialReady ? '已暂停' : '待配置';
+    tags.appendChild(el('span', 'tag ' + (item.enabled ? 'ready' : ''), stateText));
+  }
+  row.appendChild(tags);
+
+  const meta = el('div', 'meta');
+  meta.appendChild(el('p', '', item.quota || ''));
+  meta.appendChild(el('p', '', item.note || ''));
+  const models = el('div', 'models');
+  for (const model of item.models || []) models.appendChild(el('span', '', model));
+  meta.appendChild(models);
+  row.appendChild(meta);
+
+  const actions = el('div', 'actions');
+  if (item.providerExists) {
+    const toggle = el('label', 'switch');
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.checked = Boolean(item.enabled);
+    checkbox.disabled = !item.toggleable;
+    checkbox.title = item.toggleable
+      ? (item.enabled ? '关闭 ' + item.name : '开启 ' + item.name)
+      : (item.requiresKey ? '请先保存并校验 API Key' : '当前不可接入');
+    checkbox.onchange = async () => {
+      if (!requireConnection()) {
+        checkbox.checked = Boolean(item.enabled);
+        return;
+      }
+      checkbox.disabled = true;
+      try {
+        const response = await api('/api/provider-settings/' + encodeURIComponent(item.id), {
+          method: 'PATCH',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ enabled: checkbox.checked })
+        });
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error && result.error.message || '切换失败');
+        toast(checkbox.checked ? item.name + ' 已接入' : item.name + ' 已暂停', false);
+        await load();
+      } catch (error) {
+        checkbox.checked = Boolean(item.enabled);
+        toast(error.message, true);
+      } finally {
+        checkbox.disabled = !connected || !item.toggleable;
+      }
+    };
+    toggle.append(checkbox, el('i'), el('span', '', item.enabled ? '接入中' : '接入'));
+    actions.appendChild(toggle);
+  }
+  const login = el('a', 'btn', '打开登录页');
+  login.href = item.loginUrl;
+  login.target = '_blank';
+  login.rel = 'noopener';
+  actions.appendChild(login);
+  const copyLogin = el('button', 'btn', '复制登录链接');
+  copyLogin.onclick = async () => {
+    try {
+      await copyText(item.loginUrl);
+      toast('登录链接已复制');
+    } catch (error) {
+      toast(error.message, true);
+    }
+  };
+  actions.appendChild(copyLogin);
+  if (item.providerExists) {
+    const key = el('button', 'btn primary', item.configured ? '替换 Key' : '填 Key');
+    key.onclick = () => {
+      if (!requireConnection()) return;
+      row.querySelector('.keybox').classList.toggle('show');
+      row.querySelector('.keybox input').focus();
+    };
+    actions.appendChild(key);
+    if (item.configured) {
+      const del = el('button', 'btn danger', '移除');
+      del.onclick = async () => {
+        if (!requireConnection()) return;
+        if (!confirm('移除 ' + item.name + ' 的加密凭据？')) return;
+        const response = await api('/api/provider-credentials/' + encodeURIComponent(item.id), { method: 'DELETE' });
+        toast(response.ok ? '已移除' : '移除失败', !response.ok);
+        await load();
+      };
+      actions.appendChild(del);
+    }
+  }
+  row.appendChild(actions);
+
+  if (item.providerExists) {
+    const box = el('div', 'keybox');
+    const input = el('input', 'input');
+    input.type = 'password';
+    input.autocomplete = 'off';
+    input.placeholder = '粘贴 ' + item.name + ' API Key';
+    const save = el('button', 'btn primary', '加密保存并校验');
+    save.onclick = async () => {
+      if (!input.value.trim()) return toast('请输入 Key', true);
+      save.disabled = true;
+      try {
+        const response = await api('/api/provider-credentials', {
+          method: 'POST',
+          headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ providerId: item.id, secret: input.value.trim() })
+        });
+        const result = await response.json();
+        const failure = result.validation && result.validation.message
+          ? '：' + String(result.validation.message).slice(0, 120)
+          : '';
+        toast(result.ok ? '凭据已加密保存并完成真实校验' : '校验失败，未保存' + failure, !result.ok);
+        if (result.ok) {
+          input.value = '';
+          box.classList.remove('show');
+          await load();
+        }
+      } catch (error) {
+        toast(error.message, true);
+      } finally {
+        save.disabled = false;
+      }
+    };
+    box.append(input, save);
+    row.appendChild(box);
+  }
+  return row;
+}
+
+async function load() {
+  try {
+    const catalogResponse = await fetch('/api/provider-catalog', { cache: 'no-store' });
+    if (!catalogResponse.ok) throw new Error('Provider 目录加载失败');
+    const catalog = await catalogResponse.json();
+    items = catalog.providers || [];
+    connected = false;
+    render();
+    if (!token) {
+      $('tokenbar').classList.add('show');
+      $('status').textContent = '未连接 · 只读目录';
+      $('status').className = 'status';
+      return;
+    }
+    const response = await api('/api/provider-setup');
+    const data = await response.json();
+    items = data.providers || [];
+    connected = true;
+    $('tokenbar').classList.remove('show');
+    $('status').textContent = '已连接 · 开关与凭据持久化';
+    $('status').className = 'status ok';
+    render();
+  } catch (error) {
+    $('status').textContent = error.message;
+    $('status').className = 'status bad';
+  }
+}
+
+$('connect').onclick = async () => {
+  token = $('token').value.trim();
+  if (!token) return;
+  sessionStorage.setItem('relayToken', token);
+  await load();
+};
+$('refresh').onclick = load;
+$('search').oninput = render;
+$('kind').onchange = render;
+load();
+</script>
+</body>
+</html>
