@@ -158,21 +158,34 @@ kilo -> llm7 -> ovh-oss20 -> ovh-oss120 -> ovh-llama70
 - **v2.1.0**：`/v1/responses` 支持逐轮长思考（推理预算、思考摘要回填、reasoning 事件）；工具池与对话池同源头。
 - **v2.0.0**：首个公开版（已脱敏，Unlicense）。
 
-## Codex 兼容矩阵
+## 客户端兼容矩阵（Codex / OpenClaw）
 
-| Codex 能力 | 状态 |
+**Codex（`wire_api = "responses"`）**
+
+| 能力 | 状态 |
 |---|---|
-| `wire_api = "responses"` | ✅ 原生 `/v1/responses` |
+| `/v1/responses` 原生入口 | ✅ |
 | 流式事件（文本/工具/推理） | ✅ `response.*` 事件序列 |
 | 函数工具 + 并行调用 | ✅ `function_call`，支持 `parallel_tool_calls` |
-| freeform 工具（apply_patch） | ✅ `custom_tool_call` |
+| freeform 工具（apply_patch） | ✅ `custom_tool_call` / `custom_tool_call_output` |
 | `local_shell` | ✅ 映射为函数工具 |
-| 结构化输出 | ✅ `text.format` / `response_format` |
-| 多轮上下文 | ✅ `previous_response_id`（内存 64 条） |
-| 推理预算 / 思考摘要 | ✅ `reasoning.effort` + `reasoning` 条目 |
+| 结构化输出 | ✅ `text.format` / `json_schema` / `json_object` |
+| 多轮上下文 | ✅ `previous_response_id`（进程内 64 条） |
+| 推理预算 / 思考摘要 | ✅ `reasoning.effort` + `reasoning` 条目（仅 `tools` 池） |
 | `incomplete`（长度截断） | ✅ `incomplete_details` |
 | 图片输入 | ✅ `input_image` 透传（上游支持时） |
 | `reasoning.encrypted_content` | ⚠️ 用摘要 base64 代替，不参与续算 |
+
+**OpenClaw / 通用 OpenAI 客户端（`/v1/chat/completions`、`/v1/messages`）**
+
+| 能力 | 状态 |
+|---|---|
+| `ai-relay/tools`（工具池） | ✅ 工具调用、并行、文本桥；OpenClaw 实测 `exec` 成功 |
+| `ai-relay/chat`（对话池） | ✅ 只对话，`toolPolicy=strip` |
+| 思维链隐藏 | ✅ `chat` 池在 Responses **与** Chat Completions（含流式）都剥离 `reasoning` |
+| 多上游熔断 / 冷却 / 半开 | ✅ 两个入口共用一套路由 |
+| Anthropic 兼容 | ✅ `/v1/messages`（含流式事件合成） |
+| usage / 估算 token | ✅ 上游缺失时补齐 |
 
 ## 接口
 
