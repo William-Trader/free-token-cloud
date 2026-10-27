@@ -202,6 +202,7 @@ kilo -> llm7 -> ovh-oss20 -> ovh-oss120 -> ovh-llama70
 
 ## 更新日志
 
+- **v3.4.1**：控制台 Token 可视化改版——卡片内堆叠条（读取/缓存/输出）、合并视图 + 分开视图、日志显示 `in→out`、槽位表显示 `总量 (in→out)`。
 - **v3.4.0**：默认语言规则（`locale`）——仅对 `chat` 对话池注入「默认简体中文」，`tools`/编码链路不受影响；可用 `locale.routes` 调整范围。
 - **v3.3.3**：usage 统一规范化——流式/非流式、OpenAI/Anthropic 都保证 `prompt_tokens_details.cached_tokens` 与 `completion_tokens_details.reasoning_tokens` 存在；兼容 `prompt_cache_hit_tokens`、`cache_read_input_tokens` 等厂商字段。
 - **v3.3.2**：Anthropic 流量 usage 补齐 `input_tokens / output_tokens / cache_read_input_tokens / cache_creation_input_tokens`（流式与非流式），OpenAI 侧保留 `prompt_tokens_details` / `completion_tokens_details`，harness 可区分读取、输出与缓存命中。

@@ -1286,6 +1286,20 @@ function openAIFromOllama(raw, logical) {
 }
 
 
+
+function usageLogFields(usage) {
+  if (!usage) return {};
+  const details = usage.prompt_tokens_details || {};
+  const completion = usage.completion_tokens_details || {};
+  return {
+    tokens: Number(usage.total_tokens || 0),
+    tokens_in: Number(usage.prompt_tokens || 0),
+    tokens_out: Number(usage.completion_tokens || 0),
+    tokens_cached: Number(details.cached_tokens || usage.cache_read_input_tokens || 0),
+    tokens_reasoning: Number(completion.reasoning_tokens || 0)
+  };
+}
+
 function normalizeUsageFields(usage) {
   if (!usage || typeof usage !== 'object') return usage;
   const prompt = Number(usage.prompt_tokens != null ? usage.prompt_tokens : (usage.input_tokens || 0));
@@ -2178,7 +2192,7 @@ async function handleChat(req, res, body, anthropic) {
             stream: true,
             attempts: attempts.length,
             ms: Date.now() - started,
-            tokens: completion.usage ? Number(completion.usage.total_tokens || 0) : undefined
+            ...usageLogFields(completion.usage)
           });
           return fakeAnthropicStream(res, completion, logical, responseHeaders);
         }
@@ -2255,7 +2269,7 @@ async function handleChat(req, res, body, anthropic) {
           ? completion.choices[0].message.tool_calls.length
           : 0,
         usage_estimated: Boolean(completion.usage && completion.usage.estimated),
-        tokens: completion.usage ? Number(completion.usage.total_tokens || 0) : undefined
+        ...usageLogFields(completion.usage)
       });
       if (anthropic) {
         if (wantStream) return fakeAnthropicStream(res, completion, logical, responseHeaders);
@@ -2837,7 +2851,7 @@ async function handleResponses(req, res, body) {
         attempts: attempts.length,
         ms: Date.now() - started,
         tool_calls: (message.tool_calls || []).length,
-        tokens: completion.usage ? Number(completion.usage.total_tokens || 0) : undefined
+        ...usageLogFields(completion.usage)
       });
       if (body.stream) return streamResponses(res, response, headers);
       return writeJson(res, 200, response, headers);
@@ -3369,7 +3383,11 @@ function publicView() {
       model: item.model || null,
       provider: item.provider || null,
       ms: item.ms || null,
-      tokens: item.tokens || null
+      tokens: item.tokens != null ? item.tokens : null,
+      tokens_in: item.tokens_in != null ? item.tokens_in : null,
+      tokens_out: item.tokens_out != null ? item.tokens_out : null,
+      tokens_cached: item.tokens_cached != null ? item.tokens_cached : null,
+      tokens_reasoning: item.tokens_reasoning != null ? item.tokens_reasoning : null
     }))
   };
 }
