@@ -101,6 +101,10 @@
   .api-row .bar{flex:1;height:8px;border-radius:5px;background:#151d29;overflow:hidden}
   .api-row .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--cyan),var(--teal))}
   .api-row .n{font-size:12px;color:var(--muted);min-width:78px;text-align:right}
+  .tok-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:6px 0 2px}
+  .tok-row span{display:block;font-size:11px;color:var(--dim)}
+  .tok-row b{font-size:19px;font-weight:700;letter-spacing:-.3px}
+  .tok-row div+div{border-left:1px solid var(--line);padding-left:8px}
   .stack{display:flex;height:10px;border-radius:6px;overflow:hidden;background:#151d29;margin:10px 0 8px}
   .stack i{display:block;height:100%}
   .stack i.in{background:linear-gradient(90deg,#22d3ee,#38bdf8)}
@@ -126,7 +130,8 @@
     padding:7px 10px;border-radius:9px;font-size:12.5px;min-width:180px}
   .input:focus{outline:none;border-color:#2f4a57}
   select.input{min-width:130px}
-  .tbl{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+  .tbl{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);overflow-x:auto}
+  .tbl table{min-width:760px}
   table{width:100%;border-collapse:collapse}
   th,td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line);font-size:12.5px;vertical-align:middle}
   th{color:var(--muted);font-weight:500;font-size:11.5px;letter-spacing:.4px;background:rgba(255,255,255,.015)}
@@ -171,9 +176,27 @@
   }
   @media (max-width:720px){
     .stats{grid-template-columns:repeat(2,1fr)}
-    .pool-body{grid-template-columns:80px 1fr}
-    .logline{grid-template-columns:56px 48px 1fr 52px}
+    .tok-row b{font-size:17px}
+    .pool-body{grid-template-columns:80px 1fr;gap:10px}
+    .kv{grid-template-columns:1fr 1fr}
+    .logline{grid-template-columns:50px 44px 1fr 60px;font-size:11.5px}
     .logline .p{display:none}
+    .chart-top{flex-direction:column;align-items:flex-start;gap:6px}
+    .legend{flex-wrap:wrap;gap:8px}
+    .sec-head{flex-wrap:wrap}
+    #usageChart{height:120px}
+  }
+  @media (max-width:520px){
+    .wrap{padding:0 14px}
+    .hd{gap:8px}
+    .logo small{display:none}
+    .pill{font-size:11px;padding:5px 8px}
+    .stats{grid-template-columns:1fr 1fr}
+    .card{padding:13px}
+    .big{font-size:22px}
+    .pools{grid-template-columns:1fr}
+    .members{gap:4px}
+    .member{font-size:10.5px}
   }
 </style>
 </head>
@@ -201,7 +224,7 @@
     <div class="card"><h3>平均延迟</h3><div class="big" id="sLat">—</div><div class="sub">最近成功请求</div></div>
     <div class="card"><h3>可用槽位</h3><div class="big" id="sSlots">—</div><div class="sub">熔断中 <b id="sOpen">0</b></div></div>
     <div class="card"><h3>流式请求</h3><div class="big" id="sStream">—</div><div class="sub">SSE 计数</div></div>
-    <div class="card"><h3>累计 Token 用量</h3><div class="big" id="sTok">—</div><div class="sub" id="sTokSub">in — / out —</div><div class="stack" id="tokStack"><i class="in" style="width:0"></i><i class="cache" style="width:0"></i><i class="out" style="width:0"></i></div></div>
+    <div class="card tok-card"><h3>Token 用量</h3><div class="tok-row"><div><span>读取</span><b id="sTokIn">—</b></div><div><span>输出</span><b id="sTokOut">—</b></div><div><span>缓存</span><b id="sTokCache">—</b></div></div><div class="stack" id="tokStack"><i class="in" style="width:0"></i><i class="cache" style="width:0"></i><i class="out" style="width:0"></i></div><div class="sub" id="sTok">总计 —</div></div>
     <div class="card"><h3>缓存命中</h3><div class="big" id="sCache">—</div><div class="sub" id="sCacheSub">cached — / 命中 — 次</div></div>
   </div>
 
@@ -297,8 +320,10 @@
     $('sSlots').textContent = (total - open) + '/' + total;
     $('sOpen').textContent = open;
     $('sStream').textContent = fmtNum(m.streams || 0);
-    $('sTok').textContent = fmtNum(m.totalTokens || 0);
-    $('sTokSub').textContent = 'in ' + fmtNum(m.promptTokens || 0) + ' / out ' + fmtNum(m.completionTokens || 0) + ' · 跨重启保留';
+    $('sTokIn').textContent = fmtNum(m.promptTokens || 0);
+    $('sTokOut').textContent = fmtNum(m.completionTokens || 0);
+    $('sTokCache').textContent = fmtNum(m.cachedTokens || 0);
+    $('sTok').textContent = '总计 ' + fmtNum(m.totalTokens || 0) + ' · 跨重启保留';
     var cachedTok = m.cachedTokens || 0;
     var inTok = m.promptTokens || 0;
     var outTok = m.completionTokens || 0;
@@ -310,8 +335,9 @@
       var el = document.querySelector('#tokStack .' + pair[0]);
       if (el) el.style.width = Math.max(0, pair[1] / totalTok * 100).toFixed(2) + '%';
     });
-    $('sCache').textContent = inTok ? Math.round(cachedTok / inTok * 100) + '%' : '—';
-    $('sCacheSub').textContent = 'cached ' + fmtNum(cachedTok) + ' / 命中 ' + (m.cacheHits || 0) + ' 次';
+    var hitRate = m.usageEvents ? Math.round((m.cacheHits || 0) / m.usageEvents * 100) : 0;
+    $('sCache').textContent = hitRate + '%';
+    $('sCacheSub').textContent = '命中 ' + (m.cacheHits || 0) + ' / ' + (m.usageEvents || 0) + ' 次 · ' + fmtNum(cachedTok) + ' tokens';
     var upt = (state.health && state.health.uptime_s) || 0;
     $('uptime').textContent = 'uptime ' + (upt >= 86400 ? (upt/86400).toFixed(1)+'d' : upt >= 3600 ? (upt/3600).toFixed(1)+'h' : Math.round(upt/60)+'m');
     $('setupPending').textContent = (state.setup && state.setup.pending) || 0;
