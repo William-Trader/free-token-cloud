@@ -1,8 +1,8 @@
 {
   "name": "free-token-cloud",
-  "version": "3.1.1",
+  "version": "3.2.0",
   "description": "2C1G 服务器上的免费模型聚合中转：OpenAI/Anthropic 兼容入口 + token 分发 + 自动故障切换",
-  "license": "Unlicense",
+  "license": "PolyForm-Noncommercial-1.0.0",
   "type": "commonjs",
   "scripts": {
     "test": "node --test test/router.test.js",

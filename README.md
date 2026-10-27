@@ -11,7 +11,7 @@
 | 想给远程设备／朋友发 token，而不是发 key | 服务器上 `token` 单文件 Bearer 鉴权，任何 OpenAI 兼容客户端填两行配置就能接入 |
 | 免费额度分散、随时 429 | 19 个免费/匿名工具槽位、29 个对话槽位，按池排队，熔断 + 冷却 + 半开探测自动切 |
 | 想按自己的路子"白嫖"更多 token | **可改造框架**：provider、池、路由链、超时、并发、冷却全在 `config.json`，改完调 `/api/reload` 热加载，不用改代码 |
-| 不想被许可条款绑住 | **Unlicense（公共领域，本仓库能给出的最高权限许可）**：随便用、随便改、可商用、可闭源分发、无需署名 |
+| 源码开放但**禁止商用** | **PolyForm Noncommercial 1.0.0**：个人、教育、研究、非营利可自由使用/修改/分发；**任何商业用途需单独授权** |
 
 一句话：**你出机器和改造想法，框架已经把"多上游 + 故障切换 + 统一 token 入口"这部分写好了。**
 
@@ -199,6 +199,7 @@ kilo -> llm7 -> ovh-oss20 -> ovh-oss120 -> ovh-llama70
 
 ## 更新日志
 
+- **v3.2.0**：许可从 Unlicense 收紧为 **PolyForm Noncommercial 1.0.0**——非商用免费，商用需单独授权。
 - **v3.1.1**：修复 Provider 接入页禁用控件无反馈、登录链接无法打开时无备用路径；
   新增复制登录链接，Ollama 等公开模型目录改用真实最小推理校验，并完成内置 Harness 接入。
 - **v3.1.0**：新增 Qwen/百炼、Cerebras、SambaNova、DeepInfra、Novita 五个官方
@@ -377,5 +378,11 @@ systemctl restart ai-relay
 
 ## 许可
 
-**Unlicense（公共领域）** —— 本仓库能给出的最高权限许可：可商用、可修改、可闭源分发、无需署名、无任何附加条件。
-见 [LICENSE](LICENSE)。
+**PolyForm Noncommercial License 1.0.0** —— 源码开放、非商用免费：
+
+- 允许：个人学习、研究实验、爱好项目、教育教学、公益/公共机构、非营利组织；可修改、可分发（需随附许可与 Required Notice）。
+- **不允许：任何商业用途**（含公司内部生产、对外提供服务、打包进商业产品、SaaS 转售）。
+- 商用需单独授权：在 [Issues](https://github.com/William-Trader/free-token-cloud/issues) 留言或联系作者。
+- 该许可**不是 OSI 认可的开源许可**，属于「源码可见 + 非商用」。
+
+完整条款见 [LICENSE](LICENSE)。
