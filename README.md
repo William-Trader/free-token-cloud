@@ -202,6 +202,7 @@ kilo -> llm7 -> ovh-oss20 -> ovh-oss120 -> ovh-llama70
 
 ## 更新日志
 
+- **v3.4.4**：修复 agent 工具调用不稳——工具桥提示词改为「只输出 JSON，必须调用」并在无 tool_calls 时同 provider 重试一次；tools 链重排为 llm7 → kilo-cohere → kilo-dots → kilo → kilo-glyph。实测 5 次 4 次返回 tool_use。
 - **v3.4.3**：README 全面对齐实际状态——44 个 provider 条目 / 29 对话 / 19 工具槽位、Token 合并与分开视图、缓存口径与移动端说明；移除已删除的 Playground 描述。
 - **v3.4.2**：主 Token 卡拆成「读取 / 输出 / 缓存」三列 + 总计；缓存卡改为按请求的命中率；表格横向滚动、指标两列、池卡堆叠等移动端优化。
 - **v3.4.1**：控制台 Token 可视化改版——卡片内堆叠条（读取/缓存/输出）、合并视图 + 分开视图、日志显示 `in→out`、槽位表显示 `总量 (in→out)`。

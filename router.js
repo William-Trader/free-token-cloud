@@ -947,7 +947,7 @@ function contentText(content) {
   return JSON.stringify(content);
 }
 
-function toolBridgeProtocol(tools) {
+function toolBridgeProtocol(tools, strict) {
   const definitions = tools.map(tool => {
     const fn = tool.function || tool;
     return {
@@ -961,9 +961,12 @@ function toolBridgeProtocol(tools) {
   });
   return [
     '[Tool bridge protocol]',
-    'You may call the tools listed below.',
-    'When a tool is needed, reply with ONLY one JSON object and no markdown:',
+    strict
+      ? 'IMPORTANT: your previous reply contained no tool call. You MUST reply with exactly one JSON object and nothing else.'
+      : 'You may call the tools listed below.',
+    'When a tool is needed, reply with ONLY one JSON object and no markdown, no prose, no explanation:',
     '{"tool_calls":[{"name":"tool_name","arguments":{"key":"value"}}]}',
+    'If the user explicitly requires a tool, you must call it — do not answer in natural language.',
     'Do not invent a tool result. If no tool is needed, answer normally.',
     'Available tools:',
     JSON.stringify(definitions)
@@ -1077,11 +1080,11 @@ function parseBridgeToolCalls(answer, tools) {
   return [];
 }
 
-function messagesWithToolBridge(body, tools) {
+function messagesWithToolBridge(body, tools, strict) {
   return Object.assign({}, body, {
     messages: [{
       role: 'system',
-      content: toolBridgeProtocol(tools)
+      content: toolBridgeProtocol(tools, strict)
     }].concat(body.messages || [])
   });
 }
@@ -1432,41 +1435,53 @@ async function providerJsonAttempt(provider, logical, body, route, apiKey) {
     bodyWantsTools(body)
   );
   const bridgeTools = useToolBridge ? selectBridgeTools(body, body.tools) : null;
-  const effectiveBody = useToolBridge ? messagesWithToolBridge(body, bridgeTools) : body;
-  let requestBody;
-  let endpoint = provider.endpoint;
-  if (provider.type === 'anthropic-compatible') {
-    requestBody = anthropicFromOpenAI(effectiveBody, provider, logical);
-  } else if (provider.type === 'ollama-chat') {
-    requestBody = ollamaFromOpenAI(effectiveBody, provider, logical);
-  } else {
-    requestBody = buildOpenAIBody(provider, logical, effectiveBody, false, route.toolPolicy === 'strip');
+
+  async function callOnce(effectiveBody) {
+    let requestBody;
+    if (provider.type === 'anthropic-compatible') {
+      requestBody = anthropicFromOpenAI(effectiveBody, provider, logical);
+    } else if (provider.type === 'ollama-chat') {
+      requestBody = ollamaFromOpenAI(effectiveBody, provider, logical);
+    } else {
+      requestBody = buildOpenAIBody(provider, logical, effectiveBody, false, route.toolPolicy === 'strip');
+    }
+    const response = await request(provider.endpoint, {
+      headers: headersWithContentType(authHeaders(provider, apiKey)),
+      body: JSON.stringify(requestBody),
+      timeoutMs: provider.timeoutMs,
+      family: provider.family || 4
+    });
+    const text = await readAll(response.stream);
+    if (response.status < 200 || response.status >= 300) {
+      throw errorFromStatus(response.status, text, response.headers);
+    }
+    let raw;
+    try {
+      raw = JSON.parse(text);
+    } catch {
+      throw new Error('upstream returned invalid JSON');
+    }
+    if (raw && raw.error) {
+      throw new Error('upstream error: ' + JSON.stringify(raw.error).slice(0, 500));
+    }
+    let normalized = raw;
+    if (provider.type === 'anthropic-compatible') normalized = openAIFromAnthropic(raw, logical, provider);
+    if (provider.type === 'ollama-chat') normalized = openAIFromOllama(raw, logical);
+    if (bodyWantsTools(body)) {
+      normalized = applyBridgeToolCalls(normalized, bridgeTools || body.tools);
+    }
+    return normalized;
   }
 
-  const response = await request(endpoint, {
-    headers: headersWithContentType(authHeaders(provider, apiKey)),
-    body: JSON.stringify(requestBody),
-    timeoutMs: provider.timeoutMs,
-    family: provider.family || 4
-  });
-  const text = await readAll(response.stream);
-  if (response.status < 200 || response.status >= 300) {
-    throw errorFromStatus(response.status, text, response.headers);
-  }
-  let raw;
-  try {
-    raw = JSON.parse(text);
-  } catch {
-    throw new Error('upstream returned invalid JSON');
-  }
-  if (raw && raw.error) {
-    throw new Error('upstream error: ' + JSON.stringify(raw.error).slice(0, 500));
-  }
-  let normalized = raw;
-  if (provider.type === 'anthropic-compatible') normalized = openAIFromAnthropic(raw, logical, provider);
-  if (provider.type === 'ollama-chat') normalized = openAIFromOllama(raw, logical);
-  if (bodyWantsTools(body)) {
-    normalized = applyBridgeToolCalls(normalized, bridgeTools || body.tools);
+  let normalized = await callOnce(useToolBridge ? messagesWithToolBridge(body, bridgeTools) : body);
+
+  if (useToolBridge && bodyWantsTools(body)) {
+    const message = normalized.choices && normalized.choices[0] && normalized.choices[0].message;
+    const calls = message && Array.isArray(message.tool_calls) ? message.tool_calls : [];
+    if (!calls.length) {
+      // 桥接模型有时只回自然语言；用更硬的提示再要一次工具调用
+      normalized = await callOnce(messagesWithToolBridge(body, bridgeTools, true));
+    }
   }
   return normalized;
 }

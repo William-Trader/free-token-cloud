@@ -31,6 +31,11 @@
   "routes": {
     "tools": {
       "chain": [
+        "llm7",
+        "kilo-cohere",
+        "kilo-dots",
+        "kilo",
+        "kilo-glyph",
         "openrouter",
         "gemini",
         "groq",
@@ -42,16 +47,11 @@
         "siliconflow",
         "huggingface",
         "cerebras",
-        "kilo",
         "kilo-nemotron",
         "kilo-beam",
-        "kilo-glyph",
-        "kilo-dots",
-        "kilo-cohere",
         "kilo-openrouter",
         "kilo-lightning",
         "kilo-laguna-xs",
-        "llm7",
         "ovh-oss20",
         "ovh-oss120",
         "ovh-llama70",
