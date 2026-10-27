@@ -78,6 +78,7 @@
     "chat": {
       "chain": [
         "gemini",
+        "ollama-cloud",
         "kilo-ultra",
         "kilo-omni",
         "kilo-lightning",
@@ -194,6 +195,16 @@
       "strategy": "ordered",
       "allowLastResort": true,
       "contextWindow": 200000
+    },
+    "ollama": {
+      "chain": [
+        "ollama-cloud"
+      ],
+      "toolPolicy": "strip",
+      "strategy": "ordered",
+      "allowLastResort": true,
+      "contextWindow": 131072,
+      "hidden": true
     }
   },
   "providers": [
@@ -416,7 +427,8 @@
         "auto": "gpt-oss:20b",
         "chat": "gpt-oss:20b",
         "fast": "gpt-oss:20b",
-        "smart": "gpt-oss:20b"
+        "smart": "gpt-oss:20b",
+        "ollama": "gpt-oss:20b"
       },
       "pools": [
         "chat"
