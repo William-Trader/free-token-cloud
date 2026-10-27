@@ -1759,6 +1759,377 @@ async function handleChat(req, res, body, anthropic) {
   tryAgainLater(res, new Error('All providers failed'), attempts);
 }
 
+// ---------------------------------------------------------------------------
+// OpenAI Responses API 兼容层
+// Codex CLI 只支持 wire_api="responses"，这里把 Responses 请求翻译成内部的
+// chat.completions 管线（免费池、熔断、工具桥全部复用），再把结果还原成事件流。
+// ---------------------------------------------------------------------------
+
+function responsesContentParts(content) {
+  if (typeof content === 'string') return content;
+  if (!Array.isArray(content)) return content == null ? '' : String(content);
+  const parts = [];
+  for (const part of content) {
+    if (!part) continue;
+    if (typeof part === 'string') {
+      parts.push({ type: 'text', text: part });
+      continue;
+    }
+    if (part.text !== undefined) {
+      parts.push({ type: 'text', text: String(part.text) });
+      continue;
+    }
+    if (part.type === 'input_image' || part.type === 'image_url') {
+      const url = part.image_url && (part.image_url.url || part.image_url) || part.url;
+      if (url) parts.push({ type: 'image_url', image_url: { url: String(url) } });
+    }
+  }
+  if (!parts.length) return '';
+  if (parts.every(part => part.type === 'text')) return parts.map(part => part.text).join('');
+  return parts;
+}
+
+function responsesInputToMessages(body) {
+  const messages = [];
+  const instructions = typeof body.instructions === 'string' ? body.instructions.trim() : '';
+  if (instructions) messages.push({ role: 'system', content: instructions });
+  const input = body.input;
+  const items = typeof input === 'string'
+    ? [{ role: 'user', content: input }]
+    : (Array.isArray(input) ? input : []);
+  for (const item of items) {
+    if (!item) continue;
+    if (typeof item === 'string') {
+      messages.push({ role: 'user', content: item });
+      continue;
+    }
+    const type = item.type || (item.role ? 'message' : '');
+    if (type === 'message' || (!type && item.role)) {
+      const role = item.role === 'developer' ? 'system' : (item.role || 'user');
+      messages.push({ role, content: responsesContentParts(item.content) });
+      continue;
+    }
+    if (type === 'function_call') {
+      messages.push({
+        role: 'assistant',
+        content: '',
+        tool_calls: [{
+          id: item.call_id || item.id || 'call_' + crypto.randomUUID(),
+          type: 'function',
+          function: {
+            name: item.name || '',
+            arguments: typeof item.arguments === 'string'
+              ? item.arguments
+              : JSON.stringify(item.arguments || {})
+          }
+        }]
+      });
+      continue;
+    }
+    if (type === 'function_call_output') {
+      messages.push({
+        role: 'tool',
+        tool_call_id: item.call_id || item.id || '',
+        content: typeof item.output === 'string'
+          ? item.output
+          : JSON.stringify(item.output == null ? '' : item.output)
+      });
+    }
+    // reasoning / item_reference 等类型上游不认，直接丢弃
+  }
+  return messages;
+}
+
+function responsesToolsToChat(tools) {
+  if (!Array.isArray(tools) || !tools.length) return undefined;
+  const output = [];
+  for (const tool of tools) {
+    if (!tool) continue;
+    const type = tool.type || 'function';
+    if (type === 'function' && tool.name) {
+      output.push({
+        type: 'function',
+        function: {
+          name: tool.name,
+          description: tool.description || '',
+          parameters: tool.parameters || { type: 'object', properties: {} }
+        }
+      });
+      continue;
+    }
+    if (type === 'custom' && tool.name) {
+      // freeform 工具（如 apply_patch）包成单字符串参数的 function
+      output.push({
+        type: 'function',
+        function: {
+          name: tool.name,
+          description: tool.description || '',
+          parameters: {
+            type: 'object',
+            properties: { input: { type: 'string', description: 'raw tool input' } },
+            required: ['input']
+          }
+        }
+      });
+    }
+  }
+  return output.length ? output : undefined;
+}
+
+function responsesToolChoice(choice) {
+  if (choice == null) return undefined;
+  if (typeof choice === 'string') {
+    return ['auto', 'none', 'required'].includes(choice) ? choice : undefined;
+  }
+  if (choice.type === 'function' && choice.name) {
+    return { type: 'function', function: { name: choice.name } };
+  }
+  return undefined;
+}
+
+function responsesRequestToChat(body) {
+  const chat = {
+    model: String(body.model || 'tools'),
+    messages: responsesInputToMessages(body),
+    stream: false
+  };
+  const tools = responsesToolsToChat(body.tools);
+  if (tools) {
+    chat.tools = tools;
+    const toolChoice = responsesToolChoice(body.tool_choice);
+    if (toolChoice !== undefined) chat.tool_choice = toolChoice;
+    if (body.parallel_tool_calls !== undefined) chat.parallel_tool_calls = body.parallel_tool_calls;
+  }
+  if (Number.isFinite(Number(body.temperature))) chat.temperature = Number(body.temperature);
+  if (Number.isFinite(Number(body.top_p))) chat.top_p = Number(body.top_p);
+  if (Number.isFinite(Number(body.max_output_tokens))) chat.max_tokens = Number(body.max_output_tokens);
+  return chat;
+}
+
+function responsesUsage(usage) {
+  const input = Number(usage && (usage.prompt_tokens || usage.input_tokens) || 0);
+  const output = Number(usage && (usage.completion_tokens || usage.output_tokens) || 0);
+  const total = Number(usage && usage.total_tokens || (input + output));
+  return {
+    input_tokens: input,
+    input_tokens_details: { cached_tokens: 0 },
+    output_tokens: output,
+    output_tokens_details: { reasoning_tokens: 0 },
+    total_tokens: total
+  };
+}
+
+function responseFromCompletion(completion, request) {
+  const choice = completion.choices && completion.choices[0] || {};
+  const message = choice.message || {};
+  const text = contentText(message.content);
+  const output = [];
+  if (text) {
+    output.push({
+      type: 'message',
+      id: 'msg_' + crypto.randomUUID().replace(/-/g, ''),
+      status: 'completed',
+      role: 'assistant',
+      content: [{ type: 'output_text', text, annotations: [] }]
+    });
+  }
+  for (const call of message.tool_calls || []) {
+    output.push({
+      type: 'function_call',
+      id: 'fc_' + crypto.randomUUID().replace(/-/g, ''),
+      call_id: call.id || 'call_' + crypto.randomUUID().replace(/-/g, ''),
+      name: call.function && call.function.name || '',
+      arguments: call.function && call.function.arguments || '{}',
+      status: 'completed'
+    });
+  }
+  return {
+    id: 'resp_' + crypto.randomUUID().replace(/-/g, ''),
+    object: 'response',
+    created_at: Math.floor(Date.now() / 1000),
+    status: 'completed',
+    model: String(request.model || 'tools'),
+    output,
+    output_text: text,
+    parallel_tool_calls: request.parallel_tool_calls !== false,
+    tool_choice: typeof request.tool_choice === 'string' ? request.tool_choice : 'auto',
+    tools: [],
+    usage: responsesUsage(completion.usage),
+    relay: completion.relay
+  };
+}
+
+function writeResponsesEvent(res, event) {
+  const payload = JSON.stringify(Object.assign({ sequence_number: 0 }, event));
+  safeWrite(res, 'event: ' + event.type + '\ndata: ' + payload + '\n\n');
+}
+
+function textPieces(text, size = 96) {
+  const pieces = [];
+  for (let index = 0; index < text.length; index += size) pieces.push(text.slice(index, index + size));
+  return pieces.length ? pieces : [''];
+}
+
+function streamResponses(res, response, headers) {
+  sseHeaders(res, headers);
+  const inProgress = Object.assign({}, response, { status: 'in_progress', output: [], usage: null });
+  writeResponsesEvent(res, { type: 'response.created', response: inProgress });
+  let index = 0;
+  for (const item of response.output) {
+    if (item.type === 'message') {
+      writeResponsesEvent(res, {
+        type: 'response.output_item.added',
+        output_index: index,
+        item: Object.assign({}, item, { status: 'in_progress', content: [] })
+      });
+      writeResponsesEvent(res, {
+        type: 'response.content_part.added',
+        item_id: item.id,
+        output_index: index,
+        content_index: 0,
+        part: { type: 'output_text', text: '', annotations: [] }
+      });
+      for (const piece of textPieces(item.content[0].text)) {
+        writeResponsesEvent(res, {
+          type: 'response.output_text.delta',
+          item_id: item.id,
+          output_index: index,
+          content_index: 0,
+          delta: piece
+        });
+      }
+      writeResponsesEvent(res, {
+        type: 'response.output_text.done',
+        item_id: item.id,
+        output_index: index,
+        content_index: 0,
+        text: item.content[0].text
+      });
+      writeResponsesEvent(res, {
+        type: 'response.content_part.done',
+        item_id: item.id,
+        output_index: index,
+        content_index: 0,
+        part: item.content[0]
+      });
+      writeResponsesEvent(res, { type: 'response.output_item.done', output_index: index, item });
+    } else {
+      writeResponsesEvent(res, {
+        type: 'response.output_item.added',
+        output_index: index,
+        item: Object.assign({}, item, { status: 'in_progress', arguments: '' })
+      });
+      writeResponsesEvent(res, {
+        type: 'response.function_call_arguments.delta',
+        item_id: item.id,
+        output_index: index,
+        delta: item.arguments
+      });
+      writeResponsesEvent(res, {
+        type: 'response.function_call_arguments.done',
+        item_id: item.id,
+        output_index: index,
+        arguments: item.arguments
+      });
+      writeResponsesEvent(res, { type: 'response.output_item.done', output_index: index, item });
+    }
+    index += 1;
+  }
+  writeResponsesEvent(res, { type: 'response.completed', response });
+  res.end();
+}
+
+async function handleResponses(req, res, body) {
+  metrics.requests += 1;
+  const requestId = req.headers['x-request-id'] || 'relay-' + crypto.randomUUID();
+  const chat = responsesRequestToChat(body);
+  if (!chat.messages.length) {
+    return writeJson(res, 400, {
+      error: { message: 'input is required', type: 'invalid_request_error', code: 'missing_input' }
+    });
+  }
+  const logical = chat.model;
+  const started = Date.now();
+  let selection;
+  try {
+    selection = await selectProvider(logical, chat, false);
+  } catch (error) {
+    metrics.failures += 1;
+    log({ ev: 'relay_unavailable', api: 'responses', request_id: requestId, model: logical });
+    return writeJson(res, 503, {
+      error: {
+        message: 'No compatible AI upstream is currently available.',
+        type: 'relay_unavailable',
+        code: 'no_candidates'
+      }
+    });
+  }
+
+  const attempts = [];
+  for (const candidate of selection.candidates) {
+    const provider = candidate.provider;
+    const providerStarted = Date.now();
+    try {
+      const outcome = await tryProvider(provider, logical, chat, selection.definition, false);
+      const completion = normalizeCompletion(outcome.result.raw, logical, provider.id, chat);
+      const message = completion.choices[0] && completion.choices[0].message || {};
+      if (
+        bodyWantsTools(chat) &&
+        !(message.tool_calls || []).length &&
+        !contentText(message.content).trim()
+      ) {
+        throw new Error('empty tool response');
+      }
+      markSuccess(provider, outcome.elapsedMs);
+      metrics.successes += 1;
+      const response = responseFromCompletion(completion, body);
+      const headers = {
+        'x-request-id': requestId,
+        'x-relay-upstream': provider.id,
+        'x-relay-attempts': String(attempts.length + 1),
+        'x-relay-last-resort': selection.lastResort ? '1' : '0'
+      };
+      log({
+        ev: 'ok',
+        api: 'responses',
+        request_id: requestId,
+        model: logical,
+        provider: provider.id,
+        stream: Boolean(body.stream),
+        attempts: attempts.length,
+        ms: Date.now() - started,
+        tool_calls: (message.tool_calls || []).length
+      });
+      if (body.stream) return streamResponses(res, response, headers);
+      return writeJson(res, 200, response, headers);
+    } catch (error) {
+      const elapsedMs = Date.now() - providerStarted;
+      markFailure(provider, error, elapsedMs);
+      attempts.push(attemptRecord(provider, error, elapsedMs));
+      log({
+        ev: 'fail',
+        api: 'responses',
+        request_id: requestId,
+        model: logical,
+        provider: provider.id,
+        ms: elapsedMs,
+        error: String(error && error.message || error).slice(0, 300)
+      });
+    }
+  }
+
+  metrics.failures += 1;
+  log({ ev: 'relay_error', api: 'responses', request_id: requestId, model: logical, attempts });
+  return writeJson(res, 503, {
+    error: {
+      message: 'All upstreams failed for this response.',
+      type: 'relay_unavailable',
+      code: 'upstreams_failed',
+      attempts
+    }
+  });
+}
+
 function anthropicToOpenAI(body) {
   const messages = [];
   if (body.system) {
@@ -2218,6 +2589,10 @@ async function handleRequest(req, res) {
       }
       return handleChat(req, res, body, false);
     }
+    if (pathname === '/v1/responses' && req.method === 'POST') {
+      const body = await readRequestBody(req);
+      return handleResponses(req, res, body);
+    }
     if (pathname === '/v1/messages' && req.method === 'POST') {
       const body = await readRequestBody(req);
       if (!Array.isArray(body.messages) || !body.messages.length) {
@@ -2311,6 +2686,9 @@ module.exports = {
   normalizeCompletion,
   openAIFromAnthropic,
   openAIToAnthropic,
+  responsesRequestToChat,
+  responseFromCompletion,
+  streamResponses,
   parseBridgeToolCalls,
   parseSseEvent,
   routeDefinition,

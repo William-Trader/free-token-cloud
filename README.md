@@ -144,6 +144,7 @@ kilo -> llm7 -> ovh-oss20 -> ovh-oss120 -> ovh-llama70
 | GET | `/ready` | 是否有可用上游 |
 | GET | `/v1/models` | 逻辑模型列表 |
 | POST | `/v1/chat/completions` | OpenAI 兼容对话 |
+| POST | `/v1/responses` | OpenAI Responses API（Codex CLI / Codex App 直接用这个） |
 | POST | `/v1/messages` | Anthropic 兼容对话 |
 | GET | `/api/upstreams` | 详细上游状态 |
 | GET | `/api/pools` | 工具池与对话池成员 |
@@ -154,6 +155,23 @@ kilo -> llm7 -> ovh-oss20 -> ovh-oss120 -> ovh-llama70
 | POST | `/api/reload` | 热加载 config |
 
 响应头包含 `x-request-id`、`x-relay-upstream`、`x-relay-attempts`。
+
+## 接 Codex
+
+Codex CLI/App 只支持 `wire_api = "responses"`，所以本仓库实现了 `/v1/responses`
+适配层（把 Responses 请求翻译成 chat 池，再把结果还原成 `response.*` 事件流）。
+配置示例：
+
+```toml
+[model_providers.ai-relay]
+name = "AI Relay"
+base_url = "http://<RELAY_HOST>:8080/v1"
+wire_api = "responses"
+http_headers = { "Authorization" = "Bearer <RELAY_TOKEN>" }
+```
+
+然后 `codex exec -c model_provider=ai-relay -m tools "..."` 即可；`tools` 走工具池，
+`chat` 只对话。实测 Codex 能经由免费池完成读文件、跑命令这类真实工具调用。
 
 ## 本地验证
 
