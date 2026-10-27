@@ -54,6 +54,9 @@ OpenClaw provider：`ai-relay`；模型：`ai-relay/tools`（默认）、`ai-rel
 DSH Desktop / DeepSeek Harness 接入说明见 `docs/HARNESS.md`；Harness 默认使用
 `ai-relay/tools`，同时保留本地 DeepSeek 路由供手动切换。
 
+把项目交给本地 agent 部署时，先让它读 [`docs/AGENT-HANDOFF.md`](docs/AGENT-HANDOFF.md)：
+里面有红线（不动付费 key/默认模型）、Windows 适配对照表、并存接入方式与验证/回滚清单。
+
 ## 当前实测状态
 
 2026-10-27 实测通过的上游：
@@ -199,6 +202,7 @@ kilo -> llm7 -> ovh-oss20 -> ovh-oss120 -> ovh-llama70
 
 ## 更新日志
 
+- **v3.3.1**：新增 `docs/AGENT-HANDOFF.md`——给本地 agent 的部署交接（红线、Windows 适配、并存接入、验证与回滚）。
 - **v3.3.0**：缓存命中与明细 token 上线——全局/上游统计 `cachedTokens`、`reasoningTokens`、`cacheHits`；控制台新增缓存命中卡、Token 拆分（输入/输出/缓存/推理）、槽位与日志显示 cached。
 - **v3.2.1**：修复 harness 显示天文数字 tok/s——`/v1/messages` 流式改为真正的 Anthropic 事件回放（不再透传 OpenAI chunk），并按 `streamPacing` 节流到约 70 tok/s；正文为空时回退 reasoning，避免 0 时长。
 - **v3.2.0**：许可从 Unlicense 收紧为 **PolyForm Noncommercial 1.0.0**——非商用免费，商用需单独授权。
