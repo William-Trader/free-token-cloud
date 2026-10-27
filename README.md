@@ -138,6 +138,23 @@ kilo -> llm7 -> ovh-oss20 -> ovh-oss120 -> ovh-llama70
 - 上游没有 usage 时，路由估算 prompt/completion token，并在 `[DONE]` 前补标准 usage chunk。
 - 支持 OpenAI `/v1/chat/completions` 与 Anthropic `/v1/messages`。
 
+## 逐轮长思考（reasoning）
+
+`/v1/responses` 会把 Responses 的 reasoning 语义接住：
+
+- **推理预算**：请求里的 `reasoning.effort`（`low/medium/high/max`）会转成系统提示里的推理预算，
+  要求模型先拆解、分步验证、再给结论。免费上游不认数值型 effort，所以走提示词约束。
+- **逐轮延续**：多轮时上一轮的 `type: "reasoning"` 摘要会回填成 assistant 上下文，
+  模型接着上一轮的思路继续，不重头再来。
+- **思考回传**：上游返回 `reasoning` / `reasoning_content` 时，`output` 里会多一条 `type: "reasoning"` 条目，
+  流式则发送 `response.reasoning_summary_part.*` 与 `response.reasoning_summary_text.*` 事件。
+- `include: ["reasoning.encrypted_content"]` 会被忽略：免费池没有加密推理可回传，但对话上下文不丢。
+
+## 更新日志
+
+- **v2.1.0**：`/v1/responses` 支持逐轮长思考（推理预算、思考摘要回填、reasoning 事件）；工具池与对话池同源头。
+- **v2.0.0**：首个公开版（已脱敏，Unlicense）。
+
 ## 接口
 
 鉴权：`Authorization: Bearer <token>` 或 `x-api-key`。

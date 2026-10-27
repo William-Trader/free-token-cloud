@@ -1789,6 +1789,17 @@ function responsesContentParts(content) {
   return parts;
 }
 
+function responsesReasoningText(item) {
+  const chunks = [];
+  for (const part of Array.isArray(item.summary) ? item.summary : []) {
+    if (part && typeof part.text === 'string') chunks.push(part.text);
+  }
+  for (const part of Array.isArray(item.content) ? item.content : []) {
+    if (part && typeof part.text === 'string') chunks.push(part.text);
+  }
+  return chunks.join('\n').trim();
+}
+
 function responsesInputToMessages(body) {
   const messages = [];
   const instructions = typeof body.instructions === 'string' ? body.instructions.trim() : '';
@@ -1834,8 +1845,14 @@ function responsesInputToMessages(body) {
           ? item.output
           : JSON.stringify(item.output == null ? '' : item.output)
       });
+      continue;
     }
-    // reasoning / item_reference 等类型上游不认，直接丢弃
+    if (type === 'reasoning') {
+      // 上一轮的思考摘要回填为 assistant 上下文，保证多轮连续推演
+      const previous = responsesReasoningText(item);
+      if (previous) messages.push({ role: 'assistant', content: '（上一轮思考摘要，继续沿用）\n' + previous });
+    }
+    // item_reference 等类型上游不认，直接丢弃
   }
   return messages;
 }
@@ -1903,6 +1920,19 @@ function responsesRequestToChat(body) {
   if (Number.isFinite(Number(body.temperature))) chat.temperature = Number(body.temperature);
   if (Number.isFinite(Number(body.top_p))) chat.top_p = Number(body.top_p);
   if (Number.isFinite(Number(body.max_output_tokens))) chat.max_tokens = Number(body.max_output_tokens);
+  const reasoning = body.reasoning || {};
+  const effort = typeof reasoning.effort === 'string' ? reasoning.effort : '';
+  if (effort && effort !== 'none') {
+    chat.messages.push({
+      role: 'system',
+      content:
+        '在回答前先在心里完成尽可能完整的推理：拆解问题、分步验证、必要时自我反驳，' +
+        '然后把推理过程与结论分开。推理预算：' + effort + '。' +
+        (Array.isArray(body.input)
+          ? '如果这是多轮任务的延续，接着上一轮的思考摘要继续，不要重头再来。'
+          : '')
+    });
+  }
   return chat;
 }
 
@@ -1924,6 +1954,15 @@ function responseFromCompletion(completion, request) {
   const message = choice.message || {};
   const text = contentText(message.content);
   const output = [];
+  const reasoningText = String(message.reasoning || message.reasoning_content || '').trim();
+  if (reasoningText) {
+    output.push({
+      type: 'reasoning',
+      id: 'rs_' + crypto.randomUUID().replace(/-/g, ''),
+      status: 'completed',
+      summary: [{ type: 'summary_text', text: reasoningText }]
+    });
+  }
   if (text) {
     output.push({
       type: 'message',
@@ -2013,12 +2052,44 @@ function streamResponses(res, response, headers) {
         part: item.content[0]
       });
       writeResponsesEvent(res, { type: 'response.output_item.done', output_index: index, item });
-    } else {
+    } else if (item.type === 'reasoning') {
       writeResponsesEvent(res, {
         type: 'response.output_item.added',
         output_index: index,
-        item: Object.assign({}, item, { status: 'in_progress', arguments: '' })
+        item: Object.assign({}, item, { status: 'in_progress', summary: [] })
       });
+      writeResponsesEvent(res, {
+        type: 'response.reasoning_summary_part.added',
+        item_id: item.id,
+        output_index: index,
+        summary_index: 0,
+        part: { type: 'summary_text', text: '' }
+      });
+      for (const piece of textPieces(item.summary[0].text)) {
+        writeResponsesEvent(res, {
+          type: 'response.reasoning_summary_text.delta',
+          item_id: item.id,
+          output_index: index,
+          summary_index: 0,
+          delta: piece
+        });
+      }
+      writeResponsesEvent(res, {
+        type: 'response.reasoning_summary_text.done',
+        item_id: item.id,
+        output_index: index,
+        summary_index: 0,
+        text: item.summary[0].text
+      });
+      writeResponsesEvent(res, {
+        type: 'response.reasoning_summary_part.done',
+        item_id: item.id,
+        output_index: index,
+        summary_index: 0,
+        part: item.summary[0]
+      });
+      writeResponsesEvent(res, { type: 'response.output_item.done', output_index: index, item });
+    } else {
       writeResponsesEvent(res, {
         type: 'response.function_call_arguments.delta',
         item_id: item.id,

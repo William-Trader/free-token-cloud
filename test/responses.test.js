@@ -98,3 +98,50 @@ test('streaming responses emits the responses event sequence', () => {
   assert.equal(delta.delta, 'stream me');
   assert.equal(events[events.length - 1].response.output_text, 'stream me');
 });
+
+test('reasoning is preserved as a reasoning output item', () => {
+  const response = responseFromCompletion({
+    choices: [{
+      index: 0,
+      message: { role: 'assistant', content: '答案', reasoning: '先拆问题，再验证假设' },
+      finish_reason: 'stop'
+    }],
+    usage: { prompt_tokens: 1, completion_tokens: 1, total_tokens: 2 }
+  }, { model: 'tools' });
+  assert.equal(response.output[0].type, 'reasoning');
+  assert.equal(response.output[0].summary[0].text, '先拆问题，再验证假设');
+  assert.equal(response.output[1].type, 'message');
+});
+
+test('previous reasoning comes back as assistant context', () => {
+  const chat = responsesRequestToChat({
+    model: 'tools',
+    reasoning: { effort: 'high', summary: 'auto' },
+    input: [
+      { type: 'reasoning', summary: [{ type: 'summary_text', text: '上一轮结论：先建索引' }] },
+      { type: 'message', role: 'user', content: [{ type: 'input_text', text: '继续' }] }
+    ]
+  });
+  const carried = chat.messages.find(m => m.role === 'assistant' && m.content.includes('先建索引'));
+  assert.ok(carried);
+  const hint = chat.messages.find(m => m.role === 'system' && m.content.includes('推理预算：high'));
+  assert.ok(hint);
+});
+
+test('streaming reasoning emits summary events', () => {
+  const response = responseFromCompletion({
+    choices: [{ index: 0, message: { role: 'assistant', content: 'ok', reasoning: 'think first' }, finish_reason: 'stop' }]
+  }, { model: 'tools' });
+  const events = [];
+  const res = {
+    writeHead() {},
+    write(chunk) {
+      const line = chunk.split('\n').find(part => part.startsWith('data: '));
+      if (line) events.push(JSON.parse(line.slice(6)));
+    },
+    end() {}
+  };
+  streamResponses(res, response, {});
+  assert.ok(events.some(e => e.type === 'response.reasoning_summary_text.delta' && e.delta === 'think first'));
+  assert.ok(events.some(e => e.type === 'response.reasoning_summary_part.done'));
+});
