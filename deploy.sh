@@ -28,7 +28,7 @@ ssh "$HOST" "
   test -f /etc/systemd/system/ai-relay.service && cp -p /etc/systemd/system/ai-relay.service '$BACKUP_DIR/ai-relay.service' || true
 "
 
-scp "$LOCAL_DIR/router.js" "$LOCAL_DIR/config.json" "$LOCAL_DIR/watchdog.sh" "$HOST:$REMOTE_DIR/"
+scp "$LOCAL_DIR/router.js" "$LOCAL_DIR/config.json" "$LOCAL_DIR/watchdog.sh" "$LOCAL_DIR/dashboard.html" "$HOST:$REMOTE_DIR/"
 scp "$LOCAL_DIR/systemd/ai-relay.service" "$HOST:/etc/systemd/system/ai-relay.service"
 scp "$LOCAL_DIR/systemd/ai-relay-watchdog.service" "$LOCAL_DIR/systemd/ai-relay-watchdog.timer" "$HOST:/etc/systemd/system/"
 

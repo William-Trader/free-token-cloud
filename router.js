@@ -19,6 +19,20 @@ const path = require('path');
 const crypto = require('crypto');
 const { StringDecoder } = require('string_decoder');
 
+const DASHBOARD_FILE = path.join(__dirname, 'dashboard.html');
+let dashboardHtml = null;
+
+function dashboardPage() {
+  if (dashboardHtml == null) {
+    try {
+      dashboardHtml = fs.readFileSync(DASHBOARD_FILE, 'utf8');
+    } catch {
+      dashboardHtml = '<!doctype html><meta charset="utf-8"><title>Relay Console</title><h1>Relay Console</h1><p>dashboard.html 未上传。</p>';
+    }
+  }
+  return dashboardHtml;
+}
+
 const ROOT = __dirname;
 const DEFAULT_CONFIG = process.env.AI_RELAY_CONFIG || path.join(ROOT, 'config.json');
 const STARTED_AT = Date.now();
@@ -2762,11 +2776,20 @@ async function handleRequest(req, res) {
       const health = healthView();
       return writeJson(res, 200, Object.assign({}, health, { ok: true }));
     }
-    if (pathname === '/' && req.method === 'GET') {
+    if ((pathname === '/' || pathname === '/dashboard') && req.method === 'GET') {
+      const html = dashboardPage();
+      res.writeHead(200, {
+        'content-type': 'text/html; charset=utf-8',
+        'content-length': Buffer.byteLength(html),
+        'cache-control': 'no-cache'
+      });
+      return res.end(html);
+    }
+    if (pathname === '/api/info' && req.method === 'GET') {
       return writeJson(res, 200, {
         service: 'ai-relay',
-        version: 2,
-        endpoints: ['/health', '/ready', '/v1/models', '/v1/chat/completions', '/v1/messages']
+        version: 3,
+        endpoints: ['/health', '/ready', '/v1/models', '/v1/chat/completions', '/v1/messages', '/v1/responses', '/dashboard']
       });
     }
     if (pathname === '/favicon.ico' || pathname === '/apple-touch-icon.png' || pathname === '/apple-touch-icon-precomposed.png') {

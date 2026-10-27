@@ -160,6 +160,7 @@ kilo -> llm7 -> ovh-oss20 -> ovh-oss120 -> ovh-llama70
 
 ## 更新日志
 
+- **v2.4.0**：新增 Web 控制台（`/`、`/dashboard`）：实时指标、30 分钟流量、槽位熔断状态、日志、流式 Playground。
 - **v2.2.2**：`chat` 池在 `/v1/chat/completions`（非流式与流式）也会剥离 `reasoning` 字段，OpenClaw 等上游客户端不会再看到思维链。
 - **v2.2.1**：对话池（`chat`）不再注入推理提示、不再返回 `reasoning` 条目，避免把思维链暴露给用户；工具池（`tools`）保持原行为。
 - **v2.2.0**：Codex 功能对齐——`custom_tool_call`（apply_patch 等 freeform 工具）、`local_shell`、结构化输出（`text.format` / `json_schema`）、`previous_response_id` 链式上下文、`incomplete` 状态、cached / reasoning usage、`reasoning.encrypted_content` 兼容。
@@ -201,6 +202,19 @@ kilo -> llm7 -> ovh-oss20 -> ovh-oss120 -> ovh-llama70
 - **模型清单缓存**：`/v1/models` 结果缓存 60 秒，客户端轮询不再穿透到路由层。
 - **首包超时与熔断**：上游 45s 首包超时、连续 3 次失败熔断，坏上游不会拖住整条链。
 - 单进程、无数据库，2C1G 即可承载；扩容只增加槽位，不增加常驻内存压力。
+
+## 控制台（Dashboard）
+
+部署后直接打开 `http://<RELAY_HOST>:8080/`：首次输入 token（只存本机 localStorage），之后每 5 秒自动刷新。
+
+- **实时指标**：总请求、成功率、平均延迟、可用槽位、流式计数
+- **流量图**：最近 30 分钟按分钟聚合的成功/失败柱状图
+- **槽位表**：按池/状态筛选，熔断剩余时间、成功失败数、延迟条、最近错误
+- **实时日志**：最近 100 条，带 R/C 标记（Responses / Chat Completions）
+- **Playground**：选 `tools`/`chat` 直接流式试一条，走同一套池与熔断
+- **接入片段**：一键复制 curl，发给任何 OpenAI 兼容客户端
+
+页面本身不含任何凭据；数据接口仍走 Bearer 鉴权。
 
 ## 接口
 
