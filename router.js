@@ -525,9 +525,130 @@ function providerEndpoint(raw) {
   if (raw.endpoint) return raw.endpoint;
   const base = cleanUrl(raw.baseUrl);
   if (!base) return '';
+  if (raw.type === 'pi-agent') return base;
   if (raw.type === 'ollama-chat') return base + '/api/chat';
   if (raw.type === 'anthropic-compatible') return base + '/v1/messages';
   return base + '/chat/completions';
+}
+
+function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function piAgentJson(provider, pathname, options = {}) {
+  const base = cleanUrl(provider.baseUrl);
+  if (!base) throw new Error('Pi Agent baseUrl is missing');
+  const response = await request(base + pathname, {
+    method: options.method || 'GET',
+    headers: options.body === undefined
+      ? { accept: 'application/json' }
+      : {
+          accept: 'application/json',
+          'content-type': 'application/json'
+        },
+    body: options.body === undefined ? undefined : JSON.stringify(options.body),
+    timeoutMs: Math.min(options.timeoutMs || 30000, provider.timeoutMs),
+    family: provider.family || 4
+  });
+  const text = await readAll(response.stream, 4 * 1024 * 1024);
+  let payload = {};
+  try {
+    payload = text ? JSON.parse(text) : {};
+  } catch {
+    payload = { raw: text };
+  }
+  if (response.status < 200 || response.status >= 300) {
+    const message = payload.error || payload.raw || ('HTTP ' + response.status);
+    const error = new Error(String(message).slice(0, 500));
+    error.status = response.status;
+    throw error;
+  }
+  return payload;
+}
+
+function piAgentPrompt(body) {
+  const lines = [];
+  for (const message of body.messages || []) {
+    const role = String(message.role || 'user').toUpperCase();
+    const text = contentText(message.content);
+    if (text) lines.push(role + ':\n' + text);
+  }
+  return lines.join('\n\n').trim();
+}
+
+async function piAgentCompletion(provider, body) {
+  const prompt = piAgentPrompt(body);
+  if (!prompt) throw new Error('Pi Agent prompt is empty');
+  const created = await piAgentJson(provider, '/api/agent/new', {
+    method: 'POST',
+    timeoutMs: 45000,
+    body: {
+      cwd: provider.piAgentCwd,
+      type: 'prompt',
+      message: prompt,
+      ...(provider.piAgentProvider ? { provider: provider.piAgentProvider } : {}),
+      ...(provider.piAgentModel ? { modelId: provider.piAgentModel } : {}),
+      thinkingLevel: provider.piAgentThinkingLevel || 'off'
+    }
+  });
+  const sessionId = created.sessionId;
+  if (!sessionId) throw new Error('Pi Agent did not return a session id');
+
+  const deadline = Date.now() + provider.timeoutMs;
+  let state = null;
+  while (Date.now() < deadline) {
+    await delay(750);
+    const current = await piAgentJson(
+      provider,
+      '/api/sessions/' + encodeURIComponent(sessionId) + '/state',
+      { timeoutMs: 8000 }
+    );
+    state = current.state || null;
+    if (!current.running || !state) break;
+    if (!state.isPromptRunning && !state.isStreaming && Number(state.messageCount || 0) > 0) break;
+  }
+  if (state && (state.isPromptRunning || state.isStreaming)) {
+    throw Object.assign(new Error('Pi Agent prompt timed out'), {
+      status: 504,
+      classification: { code: 'network', status: 504, cooldownMs: 5000 }
+    });
+  }
+
+  const session = await piAgentJson(
+    provider,
+    '/api/sessions/' + encodeURIComponent(sessionId),
+    { timeoutMs: 15000 }
+  );
+  const messages = session.context && Array.isArray(session.context.messages)
+    ? session.context.messages
+    : [];
+  const assistant = [...messages].reverse().find(message => message.role === 'assistant');
+  const text = assistant ? contentText(assistant.content).trim() : '';
+  if (!text) throw new Error('Pi Agent returned no assistant text');
+  const stats = session.stats && session.stats.tokens || {};
+  const promptTokens = Number(stats.input || 0);
+  const completionTokens = Number(stats.output || 0);
+  const totalTokens = Number(stats.total || promptTokens + completionTokens);
+  return {
+    id: 'piagent-' + sessionId,
+    object: 'chat.completion',
+    created: Math.floor(Date.now() / 1000),
+    model: body.model || 'piagent',
+    choices: [{
+      index: 0,
+      message: { role: 'assistant', content: text },
+      finish_reason: 'stop'
+    }],
+    usage: {
+      prompt_tokens: promptTokens,
+      completion_tokens: completionTokens,
+      total_tokens: totalTokens
+    },
+    piagent: {
+      session_id: sessionId,
+      model: session.context && session.context.model || null
+    }
+  };
 }
 
 function normalizeProviderType(type) {
@@ -1002,6 +1123,40 @@ function contentText(content) {
   }
   if (content == null) return '';
   return JSON.stringify(content);
+}
+
+function reasoningEffort(body) {
+  const direct = String(
+    body.reasoning_effort ||
+    body.reasoning && body.reasoning.effort ||
+    ''
+  ).toLowerCase();
+  if (direct && direct !== 'none') return direct;
+  const thinking = body.thinking;
+  if (!thinking || thinking.type === 'disabled') return '';
+  const budget = Number(thinking.budget_tokens || 0);
+  if (budget >= 32000) return 'max';
+  if (budget >= 16000) return 'high';
+  if (budget >= 8000) return 'medium';
+  return thinking.type === 'enabled' ? 'low' : '';
+}
+
+function withReasoningInstruction(body, logical) {
+  const effort = reasoningEffort(body);
+  if (!effort || logical === 'chat' || !Array.isArray(body.messages)) return body;
+  const marked = body.messages.some(message =>
+    message && String(message.content || '').includes('[Relay reasoning mode]')
+  );
+  if (marked) return body;
+  body.messages = [{
+    role: 'system',
+    content:
+      '[Relay reasoning mode]\n' +
+      'Before answering, reason internally, decompose the task, verify assumptions, and self-check the result. ' +
+      'For tool tasks, choose tools deliberately and validate their outputs. ' +
+      'Reasoning effort: ' + effort + '.'
+  }, ...body.messages];
+  return body;
 }
 
 function toolBridgeProtocol(tools, strict, hint) {
@@ -2158,6 +2313,19 @@ function shouldForceJsonForTools(body) {
 
 async function tryProvider(provider, logical, body, route, wantStream) {
   const started = Date.now();
+  if (provider.type === 'pi-agent') {
+    beginProviderAttempt(provider);
+    try {
+      const raw = await piAgentCompletion(provider, body);
+      return {
+        provider,
+        result: { kind: 'json', raw },
+        elapsedMs: Date.now() - started
+      };
+    } finally {
+      endProviderAttempt(provider);
+    }
+  }
   const keys = orderedKeys(provider);
   const keyAttempts = [];
   beginProviderAttempt(provider);
@@ -2264,6 +2432,7 @@ function applyDefaultLocale(body, logical) {
 async function handleChat(req, res, body, anthropic) {
   bumpMetric('requests');
   const logical = String(body.model || 'auto');
+  body = withReasoningInstruction(body, logical);
   const requestId = req.headers['x-request-id'] || 'relay-' + crypto.randomUUID();
   const wantStream = Boolean(body.stream);
   const started = Date.now();
@@ -3072,6 +3241,16 @@ function anthropicToOpenAI(body) {
     }
   }
 
+  const thinking = body.thinking || null;
+  const effort = (thinking && thinking.type === 'enabled')
+    ? (thinking.budget_tokens && thinking.budget_tokens >= 8000 ? 'high' : 'medium')
+    : (body.reasoning_effort || '');
+  if (effort) {
+    messages.unshift({
+      role: 'system',
+      content: '先在心里完成完整推理（拆解、验证、必要时自我反驳），再给出结论。推理预算：' + effort + '。'
+    });
+  }
   const output = {
     model: body.model || 'auto',
     messages,
@@ -3103,7 +3282,7 @@ function anthropicToOpenAI(body) {
       }
     }
   }
-  return output;
+  return withReasoningInstruction(output, body.model || 'auto');
 }
 
 function openAIToAnthropic(completion, logical, providerId) {

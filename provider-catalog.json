@@ -210,6 +210,17 @@
       "note": "Confirm the current model has a Free or zero-price tag before enabling."
     },
     {
+      "id": "piagent",
+      "name": "Pi Agent",
+      "kind": "agent-bridge",
+      "pool": "agent",
+      "loginUrl": "http://127.0.0.1:38471",
+      "docsUrl": "https://github.com/abcwyc/pi-agent-desktop",
+      "models": ["piagent"],
+      "quota": "Local agent execution bridge",
+      "note": "Only available while Pi Agent Desktop and its SSH interface tunnel are running. Inside Pi Agent, the sole configured model is ai-relay/tools."
+    },
+    {
       "id": "llm7",
       "name": "LLM7 token",
       "kind": "optional-token",

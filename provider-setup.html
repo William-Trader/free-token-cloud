@@ -41,6 +41,7 @@
   .tag{display:inline-flex;border:1px solid var(--line);border-radius:999px;padding:2px 8px;color:var(--muted);font-size:11px}
   .tag.ready{color:#a9f0d6;border-color:#235443}.tag.failed{color:#ffc1c1;border-color:#572c2c}
   .tag.guide{color:#f4dda2;border-color:#5b4b25}.tag.oauth{color:#b9d9ff;border-color:#294e76}
+  .tag.agent{color:#d8c4ff;border-color:#4b3b70}
   .switch{display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-size:11px;cursor:pointer;user-select:none}
   .switch input{position:absolute;opacity:0;pointer-events:none}
   .switch i{position:relative;width:34px;height:18px;border-radius:999px;background:#263545;border:1px solid #33485c;transition:.16s}
@@ -82,6 +83,7 @@
       <option value="api-key">API Key</option>
       <option value="optional-token">可选 Token</option>
       <option value="subscription-oauth">订阅 OAuth</option>
+      <option value="agent-bridge">Agent Bridge</option>
       <option value="guide">自定义接入</option>
     </select>
     <button class="btn" id="refresh">刷新</button>
@@ -182,7 +184,15 @@ function row(item, guideOnly) {
   row.appendChild(name);
 
   const tags = el('div');
-  const kind = el('span', 'tag ' + (item.kind === 'guide' ? 'guide' : item.kind === 'subscription-oauth' ? 'oauth' : ''), item.kind);
+  const kind = el(
+    'span',
+    'tag ' + (
+      item.kind === 'guide' ? 'guide' :
+        item.kind === 'subscription-oauth' ? 'oauth' :
+          item.kind === 'agent-bridge' ? 'agent' : ''
+    ),
+    item.kind
+  );
   tags.appendChild(kind);
   if (item.providerExists) {
     const stateText = item.enabled ? '运行中' : item.credentialReady ? '已暂停' : '待配置';

@@ -202,6 +202,7 @@ kilo -> llm7 -> ovh-oss20 -> ovh-oss120 -> ovh-llama70
 
 ## 更新日志
 
+- **v3.7.1**：源健康重排（按实测 200 结果排序，移除 503/超时/429 的死槽位并重置熔断）；Anthropic `thinking` 与 `reasoning_effort` 会转成推理提示，PiAgent 等客户端开推理后真正生效。
 - **v3.7.0**：Provider 支持 `proxy`（HTTP CONNECT 隧道），Gemini 经本机代理可直连；Gemini 模型更新为 `gemini-3.5-flash-lite`，校验改用 chat 模式；GitHub 仓库清除服务器地址痕迹。
 - **v3.6.1**：Cloudflare Workers AI 正式可接入——支持 `<account_id>:<api_token>` 形式（地址模板自动替换 account id），`/setup` 页对应行出现 Key 输入框；校验走 `/models`。
 - **v3.6.0**：预置 9 个 keyed 适配器（Zhipu / Moonshot / Together / Nebius / Hyperbolic / Fireworks / Requesty / Vercel AI Gateway / Chutes），目录扩到 31 条；keyed 槽位排到 tools/chat 链首，填 key 即启用，缺 key 自动跳过。
