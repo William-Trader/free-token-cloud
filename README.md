@@ -202,6 +202,7 @@ kilo -> llm7 -> ovh-oss20 -> ovh-oss120 -> ovh-llama70
 
 ## 更新日志
 
+- **v4.0.0**：综合优化版——自适应调度（成功率/延迟/空闲/优先级）、工具健康度统计、原生工具优先 + 桥接重试；实测 10 次工具调用 9 次成功（llm7×5、kilo-nemotron×2、pollinations×2）。
 - **v3.8.0**：全球免费源复查（5 个候选）——Airforce / VoidAI 匿名不可用，已作为 keyed 槽位预置；匿名池按实测收敛为 26 对话 / 17 工具（淘汰 503/429/超时），provider 条目 58、目录 34；链按实测健康度排序。
 - **v3.7.4**：仓库脱敏复查——移除个人路径（`piAgentCwd` 改占位符）、测试夹具统一为 `test-token`；确认工作区/历史/release 无真实 key、无服务器 IP。
 - **v3.7.3**：Ollama Cloud 接入池（`gpt-oss:20b`），凭据校验通过；新增隐藏路由 `ollama` 便于定向调用；chat 链把 ollama-cloud 排在 gemini 之后。
@@ -308,6 +309,12 @@ kilo -> llm7 -> ovh-oss20 -> ovh-oss120 -> ovh-llama70
 - 代理只对配置了 `proxy` 的 provider 生效，其余上游仍直连。
 - 常见做法：在服务器本机跑 mihomo（或任意 HTTP 代理），只监听 `127.0.0.1`，再在 provider 上填代理地址。
 - 出口地区要选厂商支持的区域（例如 Google 需要 US/SG/JP 等），否则会返回 `User location is not supported`。
+
+## 调度（v4）
+- **自适应排序**：候选按「近期成功率 62% + 延迟 20% + 空闲度 + 优先级」动态打分，带小幅随机抖动，避免总打同一个上游。
+- **工具健康度**：单独记录每个上游的 `tool_attempts / tool_successes / tool_success_rate`，tools 请求优先原生 function calling，其次文本桥。
+- **失败重试**：文本桥未产出 `tool_calls` 时，同上游追加硬提示重试一次；仍失败才换下一个上游。
+- **熔断与半开**：连续失败 3 次熔断，冷却后单探针恢复，坏源不会拖住整条链。
 
 ## 性能
 

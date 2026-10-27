@@ -761,6 +761,8 @@ function newProviderState(id) {
     lastProbeError: null,
     probeFailures: 0,
     tokens: { prompt: 0, completion: 0, total: 0, cached: 0, reasoning: 0 },
+    toolAttempts: 0,
+    toolSuccesses: 0,
     openUntil: 0,
     probing: false,
     inFlight: 0,
@@ -894,16 +896,31 @@ function buildCandidates(logical, body, options = {}) {
     });
   }
 
-  candidates.sort((left, right) => {
-    if (wantsTools && left.provider.toolPriority !== right.provider.toolPriority) {
-      return left.provider.toolPriority - right.provider.toolPriority;
-    }
-    if (left.provider.priority !== right.provider.priority) {
-      return left.provider.priority - right.provider.priority;
-    }
-    if (definition.strategy === 'latency') return left.score - right.score;
-    return 0;
-  });
+  if (definition.strategy === 'adaptive') {
+    const rank = candidate => {
+      const state = stateFor(candidate.provider.id);
+      const attempts = wantsTools ? (state.toolAttempts || 0) : ((state.successes || 0) + (state.failures || 0));
+      const wins = wantsTools ? (state.toolSuccesses || 0) : (state.successes || 0);
+      const reliability = (wins + 1) / (attempts + 2);
+      const latency = state.avgLatencyMs == null ? 4000 : state.avgLatencyMs;
+      const speed = 1 / (1 + latency / 3000);
+      const idle = state.inFlight > 0 ? 0 : 0.12;
+      const priorityBonus = Math.max(0, (200 - (candidate.provider.toolPriority || candidate.provider.priority)) / 2000);
+      return reliability * 0.62 + speed * 0.2 + idle + priorityBonus + Math.random() * 0.04;
+    };
+    candidates.sort((left, right) => rank(right) - rank(left));
+  } else {
+    candidates.sort((left, right) => {
+      if (wantsTools && left.provider.toolPriority !== right.provider.toolPriority) {
+        return left.provider.toolPriority - right.provider.toolPriority;
+      }
+      if (left.provider.priority !== right.provider.priority) {
+        return left.provider.priority - right.provider.priority;
+      }
+      if (definition.strategy === 'latency') return left.score - right.score;
+      return 0;
+    });
+  }
 
   return { definition, candidates, skipped, wantsTools, stripTools };
 }
@@ -2487,6 +2504,13 @@ async function handleChat(req, res, body, anthropic) {
             if (!contentText(stripped.content).trim() && fallback) stripped.content = fallback;
           }
           markSuccess(provider, outcome.elapsedMs, completion.usage);
+          if (bodyWantsTools(body)) {
+            const toolState = stateFor(provider.id);
+            toolState.toolAttempts = (toolState.toolAttempts || 0) + 1;
+            if ((completion.choices[0].message.tool_calls || []).length) {
+              toolState.toolSuccesses = (toolState.toolSuccesses || 0) + 1;
+            }
+          }
           bumpMetric('successes');
           bumpMetric('streams');
           log({
@@ -2544,6 +2568,13 @@ async function handleChat(req, res, body, anthropic) {
         throw new Error('empty tool response');
       }
       markSuccess(provider, outcome.elapsedMs, completion.usage);
+      if (bodyWantsTools(body)) {
+        const toolState = stateFor(provider.id);
+        toolState.toolAttempts = (toolState.toolAttempts || 0) + 1;
+        if ((completion.choices && completion.choices[0] && completion.choices[0].message.tool_calls || []).length) {
+          toolState.toolSuccesses = (toolState.toolSuccesses || 0) + 1;
+        }
+      }
       bumpMetric('successes');
       if (wantStream) bumpMetric('streams');
       if (completion.usage && completion.usage.estimated) bumpMetric('estimatedUsage');
@@ -3354,6 +3385,9 @@ function providerView(provider) {
     in_flight: state.inFlight,
     avg_latency_ms: state.avgLatencyMs,
     last_latency_ms: state.lastLatencyMs,
+    tool_attempts: state.toolAttempts || 0,
+    tool_successes: state.toolSuccesses || 0,
+    tool_success_rate: state.toolAttempts ? Math.round((state.toolSuccesses || 0) / state.toolAttempts * 100) : null,
     last_ok_at: state.lastOkAt,
     last_attempt_at: state.lastAttemptAt,
     last_probe_at: state.lastProbeAt,
