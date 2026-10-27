@@ -8,7 +8,10 @@
       "pool": "chat",
       "loginUrl": "https://aistudio.google.com/app/apikey",
       "docsUrl": "https://ai.google.dev/gemini-api/docs",
-      "models": ["gemini-2.5-flash-lite", "gemini-2.5-flash"],
+      "models": [
+        "gemini-2.5-flash-lite",
+        "gemini-2.5-flash"
+      ],
       "quota": "Free API tier",
       "note": "Use an AI Studio key. Free-tier data handling may differ from paid tiers."
     },
@@ -19,7 +22,10 @@
       "pool": "chat",
       "loginUrl": "https://console.groq.com/keys",
       "docsUrl": "https://console.groq.com/docs",
-      "models": ["openai/gpt-oss-120b", "openai/gpt-oss-20b"],
+      "models": [
+        "openai/gpt-oss-120b",
+        "openai/gpt-oss-20b"
+      ],
       "quota": "Free daily request and token limits",
       "note": "Fast inference. Verify the model IDs in the console before saving."
     },
@@ -30,7 +36,9 @@
       "pool": "chat",
       "loginUrl": "https://build.nvidia.com/explore/discover",
       "docsUrl": "https://docs.nvidia.com/nim/",
-      "models": ["openai/gpt-oss-20b"],
+      "models": [
+        "openai/gpt-oss-20b"
+      ],
       "quota": "Developer free tier",
       "note": "Requires an NVIDIA developer account and may require phone verification."
     },
@@ -41,7 +49,10 @@
       "pool": "chat",
       "loginUrl": "https://console.mistral.ai/api-keys",
       "docsUrl": "https://docs.mistral.ai/",
-      "models": ["mistral-small-latest", "ministral-8b-latest"],
+      "models": [
+        "mistral-small-latest",
+        "ministral-8b-latest"
+      ],
       "quota": "Free experiment tier",
       "note": "Free prompts may be used for training unless your account opts out."
     },
@@ -52,7 +63,10 @@
       "pool": "chat",
       "loginUrl": "https://openrouter.ai/keys",
       "docsUrl": "https://openrouter.ai/docs",
-      "models": ["openai/gpt-oss-120b:free", "liquid/lfm-2.5-2.6b:free"],
+      "models": [
+        "openai/gpt-oss-120b:free",
+        "liquid/lfm-2.5-2.6b:free"
+      ],
       "quota": "Free models with daily request cap",
       "note": "Use models ending in :free to avoid paid routes."
     },
@@ -63,7 +77,10 @@
       "pool": "chat",
       "loginUrl": "https://dashboard.cohere.com/api-keys",
       "docsUrl": "https://docs.cohere.com/",
-      "models": ["command-r7b-12-2024", "command-r-plus-08-2024"],
+      "models": [
+        "command-r7b-12-2024",
+        "command-r-plus-08-2024"
+      ],
       "quota": "Trial API key, monthly call cap",
       "note": "Trial keys are non-commercial and model availability can change."
     },
@@ -74,7 +91,9 @@
       "pool": "chat",
       "loginUrl": "https://modelscope.cn/my/myaccesstoken",
       "docsUrl": "https://modelscope.cn/docs",
-      "models": ["Qwen/Qwen3.5-27B"],
+      "models": [
+        "Qwen/Qwen3.5-27B"
+      ],
       "quota": "Free API inference with daily limits",
       "note": "Usually requires Alibaba Cloud binding or real-name verification."
     },
@@ -85,7 +104,9 @@
       "pool": "chat",
       "loginUrl": "https://ollama.com/settings/keys",
       "docsUrl": "https://docs.ollama.com/cloud",
-      "models": ["gpt-oss:20b"],
+      "models": [
+        "gpt-oss:20b"
+      ],
       "quota": "Monthly starter allowance",
       "note": "Free allowance is limited to starter models."
     },
@@ -96,7 +117,9 @@
       "pool": "chat",
       "loginUrl": "https://cloud.siliconflow.cn/account/ak",
       "docsUrl": "https://docs.siliconflow.cn/",
-      "models": ["Qwen/Qwen3-8B"],
+      "models": [
+        "Qwen/Qwen3-8B"
+      ],
       "quota": "Free model quota",
       "note": "Identity verification may be required."
     },
@@ -107,7 +130,9 @@
       "pool": "chat",
       "loginUrl": "https://huggingface.co/settings/tokens",
       "docsUrl": "https://huggingface.co/docs/inference-providers",
-      "models": ["meta-llama/Llama-3.1-8B-Instruct"],
+      "models": [
+        "meta-llama/Llama-3.1-8B-Instruct"
+      ],
       "quota": "BYOK; current Free accounts may have no monthly inference credit",
       "note": "Enable only when the account has active inference credit. Cold starts and shared queues are common."
     },
@@ -118,7 +143,10 @@
       "pool": "chat",
       "loginUrl": "https://bailian.console.aliyun.com/",
       "docsUrl": "https://help.aliyun.com/zh/model-studio/new-free-quota",
-      "models": ["qwen3.8-max", "qwen3.8-flash"],
+      "models": [
+        "qwen3.8-max",
+        "qwen3.8-flash"
+      ],
       "quota": "New-user free quota, often 1M tokens per model for 90 days",
       "note": "Use the domestic compatible-mode endpoint. Enable free-quota stop protection in the console."
     },
@@ -129,7 +157,10 @@
       "pool": "tools",
       "loginUrl": "https://cloud.cerebras.ai/",
       "docsUrl": "https://inference-docs.cerebras.ai/quickstart",
-      "models": ["gpt-oss-120b", "qwen-3.8-27b"],
+      "models": [
+        "gpt-oss-120b",
+        "qwen-3.8-27b"
+      ],
       "quota": "$5 promotional credit, expires 30 days after activation",
       "note": "Official OpenAI-compatible inference with tool calling. Credit eligibility varies by account."
     },
@@ -140,7 +171,11 @@
       "pool": "chat",
       "loginUrl": "https://cloud.sambanova.ai/",
       "docsUrl": "https://docs.sambanova.ai/cloud/docs/get-started/overview",
-      "models": ["gpt-oss-120b", "Meta-Llama-3.3-70B-Instruct", "gemma-4-31B-it"],
+      "models": [
+        "gpt-oss-120b",
+        "Meta-Llama-3.3-70B-Instruct",
+        "gemma-4-31B-it"
+      ],
       "quota": "$5 signup credit, no credit card required",
       "note": "Developer tier has limited rate limits. Free credit is consumed at list price."
     },
@@ -151,7 +186,11 @@
       "pool": "chat",
       "loginUrl": "https://deepinfra.com/dash/api_keys",
       "docsUrl": "https://deepinfra.com/docs/openai_api",
-      "models": ["Qwen/Qwen3.8-Flash", "Qwen/Qwen3.7-Max", "zai-org/GLM-5.3-Flash"],
+      "models": [
+        "Qwen/Qwen3.8-Flash",
+        "Qwen/Qwen3.7-Max",
+        "zai-org/GLM-5.3-Flash"
+      ],
       "quota": "BYOK; promotional and program credits vary by account",
       "note": "Not a universal perpetual free tier. Enable only when the account has usable credit."
     },
@@ -162,7 +201,11 @@
       "pool": "chat",
       "loginUrl": "https://novita.ai/settings/key-management",
       "docsUrl": "https://novita.ai/docs/api-reference/model-apis-llm-introduction",
-      "models": ["qwen/qwen3.8-flash", "zai-org/glm-5.3-flash", "openai/gpt-oss-120b"],
+      "models": [
+        "qwen/qwen3.8-flash",
+        "zai-org/glm-5.3-flash",
+        "openai/gpt-oss-120b"
+      ],
       "quota": "Free models and promotional credits vary by account",
       "note": "Confirm the current model has a Free or zero-price tag before enabling."
     },
@@ -173,7 +216,10 @@
       "pool": "chat",
       "loginUrl": "https://token.llm7.io",
       "docsUrl": "https://llm7.io",
-      "models": ["gpt-oss:20b", "nemotron-3-nano:30b"],
+      "models": [
+        "gpt-oss:20b",
+        "nemotron-3-nano:30b"
+      ],
       "quota": "Higher anonymous limits",
       "note": "The anonymous endpoint also works without this token."
     },
@@ -184,7 +230,9 @@
       "pool": "chat",
       "loginUrl": "https://enter.pollinations.ai/",
       "docsUrl": "https://github.com/pollinations/pollinations",
-      "models": ["openai-fast"],
+      "models": [
+        "openai-fast"
+      ],
       "quota": "Higher free limits",
       "note": "The legacy anonymous endpoint is rate limited."
     },
@@ -195,7 +243,10 @@
       "pool": "chat",
       "loginUrl": "https://dash.cloudflare.com/profile/api-tokens",
       "docsUrl": "https://developers.cloudflare.com/workers-ai/",
-      "models": ["@cf/openai/gpt-oss-120b", "@cf/zai-org/glm-4.7-flash"],
+      "models": [
+        "@cf/openai/gpt-oss-120b",
+        "@cf/zai-org/glm-4.7-flash"
+      ],
       "quota": "Daily neuron allowance",
       "note": "Needs both account ID and API token; add a custom adapter before saving."
     },
@@ -206,7 +257,9 @@
       "pool": "chat",
       "loginUrl": "https://requesty.ai/",
       "docsUrl": "https://docs.requesty.ai/",
-      "models": ["free model catalog"],
+      "models": [
+        "free model catalog"
+      ],
       "quota": "New organization free requests",
       "note": "Add after confirming the current free-model IDs in the dashboard."
     },
@@ -217,7 +270,9 @@
       "pool": "chat",
       "loginUrl": "https://vercel.com/ai-gateway",
       "docsUrl": "https://vercel.com/docs/ai-gateway",
-      "models": ["catalog dependent"],
+      "models": [
+        "catalog dependent"
+      ],
       "quota": "Monthly trial credit",
       "note": "Credits are time-limited. Add a custom adapter and budget guard."
     },
@@ -228,7 +283,9 @@
       "pool": "tools",
       "loginUrl": "https://github.com/features/copilot",
       "docsUrl": "https://docs.github.com/copilot",
-      "models": ["subscription dependent"],
+      "models": [
+        "subscription dependent"
+      ],
       "quota": "Uses an existing Copilot subscription",
       "note": "Requires a dedicated OAuth/CLI bridge. Not enabled by the generic API-key vault."
     },
@@ -239,7 +296,9 @@
       "pool": "tools",
       "loginUrl": "https://claude.ai/",
       "docsUrl": "https://docs.anthropic.com/en/docs/claude-code",
-      "models": ["subscription dependent"],
+      "models": [
+        "subscription dependent"
+      ],
       "quota": "Uses a Claude subscription",
       "note": "Requires a dedicated Claude Code CLI OAuth bridge."
     },
@@ -250,7 +309,9 @@
       "pool": "tools",
       "loginUrl": "https://chatgpt.com/",
       "docsUrl": "https://developers.openai.com/codex/",
-      "models": ["subscription dependent"],
+      "models": [
+        "subscription dependent"
+      ],
       "quota": "Uses an existing ChatGPT plan",
       "note": "Requires a dedicated Codex CLI OAuth bridge."
     },
@@ -261,9 +322,103 @@
       "pool": "tools",
       "loginUrl": "https://www.kimi.ai/code",
       "docsUrl": "https://platform.kimi.ai/docs",
-      "models": ["subscription dependent"],
+      "models": [
+        "subscription dependent"
+      ],
       "quota": "Uses a Kimi Code plan",
       "note": "Requires a dedicated Kimi CLI or OAuth adapter."
+    },
+    {
+      "id": "zhipu",
+      "name": "智谱 GLM",
+      "kind": "api-key",
+      "pool": "chat",
+      "loginUrl": "https://open.bigmodel.cn/usercenter/apikeys",
+      "docsUrl": "https://open.bigmodel.cn/dev/api",
+      "models": [
+        "glm-4.7-flash",
+        "glm-4.6"
+      ],
+      "quota": "免费额度/按量",
+      "note": "GLM-4.7-Flash 免费档，原生工具调用"
+    },
+    {
+      "id": "moonshot",
+      "name": "Moonshot Kimi",
+      "kind": "api-key",
+      "pool": "chat",
+      "loginUrl": "https://platform.moonshot.cn/console/api-keys",
+      "docsUrl": "https://platform.moonshot.cn/docs",
+      "models": [
+        "kimi-k2-0905-preview"
+      ],
+      "quota": "新用户额度",
+      "note": "长上下文，原生工具"
+    },
+    {
+      "id": "together",
+      "name": "Together AI",
+      "kind": "api-key",
+      "pool": "chat",
+      "loginUrl": "https://api.together.ai/settings/api-keys",
+      "docsUrl": "https://docs.together.ai/docs/openai-api-compatibility",
+      "models": [
+        "meta-llama/Llama-3.3-70B-Instruct-Turbo"
+      ],
+      "quota": "免费模型/试用额度",
+      "note": "OpenAI 兼容，原生工具"
+    },
+    {
+      "id": "nebius",
+      "name": "Nebius AI Studio",
+      "kind": "api-key",
+      "pool": "chat",
+      "loginUrl": "https://studio.nebius.ai/settings/api-keys",
+      "docsUrl": "https://docs.nebius.com/studio/inference/api",
+      "models": [
+        "meta-llama/Meta-Llama-3.1-70B-Instruct"
+      ],
+      "quota": "免费额度",
+      "note": "OpenAI 兼容"
+    },
+    {
+      "id": "hyperbolic",
+      "name": "Hyperbolic",
+      "kind": "api-key",
+      "pool": "chat",
+      "loginUrl": "https://app.hyperbolic.xyz/settings",
+      "docsUrl": "https://docs.hyperbolic.xyz/docs/getting-started",
+      "models": [
+        "meta-llama/Llama-3.3-70B-Instruct"
+      ],
+      "quota": "试用额度",
+      "note": "OpenAI 兼容"
+    },
+    {
+      "id": "fireworks",
+      "name": "Fireworks AI",
+      "kind": "api-key",
+      "pool": "chat",
+      "loginUrl": "https://fireworks.ai/account/api-keys",
+      "docsUrl": "https://docs.fireworks.ai/api-reference/introduction",
+      "models": [
+        "accounts/fireworks/models/llama-v3p3-70b-instruct"
+      ],
+      "quota": "赠送额度",
+      "note": "OpenAI 兼容"
+    },
+    {
+      "id": "chutes",
+      "name": "Chutes AI",
+      "kind": "api-key",
+      "pool": "chat",
+      "loginUrl": "https://chutes.ai/app/api",
+      "docsUrl": "https://docs.chutes.ai/",
+      "models": [
+        "google/gemma-4-31B-turbo-TEE"
+      ],
+      "quota": "按量",
+      "note": "OpenAI 兼容"
     }
   ]
 }

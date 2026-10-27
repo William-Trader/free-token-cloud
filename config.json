@@ -31,6 +31,15 @@
   "routes": {
     "tools": {
       "chain": [
+        "zhipu",
+        "moonshot",
+        "together",
+        "nebius",
+        "hyperbolic",
+        "fireworks",
+        "requesty",
+        "vercel-ai-gateway",
+        "chutes",
         "llm7",
         "llm7-codestral",
         "kilo-cohere",
@@ -76,6 +85,15 @@
     },
     "chat": {
       "chain": [
+        "zhipu",
+        "moonshot",
+        "together",
+        "nebius",
+        "hyperbolic",
+        "fireworks",
+        "requesty",
+        "vercel-ai-gateway",
+        "chutes",
         "openrouter",
         "gemini",
         "groq",
@@ -1536,6 +1554,265 @@
       "rpm": 15,
       "priority": 119,
       "toolPriority": 69
+    },
+    {
+      "id": "zhipu",
+      "type": "openai-compatible",
+      "label": "Zhipu GLM (BigModel)",
+      "enabled": true,
+      "baseUrl": "https://open.bigmodel.cn/api/paas/v4",
+      "healthUrl": "https://open.bigmodel.cn/api/paas/v4/models",
+      "apiKeyFile": "/opt/ai-relay/keys/zhipu.key",
+      "modelMap": {
+        "auto": "glm-4.7-flash",
+        "chat": "glm-4.7-flash",
+        "fast": "glm-4.7-flash",
+        "smart": "glm-4.6"
+      },
+      "pools": [
+        "tools",
+        "chat"
+      ],
+      "capabilities": {
+        "tools": true,
+        "stream": true,
+        "usage": true
+      },
+      "timeoutMs": 90000,
+      "maxConcurrency": 2,
+      "rpm": 20,
+      "priority": 201,
+      "toolPriority": 101
+    },
+    {
+      "id": "moonshot",
+      "type": "openai-compatible",
+      "label": "Moonshot Kimi",
+      "enabled": true,
+      "baseUrl": "https://api.moonshot.cn/v1",
+      "healthUrl": "https://api.moonshot.cn/v1/models",
+      "apiKeyFile": "/opt/ai-relay/keys/moonshot.key",
+      "modelMap": {
+        "auto": "kimi-k2-0905-preview",
+        "chat": "kimi-k2-0905-preview",
+        "fast": "kimi-k2-0905-preview",
+        "smart": "kimi-k2-0905-preview"
+      },
+      "pools": [
+        "tools",
+        "chat"
+      ],
+      "capabilities": {
+        "tools": true,
+        "stream": true,
+        "usage": true
+      },
+      "timeoutMs": 90000,
+      "maxConcurrency": 2,
+      "rpm": 20,
+      "priority": 202,
+      "toolPriority": 102
+    },
+    {
+      "id": "together",
+      "type": "openai-compatible",
+      "label": "Together AI",
+      "enabled": true,
+      "baseUrl": "https://api.together.xyz/v1",
+      "healthUrl": "https://api.together.xyz/v1/models",
+      "apiKeyFile": "/opt/ai-relay/keys/together.key",
+      "modelMap": {
+        "auto": "meta-llama/Llama-3.3-70B-Instruct-Turbo",
+        "chat": "meta-llama/Llama-3.3-70B-Instruct-Turbo",
+        "fast": "meta-llama/Llama-3.3-70B-Instruct-Turbo",
+        "smart": "Qwen/Qwen3-235B-A22B"
+      },
+      "pools": [
+        "tools",
+        "chat"
+      ],
+      "capabilities": {
+        "tools": true,
+        "stream": true,
+        "usage": true
+      },
+      "timeoutMs": 90000,
+      "maxConcurrency": 2,
+      "rpm": 30,
+      "priority": 203,
+      "toolPriority": 103
+    },
+    {
+      "id": "nebius",
+      "type": "openai-compatible",
+      "label": "Nebius AI Studio",
+      "enabled": true,
+      "baseUrl": "https://api.studio.nebius.ai/v1",
+      "healthUrl": "https://api.studio.nebius.ai/v1/models",
+      "apiKeyFile": "/opt/ai-relay/keys/nebius.key",
+      "modelMap": {
+        "auto": "meta-llama/Meta-Llama-3.1-70B-Instruct",
+        "chat": "meta-llama/Meta-Llama-3.1-70B-Instruct",
+        "fast": "meta-llama/Meta-Llama-3.1-70B-Instruct",
+        "smart": "meta-llama/Meta-Llama-3.1-70B-Instruct"
+      },
+      "pools": [
+        "tools",
+        "chat"
+      ],
+      "capabilities": {
+        "tools": true,
+        "stream": true,
+        "usage": true
+      },
+      "timeoutMs": 90000,
+      "maxConcurrency": 2,
+      "rpm": 20,
+      "priority": 204,
+      "toolPriority": 104
+    },
+    {
+      "id": "hyperbolic",
+      "type": "openai-compatible",
+      "label": "Hyperbolic",
+      "enabled": true,
+      "baseUrl": "https://api.hyperbolic.xyz/v1",
+      "healthUrl": "https://api.hyperbolic.xyz/v1/models",
+      "apiKeyFile": "/opt/ai-relay/keys/hyperbolic.key",
+      "modelMap": {
+        "auto": "meta-llama/Llama-3.3-70B-Instruct",
+        "chat": "meta-llama/Llama-3.3-70B-Instruct",
+        "fast": "meta-llama/Llama-3.3-70B-Instruct",
+        "smart": "meta-llama/Llama-3.3-70B-Instruct"
+      },
+      "pools": [
+        "tools",
+        "chat"
+      ],
+      "capabilities": {
+        "tools": true,
+        "stream": true,
+        "usage": true
+      },
+      "timeoutMs": 90000,
+      "maxConcurrency": 2,
+      "rpm": 20,
+      "priority": 205,
+      "toolPriority": 105
+    },
+    {
+      "id": "fireworks",
+      "type": "openai-compatible",
+      "label": "Fireworks AI",
+      "enabled": true,
+      "baseUrl": "https://api.fireworks.ai/inference/v1",
+      "healthUrl": "https://api.fireworks.ai/inference/v1/models",
+      "apiKeyFile": "/opt/ai-relay/keys/fireworks.key",
+      "modelMap": {
+        "auto": "accounts/fireworks/models/llama-v3p3-70b-instruct",
+        "chat": "accounts/fireworks/models/llama-v3p3-70b-instruct",
+        "fast": "accounts/fireworks/models/llama-v3p3-70b-instruct",
+        "smart": "accounts/fireworks/models/llama-v3p3-70b-instruct"
+      },
+      "pools": [
+        "tools",
+        "chat"
+      ],
+      "capabilities": {
+        "tools": true,
+        "stream": true,
+        "usage": true
+      },
+      "timeoutMs": 90000,
+      "maxConcurrency": 2,
+      "rpm": 20,
+      "priority": 206,
+      "toolPriority": 106
+    },
+    {
+      "id": "chutes",
+      "type": "openai-compatible",
+      "label": "Chutes",
+      "enabled": true,
+      "baseUrl": "https://llm.chutes.ai/v1",
+      "healthUrl": "https://llm.chutes.ai/v1/models",
+      "apiKeyFile": "/opt/ai-relay/keys/chutes.key",
+      "modelMap": {
+        "auto": "google/gemma-4-31B-turbo-TEE",
+        "chat": "google/gemma-4-31B-turbo-TEE",
+        "fast": "google/gemma-4-31B-turbo-TEE",
+        "smart": "google/gemma-4-31B-turbo-TEE"
+      },
+      "pools": [
+        "chat"
+      ],
+      "capabilities": {
+        "tools": false,
+        "stream": true,
+        "usage": true
+      },
+      "timeoutMs": 90000,
+      "maxConcurrency": 2,
+      "rpm": 15,
+      "priority": 207
+    },
+    {
+      "id": "requesty",
+      "type": "openai-compatible",
+      "label": "Requesty Router",
+      "enabled": true,
+      "baseUrl": "https://router.requesty.ai/v1",
+      "healthUrl": "https://router.requesty.ai/v1/models",
+      "apiKeyFile": "/opt/ai-relay/keys/requesty.key",
+      "modelMap": {
+        "auto": "openai/gpt-4o-mini",
+        "chat": "openai/gpt-4o-mini",
+        "fast": "openai/gpt-4o-mini",
+        "smart": "openai/gpt-4o-mini"
+      },
+      "pools": [
+        "tools",
+        "chat"
+      ],
+      "capabilities": {
+        "tools": true,
+        "stream": true,
+        "usage": true
+      },
+      "timeoutMs": 90000,
+      "maxConcurrency": 2,
+      "rpm": 30,
+      "priority": 208,
+      "toolPriority": 108
+    },
+    {
+      "id": "vercel-ai-gateway",
+      "type": "openai-compatible",
+      "label": "Vercel AI Gateway",
+      "enabled": true,
+      "baseUrl": "https://ai-gateway.vercel.sh/v1",
+      "healthUrl": "https://ai-gateway.vercel.sh/v1/models",
+      "apiKeyFile": "/opt/ai-relay/keys/vercel-ai-gateway.key",
+      "modelMap": {
+        "auto": "alibaba/qwen-3-14b",
+        "chat": "alibaba/qwen-3-14b",
+        "fast": "alibaba/qwen-3-14b",
+        "smart": "alibaba/qwen-3-14b"
+      },
+      "pools": [
+        "tools",
+        "chat"
+      ],
+      "capabilities": {
+        "tools": true,
+        "stream": true,
+        "usage": true
+      },
+      "timeoutMs": 90000,
+      "maxConcurrency": 2,
+      "rpm": 30,
+      "priority": 209,
+      "toolPriority": 109
     }
   ],
   "streamPacing": {
