@@ -145,3 +145,56 @@ test('streaming reasoning emits summary events', () => {
   assert.ok(events.some(e => e.type === 'response.reasoning_summary_text.delta' && e.delta === 'think first'));
   assert.ok(events.some(e => e.type === 'response.reasoning_summary_part.done'));
 });
+
+test('custom tool calls come back as custom_tool_call items', () => {
+  const response = responseFromCompletion({
+    choices: [{
+      index: 0,
+      message: {
+        role: 'assistant',
+        content: '',
+        tool_calls: [{
+          id: 'call_patch',
+          type: 'function',
+          function: { name: 'apply_patch', arguments: '{"input":"*** Begin Patch\\n*** End Patch"}' }
+        }]
+      },
+      finish_reason: 'tool_calls'
+    }]
+  }, { model: 'tools' }, { customTools: ['apply_patch'] });
+  assert.equal(response.output[0].type, 'custom_tool_call');
+  assert.ok(response.output[0].input.includes('Begin Patch'));
+});
+
+test('previous_response_id continues the stored conversation', () => {
+  const first = responsesRequestToChat({ model: 'tools', input: '第一步', store: true });
+  assert.equal(first.__store, true);
+  const response = responseFromCompletion({
+    choices: [{ index: 0, message: { role: 'assistant', content: '记住 42' }, finish_reason: 'stop' }]
+  }, { model: 'tools' });
+  // 直接用导出的 helper 走同一条存储路径
+  const { rememberResponse } = require('../router');
+  rememberResponse(response.id, first.messages.concat([{ role: 'assistant', content: '记住 42' }]));
+  const second = responsesRequestToChat({
+    model: 'tools',
+    previous_response_id: response.id,
+    input: '接着来'
+  });
+  assert.ok(second.messages.some(m => m.content === '记住 42'));
+  assert.ok(second.messages.some(m => m.content === '接着来'));
+});
+
+test('structured output and incomplete status are mapped', () => {
+  const chat = responsesRequestToChat({
+    model: 'tools',
+    text: { format: { type: 'json_schema', name: 'out', schema: { type: 'object' }, strict: true } },
+    input: '给 JSON'
+  });
+  assert.equal(chat.response_format.type, 'json_schema');
+  const response = responseFromCompletion({
+    choices: [{ index: 0, message: { role: 'assistant', content: '{}' }, finish_reason: 'length' }],
+    usage: { prompt_tokens: 1, completion_tokens: 2, total_tokens: 3 }
+  }, { model: 'tools' });
+  assert.equal(response.status, 'incomplete');
+  assert.equal(response.incomplete_details.reason, 'max_output_tokens');
+});

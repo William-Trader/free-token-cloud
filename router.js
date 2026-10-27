@@ -1837,6 +1837,31 @@ function responsesInputToMessages(body) {
       });
       continue;
     }
+    if (type === 'custom_tool_call') {
+      messages.push({
+        role: 'assistant',
+        content: '',
+        tool_calls: [{
+          id: item.call_id || item.id || 'call_' + crypto.randomUUID(),
+          type: 'function',
+          function: {
+            name: item.name || '',
+            arguments: JSON.stringify({ input: item.input == null ? '' : String(item.input) })
+          }
+        }]
+      });
+      continue;
+    }
+    if (type === 'custom_tool_call_output') {
+      messages.push({
+        role: 'tool',
+        tool_call_id: item.call_id || item.id || '',
+        content: typeof item.output === 'string'
+          ? item.output
+          : JSON.stringify(item.output == null ? '' : item.output)
+      });
+      continue;
+    }
     if (type === 'function_call_output') {
       messages.push({
         role: 'tool',
@@ -1888,6 +1913,24 @@ function responsesToolsToChat(tools) {
           }
         }
       });
+      continue;
+    }
+    if (type === 'local_shell') {
+      output.push({
+        type: 'function',
+        function: {
+          name: 'local_shell',
+          description: 'Run a command on the local machine',
+          parameters: {
+            type: 'object',
+            properties: {
+              command: { type: 'array', items: { type: 'string' }, description: 'argv' },
+              workdir: { type: 'string' }
+            },
+            required: ['command']
+          }
+        }
+      });
     }
   }
   return output.length ? output : undefined;
@@ -1904,22 +1947,59 @@ function responsesToolChoice(choice) {
   return undefined;
 }
 
+const RESPONSE_STORE = new Map();
+const RESPONSE_STORE_LIMIT = 64;
+
+function rememberResponse(id, messages) {
+  if (!id) return;
+  RESPONSE_STORE.set(id, { messages: messages.slice(), at: Date.now() });
+  while (RESPONSE_STORE.size > RESPONSE_STORE_LIMIT) {
+    const oldest = RESPONSE_STORE.keys().next().value;
+    RESPONSE_STORE.delete(oldest);
+  }
+}
+
 function responsesRequestToChat(body) {
   const chat = {
     model: String(body.model || 'tools'),
-    messages: responsesInputToMessages(body),
+    messages: [],
     stream: false
   };
+  if (body.previous_response_id && RESPONSE_STORE.has(body.previous_response_id)) {
+    chat.messages = RESPONSE_STORE.get(body.previous_response_id).messages.slice();
+  }
+  chat.messages = chat.messages.concat(responsesInputToMessages(body));
   const tools = responsesToolsToChat(body.tools);
+  const customNames = Array.isArray(body.tools)
+    ? body.tools.filter(tool => tool && tool.type === 'custom' && tool.name).map(tool => tool.name)
+    : [];
+  if (customNames.length) chat.__customTools = customNames;
   if (tools) {
     chat.tools = tools;
     const toolChoice = responsesToolChoice(body.tool_choice);
     if (toolChoice !== undefined) chat.tool_choice = toolChoice;
     if (body.parallel_tool_calls !== undefined) chat.parallel_tool_calls = body.parallel_tool_calls;
   }
+  const format = body.text && body.text.format || body.response_format;
+  if (format) {
+    if (format.type === 'json_schema') {
+      chat.response_format = {
+        type: 'json_schema',
+        json_schema: {
+          name: format.name || 'response',
+          schema: format.schema || {},
+          strict: format.strict !== false
+        }
+      };
+    } else if (format.type === 'json_object') {
+      chat.response_format = { type: 'json_object' };
+    }
+  }
   if (Number.isFinite(Number(body.temperature))) chat.temperature = Number(body.temperature);
   if (Number.isFinite(Number(body.top_p))) chat.top_p = Number(body.top_p);
   if (Number.isFinite(Number(body.max_output_tokens))) chat.max_tokens = Number(body.max_output_tokens);
+  chat.__include = Array.isArray(body.include) ? body.include.slice() : [];
+  chat.__store = body.store !== false;
   const reasoning = body.reasoning || {};
   const effort = typeof reasoning.effort === 'string' ? reasoning.effort : '';
   if (effort && effort !== 'none') {
@@ -1940,28 +2020,44 @@ function responsesUsage(usage) {
   const input = Number(usage && (usage.prompt_tokens || usage.input_tokens) || 0);
   const output = Number(usage && (usage.completion_tokens || usage.output_tokens) || 0);
   const total = Number(usage && usage.total_tokens || (input + output));
+  const cached = Number(
+    usage && usage.prompt_tokens_details && usage.prompt_tokens_details.cached_tokens ||
+    usage && usage.input_tokens_details && usage.input_tokens_details.cached_tokens || 0
+  );
+  const reasoning = Number(
+    usage && usage.completion_tokens_details && usage.completion_tokens_details.reasoning_tokens ||
+    usage && usage.output_tokens_details && usage.output_tokens_details.reasoning_tokens || 0
+  );
   return {
     input_tokens: input,
-    input_tokens_details: { cached_tokens: 0 },
+    input_tokens_details: { cached_tokens: cached },
     output_tokens: output,
-    output_tokens_details: { reasoning_tokens: 0 },
+    output_tokens_details: { reasoning_tokens: reasoning },
     total_tokens: total
   };
 }
 
-function responseFromCompletion(completion, request) {
+function responseFromCompletion(completion, request, options = {}) {
   const choice = completion.choices && completion.choices[0] || {};
   const message = choice.message || {};
   const text = contentText(message.content);
   const output = [];
+  const customTools = options.customTools instanceof Set
+    ? options.customTools
+    : new Set(options.customTools || []);
+  const include = Array.isArray(options.include) ? options.include : [];
   const reasoningText = String(message.reasoning || message.reasoning_content || '').trim();
   if (reasoningText) {
-    output.push({
+    const item = {
       type: 'reasoning',
       id: 'rs_' + crypto.randomUUID().replace(/-/g, ''),
       status: 'completed',
       summary: [{ type: 'summary_text', text: reasoningText }]
-    });
+    };
+    if (include.includes('reasoning.encrypted_content')) {
+      item.encrypted_content = Buffer.from(reasoningText, 'utf8').toString('base64');
+    }
+    output.push(item);
   }
   if (text) {
     output.push({
@@ -1973,20 +2069,41 @@ function responseFromCompletion(completion, request) {
     });
   }
   for (const call of message.tool_calls || []) {
+    const name = call.function && call.function.name || '';
+    const args = call.function && call.function.arguments || '{}';
+    const callId = call.id || 'call_' + crypto.randomUUID().replace(/-/g, '');
+    if (customTools.has(name)) {
+      let input = args;
+      try {
+        const parsed = JSON.parse(args);
+        if (parsed && typeof parsed.input === 'string') input = parsed.input;
+      } catch {}
+      output.push({
+        type: 'custom_tool_call',
+        id: 'ctc_' + crypto.randomUUID().replace(/-/g, ''),
+        call_id: callId,
+        name,
+        input,
+        status: 'completed'
+      });
+      continue;
+    }
     output.push({
       type: 'function_call',
       id: 'fc_' + crypto.randomUUID().replace(/-/g, ''),
-      call_id: call.id || 'call_' + crypto.randomUUID().replace(/-/g, ''),
-      name: call.function && call.function.name || '',
-      arguments: call.function && call.function.arguments || '{}',
+      call_id: callId,
+      name,
+      arguments: args,
       status: 'completed'
     });
   }
+  const incomplete = choice.finish_reason === 'length';
   return {
     id: 'resp_' + crypto.randomUUID().replace(/-/g, ''),
     object: 'response',
     created_at: Math.floor(Date.now() / 1000),
-    status: 'completed',
+    status: incomplete ? 'incomplete' : 'completed',
+    incomplete_details: incomplete ? { reason: 'max_output_tokens' } : undefined,
     model: String(request.model || 'tools'),
     output,
     output_text: text,
@@ -2153,7 +2270,15 @@ async function handleResponses(req, res, body) {
       }
       markSuccess(provider, outcome.elapsedMs);
       metrics.successes += 1;
-      const response = responseFromCompletion(completion, body);
+      const response = responseFromCompletion(completion, body, {
+        customTools: chat.__customTools,
+        include: chat.__include
+      });
+      if (chat.__store) {
+        const assistantMessage = { role: 'assistant', content: message.content || '' };
+        if ((message.tool_calls || []).length) assistantMessage.tool_calls = message.tool_calls;
+        rememberResponse(response.id, chat.messages.concat([assistantMessage]));
+      }
       const headers = {
         'x-request-id': requestId,
         'x-relay-upstream': provider.id,
@@ -2757,6 +2882,7 @@ module.exports = {
   normalizeCompletion,
   openAIFromAnthropic,
   openAIToAnthropic,
+  rememberResponse,
   responsesRequestToChat,
   responseFromCompletion,
   streamResponses,

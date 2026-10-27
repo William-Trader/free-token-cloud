@@ -152,8 +152,25 @@ kilo -> llm7 -> ovh-oss20 -> ovh-oss120 -> ovh-llama70
 
 ## 更新日志
 
+- **v2.2.0**：Codex 功能对齐——`custom_tool_call`（apply_patch 等 freeform 工具）、`local_shell`、结构化输出（`text.format` / `json_schema`）、`previous_response_id` 链式上下文、`incomplete` 状态、cached / reasoning usage、`reasoning.encrypted_content` 兼容。
 - **v2.1.0**：`/v1/responses` 支持逐轮长思考（推理预算、思考摘要回填、reasoning 事件）；工具池与对话池同源头。
 - **v2.0.0**：首个公开版（已脱敏，Unlicense）。
+
+## Codex 兼容矩阵
+
+| Codex 能力 | 状态 |
+|---|---|
+| `wire_api = "responses"` | ✅ 原生 `/v1/responses` |
+| 流式事件（文本/工具/推理） | ✅ `response.*` 事件序列 |
+| 函数工具 + 并行调用 | ✅ `function_call`，支持 `parallel_tool_calls` |
+| freeform 工具（apply_patch） | ✅ `custom_tool_call` |
+| `local_shell` | ✅ 映射为函数工具 |
+| 结构化输出 | ✅ `text.format` / `response_format` |
+| 多轮上下文 | ✅ `previous_response_id`（内存 64 条） |
+| 推理预算 / 思考摘要 | ✅ `reasoning.effort` + `reasoning` 条目 |
+| `incomplete`（长度截断） | ✅ `incomplete_details` |
+| 图片输入 | ✅ `input_image` 透传（上游支持时） |
+| `reasoning.encrypted_content` | ⚠️ 用摘要 base64 代替，不参与续算 |
 
 ## 接口
 
