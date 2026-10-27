@@ -202,6 +202,7 @@ kilo -> llm7 -> ovh-oss20 -> ovh-oss120 -> ovh-llama70
 
 ## 更新日志
 
+- **v3.7.0**：Provider 支持 `proxy`（HTTP CONNECT 隧道），Gemini 经本机代理可直连；Gemini 模型更新为 `gemini-3.5-flash-lite`，校验改用 chat 模式；GitHub 仓库清除服务器地址痕迹。
 - **v3.6.1**：Cloudflare Workers AI 正式可接入——支持 `<account_id>:<api_token>` 形式（地址模板自动替换 account id），`/setup` 页对应行出现 Key 输入框；校验走 `/models`。
 - **v3.6.0**：预置 9 个 keyed 适配器（Zhipu / Moonshot / Together / Nebius / Hyperbolic / Fireworks / Requesty / Vercel AI Gateway / Chutes），目录扩到 31 条；keyed 槽位排到 tools/chat 链首，填 key 即启用，缺 key 自动跳过。
 - **v3.5.0**：全网匿名源复查——接入 LLM7 `codestral-latest`（原生 function calling，进 tools 池），淘汰 Kilo `xingchen`（429）与 `super-120b`（404）；现 30 对话 / 20 工具槽位、54 个 provider 条目。
@@ -280,6 +281,18 @@ kilo -> llm7 -> ovh-oss20 -> ovh-oss120 -> ovh-llama70
 - 开销：每次对话多约 20 个 prompt token，无额外模型调用。
 - 想让 `tools` 也中文：把 `"tools"` 加进 `routes`；想全关：`"default": ""`。
 - 用户明确要求其他语言时，提示词允许模型切换。
+
+## 出网代理（可选）
+
+部分厂商（Google / OpenAI / Anthropic）在部分网络下不可直连。Provider 支持单独走 HTTP 代理：
+
+```json
+{ "id": "gemini", "proxy": "http://127.0.0.1:7890" }
+```
+
+- 代理只对配置了 `proxy` 的 provider 生效，其余上游仍直连。
+- 常见做法：在服务器本机跑 mihomo（或任意 HTTP 代理），只监听 `127.0.0.1`，再在 provider 上填代理地址。
+- 出口地区要选厂商支持的区域（例如 Google 需要 US/SG/JP 等），否则会返回 `User location is not supported`。
 
 ## 性能
 

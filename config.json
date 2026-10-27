@@ -276,13 +276,13 @@
       "enabled": true,
       "credentialId": "gemini",
       "baseUrl": "https://generativelanguage.googleapis.com/v1beta/openai",
-      "healthUrl": "https://generativelanguage.googleapis.com/v1beta/openai/models",
+      "healthUrl": "",
       "apiKeyFile": "/opt/ai-relay/keys/gemini.key",
       "modelMap": {
-        "auto": "gemini-2.5-flash-lite",
-        "chat": "gemini-2.5-flash-lite",
-        "fast": "gemini-2.5-flash-lite",
-        "smart": "gemini-2.5-flash"
+        "auto": "gemini-3.5-flash-lite",
+        "chat": "gemini-3.5-flash-lite",
+        "fast": "gemini-3.5-flash-lite",
+        "smart": "gemini-3.5-flash"
       },
       "pools": [
         "chat"
@@ -296,7 +296,10 @@
       "timeoutMs": 90000,
       "maxConcurrency": 2,
       "rpm": 10,
-      "priority": 30
+      "priority": 30,
+      "proxy": "http://127.0.0.1:7890",
+      "validationMode": "chat",
+      "validationMaxTokens": 8
     },
     {
       "id": "groq",

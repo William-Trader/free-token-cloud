@@ -17,6 +17,7 @@ const https = require('https');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const tls = require('tls');
 const { StringDecoder } = require('string_decoder');
 
 const DASHBOARD_FILE = path.join(__dirname, 'dashboard.html');
@@ -432,10 +433,66 @@ function makeAbortError(message) {
 const httpAgent = new http.Agent({ keepAlive: true, maxSockets: 64, keepAliveMsecs: 15000 });
 const httpsAgent = new https.Agent({ keepAlive: true, maxSockets: 64, keepAliveMsecs: 15000 });
 
+
+function proxiedRequest(target, options, proxyUrl, timeoutMs) {
+  const proxy = new URL(proxyUrl);
+  const method = options.method || 'POST';
+  const body = options.body;
+  return new Promise((resolve, reject) => {
+    if (target.protocol === 'http:') {
+      const req = http.request({
+        host: proxy.hostname,
+        port: proxy.port || 80,
+        method,
+        path: target.href,
+        headers: Object.assign({}, options.headers || {}, { host: target.host })
+      }, response => resolve({ status: response.statusCode, headers: response.headers, stream: response }));
+      req.setTimeout(timeoutMs, () => req.destroy(makeAbortError('upstream timeout ' + timeoutMs + 'ms')));
+      req.on('error', reject);
+      if (body !== undefined) req.write(body);
+      req.end();
+      return;
+    }
+    const connect = http.request({
+      host: proxy.hostname,
+      port: proxy.port || 80,
+      method: 'CONNECT',
+      path: target.hostname + ':' + (target.port || 443),
+      headers: { host: target.hostname + ':' + (target.port || 443) }
+    });
+    connect.setTimeout(timeoutMs, () => connect.destroy(makeAbortError('proxy timeout')));
+    connect.on('error', reject);
+    connect.on('connect', (res, socket) => {
+      if (res.statusCode !== 200) {
+        socket.destroy();
+        reject(new Error('proxy CONNECT failed ' + res.statusCode));
+        return;
+      }
+      const secure = tls.connect({ socket, servername: target.hostname, ALPNProtocols: ['http/1.1'] }, () => {
+        const req = https.request({
+          host: target.hostname,
+          port: target.port || 443,
+          path: target.pathname + target.search,
+          method,
+          headers: options.headers || {},
+          createConnection: () => secure
+        }, response => resolve({ status: response.statusCode, headers: response.headers, stream: response }));
+        req.setTimeout(timeoutMs, () => req.destroy(makeAbortError('upstream timeout ' + timeoutMs + 'ms')));
+        req.on('error', reject);
+        if (body !== undefined) req.write(body);
+        req.end();
+      });
+      secure.on('error', reject);
+    });
+    connect.end();
+  });
+}
+
 function request(urlString, options = {}) {
   const target = new URL(urlString);
   const transport = target.protocol === 'https:' ? https : http;
   const timeoutMs = Number(options.timeoutMs || 90000);
+  if (options.proxy) return proxiedRequest(target, options, options.proxy, timeoutMs);
 
   return new Promise((resolve, reject) => {
     const req = transport.request({
@@ -1507,6 +1564,7 @@ async function providerJsonAttempt(provider, logical, body, route, apiKey) {
       headers: headersWithContentType(authHeaders(provider, target.key)),
       body: JSON.stringify(requestBody),
       timeoutMs: provider.timeoutMs,
+      proxy: provider.proxy || null,
       family: provider.family || 4
     });
     const text = await readAll(response.stream);
@@ -1599,6 +1657,7 @@ async function openStreamAttempt(provider, logical, body, route, apiKey) {
     headers: headersWithContentType(authHeaders(provider, target.key)),
     body: JSON.stringify(requestBody),
     timeoutMs: provider.timeoutMs,
+    proxy: provider.proxy || null,
     family: provider.family || 4
   });
 
@@ -3191,6 +3250,7 @@ async function validateProviderCredential(provider) {
         headers: headersWithContentType(authHeaders(provider, target.key)),
         body: JSON.stringify(validationBody),
         timeoutMs: Math.min(45000, provider.timeoutMs),
+        proxy: provider.proxy || null,
         family: provider.family || 4
       });
       const text = await readAll(response.stream, 2 * 1024 * 1024);
@@ -3352,6 +3412,7 @@ async function probeProvider(provider) {
       method: 'GET',
       headers: authHeaders(provider, target.key),
       timeoutMs: Math.min(30000, provider.timeoutMs),
+      proxy: provider.proxy || null,
       family: provider.family || 4
     });
     const text = await readAll(response.stream, 2 * 1024 * 1024);
