@@ -202,6 +202,7 @@ kilo -> llm7 -> ovh-oss20 -> ovh-oss120 -> ovh-llama70
 
 ## 更新日志
 
+- **v3.4.6**：补工具参数校验回归测试；OpenClaw（chat completions）与 Codex（responses）工具调用端到端复测通过。
 - **v3.4.5**：工具参数按 schema 校验——缺必填字段不接收，向模型回传缺失项并重试一次；402/配额类统一冷却；最终错误脱敏（不再把上游 quota 原文透给客户端）。
 - **v3.4.4**：修复 agent 工具调用不稳——工具桥提示词改为「只输出 JSON，必须调用」并在无 tool_calls 时同 provider 重试一次；tools 链重排为 llm7 → kilo-cohere → kilo-dots → kilo → kilo-glyph。实测 5 次 4 次返回 tool_use。
 - **v3.4.3**：README 全面对齐实际状态——44 个 provider 条目 / 29 对话 / 19 工具槽位、Token 合并与分开视图、缓存口径与移动端说明；移除已删除的 Playground 描述。

@@ -647,3 +647,31 @@ test('cloud catalog exposes expanded providers without local-only models', () =>
   );
   assert.ok(catalog.providers.length >= 24);
 });
+
+test('bridge tool calls must satisfy required fields', () => {
+  const tools = [{
+    type: 'function',
+    function: {
+      name: 'write_file',
+      parameters: {
+        type: 'object',
+        properties: { file_path: { type: 'string' }, content: { type: 'string' } },
+        required: ['file_path', 'content']
+      }
+    }
+  }];
+  const good = parseBridgeToolCalls('{"tool_calls":[{"name":"write_file","arguments":{"file_path":"a.txt","content":"ok"}}]}', tools);
+  assert.equal(good.length, 1);
+  assert.equal(good[0].function.name, 'write_file');
+
+  const bad = parseBridgeToolCalls('{"tool_calls":[{"name":"write_file","arguments":{"file_path":"a.txt"}}]}', tools);
+  assert.equal(bad.length, 0);
+  assert.ok(Array.isArray(bad.__missing) && bad.__missing[0].includes('content'));
+});
+
+test('strict retry hint is built from missing fields', () => {
+  const tools = [{ type: 'function', function: { name: 'write_file', parameters: { type: 'object', required: ['file_path', 'content'] } } }];
+  const calls = parseBridgeToolCalls('{"tool_calls":[{"name":"write_file","arguments":{}}]}', tools);
+  assert.equal(calls.length, 0);
+  assert.ok(calls.__missing && calls.__missing.length);
+});
