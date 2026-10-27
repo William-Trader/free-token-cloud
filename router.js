@@ -739,7 +739,7 @@ function classifyFailure(error) {
   if (status === 401 || status === 403 || /invalid.*api.?key|unauthorized|forbidden/.test(lower)) {
     return { code: 'auth', status, cooldownMs: retryAfter || 10 * 60 * 1000 };
   }
-  if (status === 429 || /rate.?limit|too many requests|free.?limit|quota|insufficient_quota|credits?/.test(lower)) {
+  if (status === 402 || status === 429 || /rate.?limit|too many requests|free.?limit|quota|insufficient_quota|credits?|balance|billing/.test(lower)) {
     return { code: 'rate_limit', status, cooldownMs: retryAfter || 30 * 1000 };
   }
   if (/model.*(not found|not available|unsupported|unknown)|invalid model/.test(lower)) {
@@ -947,7 +947,7 @@ function contentText(content) {
   return JSON.stringify(content);
 }
 
-function toolBridgeProtocol(tools, strict) {
+function toolBridgeProtocol(tools, strict, hint) {
   const definitions = tools.map(tool => {
     const fn = tool.function || tool;
     return {
@@ -959,6 +959,10 @@ function toolBridgeProtocol(tools, strict) {
       }
     };
   });
+  const requiredLines = definitions.map(def => {
+    const required = (def.parameters && def.parameters.required) || [];
+    return required.length ? def.name + ' 必填: ' + required.join(', ') : def.name + ' 必填: 无';
+  });
   return [
     '[Tool bridge protocol]',
     strict
@@ -968,9 +972,12 @@ function toolBridgeProtocol(tools, strict) {
     '{"tool_calls":[{"name":"tool_name","arguments":{"key":"value"}}]}',
     'If the user explicitly requires a tool, you must call it — do not answer in natural language.',
     'Do not invent a tool result. If no tool is needed, answer normally.',
+    hint ? '上一次调用的参数不合法：' + hint + '。必须按 schema 补齐后重发。' : '',
+    'Required fields:',
+    requiredLines.join('\n'),
     'Available tools:',
     JSON.stringify(definitions)
-  ].join('\n');
+  ].filter(Boolean).join('\n');
 }
 
 function balancedJsonObjects(text) {
@@ -1005,6 +1012,17 @@ function balancedJsonObjects(text) {
     }
   }
   return objects;
+}
+
+function toolRequiredMap(tools) {
+  const map = {};
+  for (const tool of tools || []) {
+    const fn = tool.function || tool;
+    if (!fn || !fn.name) continue;
+    const params = fn.parameters || fn.input_schema || {};
+    map[fn.name] = Array.isArray(params.required) ? params.required : [];
+  }
+  return map;
 }
 
 function parseBridgeToolCalls(answer, tools) {
@@ -1075,16 +1093,34 @@ function parseBridgeToolCalls(answer, tools) {
         function: { name, arguments: args }
       });
     }
-    if (normalized.length) return normalized;
+    if (normalized.length) {
+      const requiredMap = toolRequiredMap(tools);
+      const valid = [];
+      const missing = [];
+      for (const item of normalized) {
+        const required = requiredMap[item.function.name] || [];
+        let parsedArgs = {};
+        try { parsedArgs = JSON.parse(item.function.arguments || '{}'); } catch { parsedArgs = {}; }
+        const lacking = required.filter(key => parsedArgs[key] === undefined || parsedArgs[key] === null || parsedArgs[key] === '');
+        if (lacking.length) missing.push(item.function.name + ' 缺 ' + lacking.join(', '));
+        else valid.push(item);
+      }
+      if (valid.length) return valid;
+      if (missing.length) {
+        const empty = [];
+        empty.__missing = missing;
+        return empty;
+      }
+    }
   }
   return [];
 }
 
-function messagesWithToolBridge(body, tools, strict) {
+function messagesWithToolBridge(body, tools, strict, hint) {
   return Object.assign({}, body, {
     messages: [{
       role: 'system',
-      content: toolBridgeProtocol(tools, strict)
+      content: toolBridgeProtocol(tools, strict, hint)
     }].concat(body.messages || [])
   });
 }
@@ -1130,7 +1166,10 @@ function applyBridgeToolCalls(raw, tools) {
     String(message.reasoning_content || '')
   ].filter(Boolean).join('\n');
   const calls = parseBridgeToolCalls(source, tools);
-  if (!calls.length) return raw;
+  if (!calls.length) {
+    if (calls.__missing && calls.__missing.length) raw.__bridgeMissing = calls.__missing.join('; ');
+    return raw;
+  }
   message.content = '';
   message.tool_calls = calls;
   raw.choices[0].finish_reason = 'tool_calls';
@@ -1480,7 +1519,7 @@ async function providerJsonAttempt(provider, logical, body, route, apiKey) {
     const calls = message && Array.isArray(message.tool_calls) ? message.tool_calls : [];
     if (!calls.length) {
       // 桥接模型有时只回自然语言；用更硬的提示再要一次工具调用
-      normalized = await callOnce(messagesWithToolBridge(body, bridgeTools, true));
+      normalized = await callOnce(messagesWithToolBridge(body, bridgeTools, true, normalized.__bridgeMissing || ''));
     }
   }
   return normalized;
@@ -2022,10 +2061,14 @@ function forwardOpenAIStream(res, prepared, logical, body, headers, options = {}
 function tryAgainLater(response, error, attempts) {
   writeJson(response, 503, {
     error: {
-      message: 'No compatible AI upstream is currently available.',
+      message: 'All upstreams are temporarily unavailable.',
       type: 'relay_unavailable',
       code: 'all_providers_unavailable',
-      attempts
+      attempts: (attempts || []).map(item => ({
+        provider: item.provider,
+        error_code: item.error_code,
+        status: item.status
+      }))
     }
   });
 }
@@ -2890,10 +2933,14 @@ async function handleResponses(req, res, body) {
   log({ ev: 'relay_error', api: 'responses', request_id: requestId, model: logical, attempts });
   return writeJson(res, 503, {
     error: {
-      message: 'All upstreams failed for this response.',
+      message: 'All upstreams are temporarily unavailable.',
       type: 'relay_unavailable',
       code: 'upstreams_failed',
-      attempts
+      attempts: (attempts || []).map(item => ({
+        provider: item.provider,
+        error_code: item.error_code,
+        status: item.status
+      }))
     }
   });
 }
