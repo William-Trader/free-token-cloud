@@ -276,7 +276,7 @@ function row(item, guideOnly) {
     const input = el('input', 'input');
     input.type = 'password';
     input.autocomplete = 'off';
-    input.placeholder = '粘贴 ' + item.name + ' API Key';
+    input.placeholder = item.id === 'cloudflare-workers-ai' ? '粘贴 <account_id>:<api_token>' : '粘贴 ' + item.name + ' API Key';
     const save = el('button', 'btn primary', '加密保存并校验');
     save.onclick = async () => {
       if (!input.value.trim()) return toast('请输入 Key', true);

@@ -72,7 +72,8 @@
         "ovh-qwen-vl",
         "ovh-qwen35-9b",
         "ovh-qwen38-27b",
-        "pollinations"
+        "pollinations",
+        "cloudflare-workers-ai"
       ],
       "toolPolicy": "strict",
       "strategy": "ordered",
@@ -138,7 +139,8 @@
         "ovh-qwen-vl",
         "ovh-qwen35-9b",
         "ovh-qwen38-27b",
-        "pollinations"
+        "pollinations",
+        "cloudflare-workers-ai"
       ],
       "toolPolicy": "strip",
       "strategy": "ordered",
@@ -1813,6 +1815,34 @@
       "rpm": 30,
       "priority": 209,
       "toolPriority": 109
+    },
+    {
+      "id": "cloudflare-workers-ai",
+      "type": "openai-compatible",
+      "label": "Cloudflare Workers AI",
+      "enabled": true,
+      "baseUrl": "https://api.cloudflare.com/client/v4/accounts/{account_id}/ai/v1",
+      "healthUrl": "https://api.cloudflare.com/client/v4/accounts/{account_id}/ai/v1/models",
+      "apiKeyFile": "/opt/ai-relay/keys/cloudflare.key",
+      "modelMap": {
+        "auto": "@cf/openai/gpt-oss-120b",
+        "chat": "@cf/openai/gpt-oss-120b",
+        "fast": "@cf/zai-org/glm-4.7-flash",
+        "smart": "@cf/openai/gpt-oss-120b"
+      },
+      "pools": [
+        "chat"
+      ],
+      "capabilities": {
+        "tools": false,
+        "toolBridge": true,
+        "stream": true,
+        "usage": true
+      },
+      "timeoutMs": 90000,
+      "maxConcurrency": 2,
+      "rpm": 30,
+      "priority": 120
     }
   ],
   "streamPacing": {

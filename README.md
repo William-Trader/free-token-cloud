@@ -202,6 +202,7 @@ kilo -> llm7 -> ovh-oss20 -> ovh-oss120 -> ovh-llama70
 
 ## 更新日志
 
+- **v3.6.1**：Cloudflare Workers AI 正式可接入——支持 `<account_id>:<api_token>` 形式（地址模板自动替换 account id），`/setup` 页对应行出现 Key 输入框；校验走 `/models`。
 - **v3.6.0**：预置 9 个 keyed 适配器（Zhipu / Moonshot / Together / Nebius / Hyperbolic / Fireworks / Requesty / Vercel AI Gateway / Chutes），目录扩到 31 条；keyed 槽位排到 tools/chat 链首，填 key 即启用，缺 key 自动跳过。
 - **v3.5.0**：全网匿名源复查——接入 LLM7 `codestral-latest`（原生 function calling，进 tools 池），淘汰 Kilo `xingchen`（429）与 `super-120b`（404）；现 30 对话 / 20 工具槽位、54 个 provider 条目。
 - **v3.4.6**：补工具参数校验回归测试；OpenClaw（chat completions）与 Codex（responses）工具调用端到端复测通过。

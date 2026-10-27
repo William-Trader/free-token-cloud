@@ -239,7 +239,7 @@
     {
       "id": "cloudflare-workers-ai",
       "name": "Cloudflare Workers AI",
-      "kind": "guide",
+      "kind": "api-key",
       "pool": "chat",
       "loginUrl": "https://dash.cloudflare.com/profile/api-tokens",
       "docsUrl": "https://developers.cloudflare.com/workers-ai/",
@@ -248,7 +248,7 @@
         "@cf/zai-org/glm-4.7-flash"
       ],
       "quota": "Daily neuron allowance",
-      "note": "Needs both account ID and API token; add a custom adapter before saving."
+      "note": "格式：<account_id>:<api_token>（冒号拼接）；地址含 account id，直接用 Workers AI 的 OpenAI 兼容端点"
     },
     {
       "id": "requesty",

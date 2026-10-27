@@ -1466,6 +1466,24 @@ function errorFromStatus(status, bodyText, headers) {
   return error;
 }
 
+function splitAccountKey(apiKey) {
+  const value = String(apiKey || '');
+  const index = value.indexOf(':');
+  if (index < 0) return { accountId: '', token: value };
+  return { accountId: value.slice(0, index).trim(), token: value.slice(index + 1).trim() };
+}
+
+function resolveTarget(provider, apiKey, url) {
+  let key = apiKey;
+  let target = url || provider.endpoint;
+  if (String(provider.baseUrl || '').indexOf('{account_id}') >= 0) {
+    const parts = splitAccountKey(apiKey);
+    key = parts.token;
+    target = String(target).replace('{account_id}', encodeURIComponent(parts.accountId));
+  }
+  return { url: target, key };
+}
+
 async function providerJsonAttempt(provider, logical, body, route, apiKey) {
   const useToolBridge = (
     route.toolPolicy !== 'strip' &&
@@ -1484,8 +1502,9 @@ async function providerJsonAttempt(provider, logical, body, route, apiKey) {
     } else {
       requestBody = buildOpenAIBody(provider, logical, effectiveBody, false, route.toolPolicy === 'strip');
     }
-    const response = await request(provider.endpoint, {
-      headers: headersWithContentType(authHeaders(provider, apiKey)),
+    const target = resolveTarget(provider, apiKey);
+    const response = await request(target.url, {
+      headers: headersWithContentType(authHeaders(provider, target.key)),
       body: JSON.stringify(requestBody),
       timeoutMs: provider.timeoutMs,
       family: provider.family || 4
@@ -1575,8 +1594,9 @@ function eventHasMeaningfulDelta(event) {
 
 async function openStreamAttempt(provider, logical, body, route, apiKey) {
   const requestBody = buildOpenAIBody(provider, logical, body, true, route.toolPolicy === 'strip');
-  const response = await request(provider.endpoint, {
-    headers: headersWithContentType(authHeaders(provider, apiKey)),
+  const target = resolveTarget(provider, apiKey);
+  const response = await request(target.url, {
+    headers: headersWithContentType(authHeaders(provider, target.key)),
     body: JSON.stringify(requestBody),
     timeoutMs: provider.timeoutMs,
     family: provider.family || 4
@@ -3165,9 +3185,10 @@ async function validateProviderCredential(provider) {
         max_tokens: provider.validationMaxTokens,
         stream: false
       };
-      const response = await request(provider.endpoint, {
+      const target = resolveTarget(provider, provider.keys[0]);
+      const response = await request(target.url, {
         method: 'POST',
-        headers: headersWithContentType(authHeaders(provider, provider.keys[0])),
+        headers: headersWithContentType(authHeaders(provider, target.key)),
         body: JSON.stringify(validationBody),
         timeoutMs: Math.min(45000, provider.timeoutMs),
         family: provider.family || 4
@@ -3326,9 +3347,10 @@ async function probeProvider(provider) {
   const keys = orderedKeys(provider);
   const apiKey = keys[0] || null;
   try {
-    const response = await request(provider.healthUrl, {
+    const target = resolveTarget(provider, apiKey, provider.healthUrl);
+    const response = await request(target.url, {
       method: 'GET',
-      headers: authHeaders(provider, apiKey),
+      headers: authHeaders(provider, target.key),
       timeoutMs: Math.min(30000, provider.timeoutMs),
       family: provider.family || 4
     });
