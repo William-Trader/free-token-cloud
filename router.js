@@ -42,6 +42,8 @@ let routes = {};
 let stateById = new Map();
 let groupStates = new Map();
 
+let modelsCache = { at: 0, data: null };
+
 const CHAT_FIELDS = [
   'temperature',
   'top_p',
@@ -191,6 +193,9 @@ function makeAbortError(message) {
   return error;
 }
 
+const httpAgent = new http.Agent({ keepAlive: true, maxSockets: 64, keepAliveMsecs: 15000 });
+const httpsAgent = new https.Agent({ keepAlive: true, maxSockets: 64, keepAliveMsecs: 15000 });
+
 function request(urlString, options = {}) {
   const target = new URL(urlString);
   const transport = target.protocol === 'https:' ? https : http;
@@ -204,6 +209,7 @@ function request(urlString, options = {}) {
       path: target.pathname + target.search,
       method: options.method || 'POST',
       headers: options.headers || {},
+      agent: target.protocol === 'https:' ? httpsAgent : httpAgent,
       family: options.family || 4
     }, response => resolve({
       status: response.statusCode,
@@ -2778,9 +2784,12 @@ async function handleRequest(req, res) {
       });
     }
     if (pathname === '/v1/models' && req.method === 'GET') {
+      if (!modelsCache.data || Date.now() - modelsCache.at > 60000) {
+        modelsCache = { at: Date.now(), data: routeModels() };
+      }
       return writeJson(res, 200, {
         object: 'list',
-        data: routeModels()
+        data: modelsCache.data
       });
     }
     if (pathname === '/api/upstreams' && req.method === 'GET') {

@@ -46,16 +46,24 @@ OpenClaw provider：`ai-relay`；模型：`ai-relay/tools`（默认）、`ai-rel
 | OVH AI Endpoints | `Qwen2.5-VL-72B-Instruct` | 不需要 | 是 | 文本桥 | 独立 2 RPM 配额 |
 | Pollinations | `openai-fast` | 可选 | 是 | 原生 | 最终兜底，匿名约 30 秒一次 |
 
-当前匿名池共有 17 个独立槽位：
+当前匿名池共有 **25 个对话槽位、17 个工具槽位**：
 
 ```text
-kilo, kilo-nemotron, kilo-beam, kilo-glyph, kilo-dots,
-kilo-cohere, kilo-openrouter,
-llm7,
+# Kilo（共享账号额度，group=kilo）
+kilo, kilo-nemotron, kilo-beam, kilo-glyph, kilo-dots, kilo-cohere, kilo-openrouter,
+kilo-lfm, kilo-omni, kilo-ultra, kilo-laguna, kilo-flint,
+# LLM7（匿名可用）
+llm7, llm7-minimax, llm7-nemo, llm7-nemotron,
+# OVH（按模型独立限额）
 ovh-oss20, ovh-oss120, ovh-llama70, ovh-nemo, ovh-small,
 ovh-qwen36, ovh-qwen397, ovh-qwen-vl,
+# 兜底
 pollinations
 ```
+
+v2.3.0 新增 8 个槽位：`liquid/lfm-2.5-2.6b:free`、`nemotron-3-nano-omni-30b-a3b-reasoning:free`、
+`nemotron-3-ultra-550b-a55b:free`、`poolside/laguna-s-2.1:free`、`recursive/flint-v1.0:free`，
+以及 LLM7 的 `minimax-m2.7`、`mistral-Nemo-Instruct-2407`、`nemotron-3-nano:30b`（均实测 200）。
 
 Kilo 的多个模型共享账号级额度，路由器用 provider group 统一限制；OVH 的匿名
 限额按模型分别计算，所以某个 OVH 模型冷却时其他 OVH 模型仍可服务。
@@ -186,6 +194,13 @@ kilo -> llm7 -> ovh-oss20 -> ovh-oss120 -> ovh-llama70
 | 多上游熔断 / 冷却 / 半开 | ✅ 两个入口共用一套路由 |
 | Anthropic 兼容 | ✅ `/v1/messages`（含流式事件合成） |
 | usage / 估算 token | ✅ 上游缺失时补齐 |
+
+## 性能
+
+- **连接复用**：出站 HTTP/HTTPS 走 keep-alive Agent（64 并发、15s 空闲回收），省掉每次请求的 TLS 握手，冷启动后首批请求延迟明显下降。
+- **模型清单缓存**：`/v1/models` 结果缓存 60 秒，客户端轮询不再穿透到路由层。
+- **首包超时与熔断**：上游 45s 首包超时、连续 3 次失败熔断，坏上游不会拖住整条链。
+- 单进程、无数据库，2C1G 即可承载；扩容只增加槽位，不增加常驻内存压力。
 
 ## 接口
 

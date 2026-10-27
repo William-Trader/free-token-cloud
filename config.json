@@ -72,7 +72,15 @@
         "kilo-dots",
         "kilo-cohere",
         "kilo-openrouter",
+        "kilo-lfm",
+        "kilo-omni",
+        "kilo-ultra",
+        "kilo-laguna",
+        "kilo-flint",
         "llm7",
+        "llm7-minimax",
+        "llm7-nemo",
+        "llm7-nemotron",
         "ovh-oss20",
         "ovh-oss120",
         "ovh-llama70",
@@ -109,7 +117,9 @@
         "ovh-qwen-vl",
         "pollinations",
         "groq",
-        "gemini"
+        "gemini",
+        "kilo-lfm",
+        "llm7-nemotron"
       ],
       "toolPolicy": "strict",
       "strategy": "ordered",
@@ -163,7 +173,9 @@
         "fast": "liquid/lfm-2.5-2.6b:free",
         "smart": "openai/gpt-oss-120b:free"
       },
-      "pools": ["chat"],
+      "pools": [
+        "chat"
+      ],
       "headers": {
         "HTTP-Referer": "http://127.0.0.1",
         "X-Title": "OpenClaw ai-relay"
@@ -192,7 +204,9 @@
         "fast": "gemini-2.5-flash-lite",
         "smart": "gemini-2.5-flash"
       },
-      "pools": ["chat"],
+      "pools": [
+        "chat"
+      ],
       "capabilities": {
         "tools": true,
         "stream": true,
@@ -218,7 +232,9 @@
         "fast": "openai/gpt-oss-20b",
         "smart": "openai/gpt-oss-120b"
       },
-      "pools": ["chat"],
+      "pools": [
+        "chat"
+      ],
       "capabilities": {
         "tools": true,
         "stream": true,
@@ -243,7 +259,9 @@
         "fast": "openai/gpt-oss-20b",
         "smart": "openai/gpt-oss-20b"
       },
-      "pools": ["chat"],
+      "pools": [
+        "chat"
+      ],
       "capabilities": {
         "tools": true,
         "stream": true,
@@ -268,7 +286,9 @@
         "fast": "ministral-8b-latest",
         "smart": "mistral-medium-latest"
       },
-      "pools": ["chat"],
+      "pools": [
+        "chat"
+      ],
       "capabilities": {
         "tools": true,
         "stream": true,
@@ -294,7 +314,10 @@
         "fast": "kilo-auto/free",
         "smart": "kilo-auto/free"
       },
-      "pools": ["tools", "chat"],
+      "pools": [
+        "tools",
+        "chat"
+      ],
       "capabilities": {
         "tools": true,
         "stream": true,
@@ -320,7 +343,10 @@
         "fast": "nvidia/nemotron-3.5-super-vl:free",
         "smart": "nvidia/nemotron-3.5-super-vl:free"
       },
-      "pools": ["tools", "chat"],
+      "pools": [
+        "tools",
+        "chat"
+      ],
       "capabilities": {
         "tools": false,
         "toolBridge": true,
@@ -348,7 +374,10 @@
         "fast": "reflection/beam-free",
         "smart": "reflection/beam-free"
       },
-      "pools": ["tools", "chat"],
+      "pools": [
+        "tools",
+        "chat"
+      ],
       "capabilities": {
         "tools": false,
         "toolBridge": true,
@@ -375,7 +404,10 @@
         "fast": "stealth/glyph-cluster",
         "smart": "stealth/glyph-cluster"
       },
-      "pools": ["tools", "chat"],
+      "pools": [
+        "tools",
+        "chat"
+      ],
       "capabilities": {
         "tools": false,
         "toolBridge": true,
@@ -402,7 +434,10 @@
         "fast": "dots-studio/dots-3-note-preview:free",
         "smart": "dots-studio/dots-3-note-preview:free"
       },
-      "pools": ["tools", "chat"],
+      "pools": [
+        "tools",
+        "chat"
+      ],
       "capabilities": {
         "tools": false,
         "toolBridge": true,
@@ -430,7 +465,10 @@
         "fast": "cohere/north-mini-code:free",
         "smart": "cohere/north-mini-code:free"
       },
-      "pools": ["tools", "chat"],
+      "pools": [
+        "tools",
+        "chat"
+      ],
       "capabilities": {
         "tools": false,
         "toolBridge": true,
@@ -457,7 +495,10 @@
         "fast": "openrouter/free",
         "smart": "openrouter/free"
       },
-      "pools": ["tools", "chat"],
+      "pools": [
+        "tools",
+        "chat"
+      ],
       "capabilities": {
         "tools": false,
         "toolBridge": true,
@@ -486,7 +527,10 @@
         "fast": "gpt-oss:20b",
         "smart": "nemotron-3-nano:30b"
       },
-      "pools": ["tools", "chat"],
+      "pools": [
+        "tools",
+        "chat"
+      ],
       "capabilities": {
         "tools": true,
         "stream": true,
@@ -511,7 +555,10 @@
         "fast": "gpt-oss-20b",
         "smart": "gpt-oss-20b"
       },
-      "pools": ["tools", "chat"],
+      "pools": [
+        "tools",
+        "chat"
+      ],
       "capabilities": {
         "tools": false,
         "toolBridge": true,
@@ -537,7 +584,10 @@
         "fast": "gpt-oss-120b",
         "smart": "gpt-oss-120b"
       },
-      "pools": ["tools", "chat"],
+      "pools": [
+        "tools",
+        "chat"
+      ],
       "capabilities": {
         "tools": false,
         "toolBridge": true,
@@ -563,7 +613,10 @@
         "fast": "Meta-Llama-3_3-70B-Instruct",
         "smart": "Meta-Llama-3_3-70B-Instruct"
       },
-      "pools": ["tools", "chat"],
+      "pools": [
+        "tools",
+        "chat"
+      ],
       "capabilities": {
         "tools": false,
         "toolBridge": true,
@@ -589,7 +642,10 @@
         "fast": "Mistral-Nemo-Instruct-2407",
         "smart": "Mistral-Nemo-Instruct-2407"
       },
-      "pools": ["tools", "chat"],
+      "pools": [
+        "tools",
+        "chat"
+      ],
       "capabilities": {
         "tools": false,
         "toolBridge": true,
@@ -615,7 +671,10 @@
         "fast": "Mistral-Small-3.2-24B-Instruct-2506",
         "smart": "Mistral-Small-3.2-24B-Instruct-2506"
       },
-      "pools": ["tools", "chat"],
+      "pools": [
+        "tools",
+        "chat"
+      ],
       "capabilities": {
         "tools": false,
         "toolBridge": true,
@@ -641,7 +700,10 @@
         "fast": "Qwen3.6-27B",
         "smart": "Qwen3.6-27B"
       },
-      "pools": ["tools", "chat"],
+      "pools": [
+        "tools",
+        "chat"
+      ],
       "capabilities": {
         "tools": false,
         "toolBridge": true,
@@ -667,7 +729,10 @@
         "fast": "Qwen3.5-397B-A17B",
         "smart": "Qwen3.5-397B-A17B"
       },
-      "pools": ["tools", "chat"],
+      "pools": [
+        "tools",
+        "chat"
+      ],
       "capabilities": {
         "tools": false,
         "toolBridge": true,
@@ -693,7 +758,10 @@
         "fast": "Qwen2.5-VL-72B-Instruct",
         "smart": "Qwen2.5-VL-72B-Instruct"
       },
-      "pools": ["tools", "chat"],
+      "pools": [
+        "tools",
+        "chat"
+      ],
       "capabilities": {
         "tools": false,
         "toolBridge": true,
@@ -721,7 +789,10 @@
         "fast": "openai-fast",
         "smart": "openai-fast"
       },
-      "pools": ["tools", "chat"],
+      "pools": [
+        "tools",
+        "chat"
+      ],
       "headers": {
         "referer": "https://pollinations.ai/"
       },
@@ -735,6 +806,241 @@
       "maxConcurrency": 1,
       "rpm": 2,
       "priority": 130,
+      "toolPriority": 80
+    },
+    {
+      "id": "kilo-lfm",
+      "type": "openai-compatible",
+      "label": "Kilo Liquid LFM 2.5 2.6B",
+      "enabled": true,
+      "group": "kilo",
+      "baseUrl": "https://api.kilo.ai/api/gateway/v1",
+      "healthUrl": "https://api.kilo.ai/api/gateway/v1/models",
+      "modelMap": {
+        "auto": "liquid/lfm-2.5-2.6b:free",
+        "chat": "liquid/lfm-2.5-2.6b:free",
+        "fast": "liquid/lfm-2.5-2.6b:free",
+        "smart": "liquid/lfm-2.5-2.6b:free"
+      },
+      "pools": [
+        "chat"
+      ],
+      "capabilities": {
+        "tools": false,
+        "toolBridge": true,
+        "stream": true,
+        "usage": true
+      },
+      "timeoutMs": 90000,
+      "maxConcurrency": 1,
+      "rpm": 2,
+      "priority": 111,
+      "toolPriority": 10
+    },
+    {
+      "id": "kilo-omni",
+      "type": "openai-compatible",
+      "label": "Kilo Nemotron Nano Omni 30B (reasoning)",
+      "enabled": true,
+      "group": "kilo",
+      "baseUrl": "https://api.kilo.ai/api/gateway/v1",
+      "healthUrl": "https://api.kilo.ai/api/gateway/v1/models",
+      "modelMap": {
+        "auto": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+        "chat": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+        "fast": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free",
+        "smart": "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free"
+      },
+      "pools": [
+        "chat"
+      ],
+      "capabilities": {
+        "tools": false,
+        "toolBridge": true,
+        "stream": true,
+        "usage": true
+      },
+      "timeoutMs": 90000,
+      "maxConcurrency": 1,
+      "rpm": 2,
+      "priority": 112,
+      "toolPriority": 11
+    },
+    {
+      "id": "kilo-ultra",
+      "type": "openai-compatible",
+      "label": "Kilo Nemotron Ultra 550B",
+      "enabled": true,
+      "group": "kilo",
+      "baseUrl": "https://api.kilo.ai/api/gateway/v1",
+      "healthUrl": "https://api.kilo.ai/api/gateway/v1/models",
+      "modelMap": {
+        "auto": "nvidia/nemotron-3-ultra-550b-a55b:free",
+        "chat": "nvidia/nemotron-3-ultra-550b-a55b:free",
+        "fast": "nvidia/nemotron-3-ultra-550b-a55b:free",
+        "smart": "nvidia/nemotron-3-ultra-550b-a55b:free"
+      },
+      "pools": [
+        "chat"
+      ],
+      "capabilities": {
+        "tools": false,
+        "toolBridge": true,
+        "stream": true,
+        "usage": true
+      },
+      "timeoutMs": 90000,
+      "maxConcurrency": 1,
+      "rpm": 2,
+      "priority": 113,
+      "toolPriority": 12
+    },
+    {
+      "id": "kilo-laguna",
+      "type": "openai-compatible",
+      "label": "Kilo Poolside Laguna S 2.1",
+      "enabled": true,
+      "group": "kilo",
+      "baseUrl": "https://api.kilo.ai/api/gateway/v1",
+      "healthUrl": "https://api.kilo.ai/api/gateway/v1/models",
+      "modelMap": {
+        "auto": "poolside/laguna-s-2.1:free",
+        "chat": "poolside/laguna-s-2.1:free",
+        "fast": "poolside/laguna-s-2.1:free",
+        "smart": "poolside/laguna-s-2.1:free"
+      },
+      "pools": [
+        "chat"
+      ],
+      "capabilities": {
+        "tools": false,
+        "toolBridge": true,
+        "stream": true,
+        "usage": true
+      },
+      "timeoutMs": 90000,
+      "maxConcurrency": 1,
+      "rpm": 2,
+      "priority": 114,
+      "toolPriority": 13
+    },
+    {
+      "id": "kilo-flint",
+      "type": "openai-compatible",
+      "label": "Kilo Recursive Flint v1.0",
+      "enabled": true,
+      "group": "kilo",
+      "baseUrl": "https://api.kilo.ai/api/gateway/v1",
+      "healthUrl": "https://api.kilo.ai/api/gateway/v1/models",
+      "modelMap": {
+        "auto": "recursive/flint-v1.0:free",
+        "chat": "recursive/flint-v1.0:free",
+        "fast": "recursive/flint-v1.0:free",
+        "smart": "recursive/flint-v1.0:free"
+      },
+      "pools": [
+        "chat"
+      ],
+      "capabilities": {
+        "tools": false,
+        "toolBridge": true,
+        "stream": true,
+        "usage": true
+      },
+      "timeoutMs": 90000,
+      "maxConcurrency": 1,
+      "rpm": 2,
+      "priority": 115,
+      "toolPriority": 14
+    },
+    {
+      "id": "llm7-minimax",
+      "type": "openai-compatible",
+      "label": "LLM7 MiniMax M2.7",
+      "enabled": true,
+      "baseUrl": "https://api.llm7.io/v1",
+      "healthUrl": "https://api.llm7.io/v1/models",
+      "apiKeyFile": "/opt/ai-relay/keys/llm7.key",
+      "optionalAuth": true,
+      "modelMap": {
+        "auto": "minimax-m2.7",
+        "chat": "minimax-m2.7",
+        "fast": "minimax-m2.7",
+        "smart": "minimax-m2.7"
+      },
+      "pools": [
+        "chat"
+      ],
+      "capabilities": {
+        "tools": false,
+        "toolBridge": true,
+        "stream": true,
+        "usage": true
+      },
+      "timeoutMs": 75000,
+      "maxConcurrency": 1,
+      "rpm": 20,
+      "priority": 116,
+      "toolPriority": 80
+    },
+    {
+      "id": "llm7-nemo",
+      "type": "openai-compatible",
+      "label": "LLM7 Mistral Nemo 2407",
+      "enabled": true,
+      "baseUrl": "https://api.llm7.io/v1",
+      "healthUrl": "https://api.llm7.io/v1/models",
+      "apiKeyFile": "/opt/ai-relay/keys/llm7.key",
+      "optionalAuth": true,
+      "modelMap": {
+        "auto": "mistral-Nemo-Instruct-2407",
+        "chat": "mistral-Nemo-Instruct-2407",
+        "fast": "mistral-Nemo-Instruct-2407",
+        "smart": "mistral-Nemo-Instruct-2407"
+      },
+      "pools": [
+        "chat"
+      ],
+      "capabilities": {
+        "tools": false,
+        "toolBridge": true,
+        "stream": true,
+        "usage": true
+      },
+      "timeoutMs": 75000,
+      "maxConcurrency": 1,
+      "rpm": 20,
+      "priority": 117,
+      "toolPriority": 80
+    },
+    {
+      "id": "llm7-nemotron",
+      "type": "openai-compatible",
+      "label": "LLM7 Nemotron 3 Nano 30B",
+      "enabled": true,
+      "baseUrl": "https://api.llm7.io/v1",
+      "healthUrl": "https://api.llm7.io/v1/models",
+      "apiKeyFile": "/opt/ai-relay/keys/llm7.key",
+      "optionalAuth": true,
+      "modelMap": {
+        "auto": "nemotron-3-nano:30b",
+        "chat": "nemotron-3-nano:30b",
+        "fast": "nemotron-3-nano:30b",
+        "smart": "nemotron-3-nano:30b"
+      },
+      "pools": [
+        "chat"
+      ],
+      "capabilities": {
+        "tools": false,
+        "toolBridge": true,
+        "stream": true,
+        "usage": true
+      },
+      "timeoutMs": 75000,
+      "maxConcurrency": 1,
+      "rpm": 20,
+      "priority": 118,
       "toolPriority": 80
     }
   ]
