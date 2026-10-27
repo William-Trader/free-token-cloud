@@ -12,7 +12,6 @@
     --radius:14px;
   }
   *{box-sizing:border-box}
-  html,body{height:100%}
   body{
     margin:0;background:
       radial-gradient(900px 500px at 12% -8%, rgba(45,212,191,.13), transparent 60%),
@@ -22,15 +21,13 @@
     -webkit-font-smoothing:antialiased;
   }
   .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
-  a{color:var(--teal);text-decoration:none}
   button{font:inherit;cursor:pointer}
   .wrap{max-width:1280px;margin:0 auto;padding:0 22px}
 
-  /* header */
   header{position:sticky;top:0;z-index:30;backdrop-filter:blur(14px);
     background:rgba(7,10,15,.78);border-bottom:1px solid var(--line)}
-  .hd{display:flex;align-items:center;gap:16px;height:64px}
-  .logo{display:flex;align-items:center;gap:10px;font-weight:700;letter-spacing:.2px}
+  .hd{display:flex;align-items:center;gap:14px;height:64px}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:700}
   .mark{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--teal),var(--cyan));
     display:grid;place-items:center;color:#04231f;font-weight:900;font-size:14px}
   .logo small{display:block;font-size:11px;color:var(--muted);font-weight:500;letter-spacing:.6px}
@@ -46,32 +43,69 @@
   .btn{border:1px solid var(--line);background:var(--panel-2);color:var(--ink);
     padding:7px 12px;border-radius:10px;font-size:12px}
   .btn:hover{border-color:#2c3a4d}
-  .btn.primary{background:linear-gradient(135deg,var(--teal),var(--cyan));color:#04231f;border:0;font-weight:700}
-  .btn.ghost{background:transparent}
 
-  /* layout */
   main{padding:22px 0 60px}
   .grid{display:grid;gap:14px}
   .stats{grid-template-columns:repeat(5,1fr)}
   .card{background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,0)),var(--panel);
-    border:1px solid var(--line);border-radius:var(--radius);padding:16px 16px}
+    border:1px solid var(--line);border-radius:var(--radius);padding:16px}
   .card h3{margin:0 0 2px;font-size:12px;color:var(--muted);font-weight:500;letter-spacing:.4px}
   .big{font-size:26px;font-weight:700;letter-spacing:-.4px}
   .big small{font-size:12px;color:var(--muted);font-weight:500;margin-left:4px}
   .sub{font-size:12px;color:var(--dim);margin-top:2px}
   .spark{width:100%;height:34px;display:block;margin-top:8px}
 
-  .section{margin-top:20px}
+  .section{margin-top:22px}
   .sec-head{display:flex;align-items:center;gap:12px;margin:0 0 10px}
-  .sec-head h2{margin:0;font-size:15px;letter-spacing:.3px}
+  .sec-head h2{margin:0;font-size:15px}
   .sec-head .hint{color:var(--dim);font-size:12px}
   .sec-head .spacer{flex:1}
 
-  .chart-card{padding:16px}
-  .chart-top{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:8px}
+  /* pools */
+  .pools{grid-template-columns:1fr 1fr}
+  .pool-card{position:relative;overflow:hidden}
+  .pool-card::before{content:"";position:absolute;inset:0 0 auto 0;height:3px;background:linear-gradient(90deg,var(--green),transparent)}
+  .pool-card.chat::before{background:linear-gradient(90deg,var(--cyan),transparent)}
+  .pool-top{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+  .pool-title{font-size:13px;letter-spacing:.6px;color:var(--muted)}
+  .pool-name{font-size:18px;font-weight:700}
+  .pool-badge{margin-left:auto;font-size:11px;padding:2px 8px;border-radius:999px;border:1px solid #1f5c4d;color:#a7f3d0;background:rgba(52,211,153,.08)}
+  .pool-card.chat .pool-badge{border-color:#1e4b63;color:#bae6fd;background:rgba(34,211,238,.08)}
+  .pool-body{display:grid;grid-template-columns:96px 1fr;gap:16px;align-items:center}
+  .gauge{position:relative;width:96px;height:96px}
+  .gauge svg{transform:rotate(-90deg)}
+  .gauge .val{position:absolute;inset:0;display:grid;place-items:center;text-align:center}
+  .gauge .val b{display:block;font-size:18px;letter-spacing:-.3px}
+  .gauge .val span{font-size:10px;color:var(--dim)}
+  .kv{display:grid;grid-template-columns:1fr 1fr;gap:8px 14px}
+  .kv div{min-width:0}
+  .kv span{display:block;font-size:11px;color:var(--dim)}
+  .kv b{font-size:14px;font-weight:600}
+  .route{margin-top:12px;border-top:1px solid var(--line);padding-top:10px;display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+  .route b{color:var(--ink);font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+  .route .live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 1.8s infinite}
+  .members{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .member{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:var(--muted);
+    border:1px solid var(--line);border-radius:8px;padding:3px 7px;background:var(--panel-2)}
+  .member .dot{width:6px;height:6px}
+  .member.hot{color:var(--ink);border-color:#2a3b4d}
+
+  /* usage */
+  .usage{grid-template-columns:1.4fr .6fr}
+  .chart-top{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin-bottom:6px}
   .legend{display:flex;gap:14px;font-size:12px;color:var(--muted)}
   .legend i{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:5px;vertical-align:middle}
-  #traffic{width:100%;height:150px;display:block}
+  #usageChart{width:100%;height:160px;display:block}
+  .api-split{display:flex;flex-direction:column;gap:10px}
+  .api-row{display:flex;align-items:center;gap:10px}
+  .api-row .bar{flex:1;height:8px;border-radius:5px;background:#151d29;overflow:hidden}
+  .api-row .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--cyan),var(--teal))}
+  .api-row .n{font-size:12px;color:var(--muted);min-width:78px;text-align:right}
+  .top-list{margin-top:6px}
+  .top-item{display:grid;grid-template-columns:120px 1fr 46px;gap:10px;align-items:center;padding:4px 0;font-size:12px}
+  .top-item .bar{height:7px;border-radius:4px;background:#151d29;overflow:hidden}
+  .top-item .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--teal),var(--cyan))}
+  .top-item b{font-weight:500;color:var(--muted);text-align:right}
 
   /* providers */
   .toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
@@ -93,20 +127,13 @@
   .tag.chat{color:#bae6fd;border-color:#1e4b63;background:rgba(34,211,238,.08)}
   .st{display:inline-flex;align-items:center;gap:6px;font-size:11.5px}
   .st.closed{color:var(--green)} .st.open{color:var(--red)} .st.half{color:var(--amber)}
-  .bar{height:6px;border-radius:4px;background:#1a2330;overflow:hidden;min-width:70px}
-  .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--teal),var(--cyan))}
-  .err{color:#fca5a5;font-size:11px;max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .bar-lat{height:6px;border-radius:4px;background:#1a2330;overflow:hidden;min-width:70px}
+  .bar-lat i{display:block;height:100%;background:linear-gradient(90deg,var(--teal),var(--cyan))}
+  .err{color:#fca5a5;font-size:11px;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .muted{color:var(--muted)} .dim{color:var(--dim)}
 
-  /* pools */
-  .pools{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
-  .pool{font-size:11px;padding:3px 8px;border-radius:8px;border:1px solid var(--line);color:var(--muted);background:var(--panel-2)}
-  .pool.tools{color:#a7f3d0;border-color:#1f5c4d}
-  .pool.chat{color:#bae6fd;border-color:#1e4b63}
-
-  /* logs + playground */
-  .split{display:grid;grid-template-columns:1.25fr .75fr;gap:14px}
-  .logs{max-height:360px;overflow:auto}
+  /* logs */
+  .logs{max-height:420px;overflow:auto}
   .logline{display:grid;grid-template-columns:64px 54px 1fr 92px 62px;gap:8px;padding:7px 12px;
     border-bottom:1px solid var(--line);font-size:12px;align-items:center}
   .logline:last-child{border-bottom:0}
@@ -119,32 +146,22 @@
   .logline .api{color:var(--dim);font-size:10.5px}
   .empty{padding:22px;text-align:center;color:var(--dim);font-size:12.5px}
 
-  .pg textarea{width:100%;min-height:78px;resize:vertical;background:var(--panel-2);border:1px solid var(--line);
-    color:var(--ink);border-radius:10px;padding:10px;font-size:13px;line-height:1.5}
-  .pg textarea:focus{outline:none;border-color:#2f4a57}
-  .pg .row{display:flex;gap:8px;margin-top:8px;align-items:center}
-  .out{margin-top:10px;background:#080d13;border:1px solid var(--line);border-radius:10px;padding:10px;
-    min-height:90px;max-height:220px;overflow:auto;white-space:pre-wrap;font-size:12.5px;color:#d7e3f4}
-  .out .meta{color:var(--dim);font-size:11px;display:block;margin-bottom:6px}
-
-  /* login */
-  .overlay{position:fixed;inset:0;z-index:60;display:grid;place-items:center;
-    background:radial-gradient(600px 400px at 50% 20%,rgba(45,212,191,.12),transparent 60%),rgba(5,8,12,.92)}
-  .login{width:min(420px,92vw);background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:26px;
-    box-shadow:0 30px 80px rgba(0,0,0,.55)}
-  .login h1{margin:0 0 6px;font-size:19px}
-  .login p{margin:0 0 16px;color:var(--muted);font-size:13px}
-  .login input{width:100%;background:var(--panel-2);border:1px solid var(--line);color:var(--ink);
-    border-radius:10px;padding:11px 12px;font-size:14px;letter-spacing:.3px}
-  .login input:focus{outline:none;border-color:#2f4a57}
-  .login .err{color:#fca5a5;font-size:12px;margin-top:8px;min-height:16px;max-width:none;white-space:normal}
   .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:var(--panel-2);
     border:1px solid var(--line);border-radius:10px;padding:9px 14px;font-size:12.5px;color:var(--ink);
     opacity:0;pointer-events:none;transition:opacity .2s ease;z-index:70}
   .toast.show{opacity:1}
 
-  @media (max-width:1080px){.stats{grid-template-columns:repeat(3,1fr)}.split{grid-template-columns:1fr}}
-  @media (max-width:720px){.stats{grid-template-columns:repeat(2,1fr)}.logline{grid-template-columns:56px 48px 1fr 52px}.logline .p{display:none}}
+  @media (max-width:1080px){
+    .stats{grid-template-columns:repeat(3,1fr)}
+    .pools{grid-template-columns:1fr}
+    .usage{grid-template-columns:1fr}
+  }
+  @media (max-width:720px){
+    .stats{grid-template-columns:repeat(2,1fr)}
+    .pool-body{grid-template-columns:80px 1fr}
+    .logline{grid-template-columns:56px 48px 1fr 52px}
+    .logline .p{display:none}
+  }
 </style>
 </head>
 <body>
@@ -156,96 +173,68 @@
       <div>Free Token Cloud<small>RELAY CONSOLE · 101</small></div>
     </div>
     <div class="spacer"></div>
-    <div class="pill live" id="statusPill"><i class="dot" id="statusDot"></i><span id="statusText">连接中…</span></div>
+    <div class="pill live" id="statusPill"><i class="dot" id="statusDot"></i><span id="statusText">加载中…</span></div>
     <div class="pill mono" id="uptime">uptime —</div>
-    <button class="btn ghost" id="refreshBtn">刷新</button>
+    <button class="btn" id="refreshBtn">刷新</button>
   </div>
 </header>
 
 <main class="wrap">
-  <div class="grid stats" id="statCards">
-    <div class="card"><h3>总请求</h3><div class="big" id="sReq">—</div><div class="sub" id="sReqSub">自上次重启</div></div>
-    <div class="card"><h3>成功率</h3><div class="big" id="sOk">—</div><div class="sub" id="sOkSub">成功 / 总数</div><svg class="spark" id="sparkOk" viewBox="0 0 100 30" preserveAspectRatio="none"></svg></div>
-    <div class="card"><h3>平均延迟</h3><div class="big" id="sLat">—</div><div class="sub">最近 100 条成功请求</div></div>
-    <div class="card"><h3>可用槽位</h3><div class="big" id="sSlots">—</div><div class="sub" id="sSlotsSub">熔断中 <b id="sOpen">0</b></div></div>
+  <div class="grid stats">
+    <div class="card"><h3>总请求</h3><div class="big" id="sReq">—</div><div class="sub" id="sReqSub">失败 —</div></div>
+    <div class="card"><h3>成功率</h3><div class="big" id="sOk">—</div><div class="sub" id="sOkSub">—</div><svg class="spark" id="sparkOk" viewBox="0 0 100 30" preserveAspectRatio="none"></svg></div>
+    <div class="card"><h3>平均延迟</h3><div class="big" id="sLat">—</div><div class="sub">最近成功请求</div></div>
+    <div class="card"><h3>可用槽位</h3><div class="big" id="sSlots">—</div><div class="sub">熔断中 <b id="sOpen">0</b></div></div>
     <div class="card"><h3>流式请求</h3><div class="big" id="sStream">—</div><div class="sub">SSE 计数</div></div>
   </div>
 
   <section class="section">
-    <div class="card chart-card">
-      <div class="chart-top">
-        <div>
-          <div class="sec-head" style="margin:0"><h2>最近 30 分钟流量</h2><span class="hint">按分钟聚合 · 成功 / 失败</span></div>
-        </div>
-        <div class="legend">
-          <span><i style="background:var(--teal)"></i>成功</span>
-          <span><i style="background:var(--red)"></i>失败</span>
-          <span><i style="background:#243244"></i>空窗</span>
-        </div>
+    <div class="sec-head"><h2>双池</h2><span class="hint">tools 走工具链，chat 只对话；两池共用熔断与冷却</span></div>
+    <div class="grid pools">
+      <div class="card pool-card" id="poolTools"></div>
+      <div class="card pool-card chat" id="poolChat"></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="sec-head"><h2>用量</h2><span class="hint">最近 30 分钟 · 按池与接口拆分</span><div class="spacer"></div>
+      <div class="legend">
+        <span><i style="background:var(--green)"></i>tools</span>
+        <span><i style="background:var(--cyan)"></i>chat</span>
+        <span><i style="background:var(--red)"></i>失败</span>
       </div>
-      <svg id="traffic" viewBox="0 0 900 150" preserveAspectRatio="none"></svg>
+    </div>
+    <div class="grid usage">
+      <div class="card"><svg id="usageChart" viewBox="0 0 900 160" preserveAspectRatio="none"></svg></div>
+      <div class="card api-split" id="apiSplit"></div>
     </div>
   </section>
 
   <section class="section">
     <div class="sec-head">
-      <h2>上游槽位</h2>
-      <span class="hint" id="provCount"></span>
+      <h2>上游槽位</h2><span class="hint" id="provCount"></span>
       <div class="spacer"></div>
       <div class="toolbar">
         <input class="input" id="search" placeholder="搜索 id / label">
         <select class="input" id="poolFilter">
-          <option value="">全部池</option>
-          <option value="tools">tools</option>
-          <option value="chat">chat</option>
+          <option value="">全部池</option><option value="tools">tools</option><option value="chat">chat</option>
         </select>
         <select class="input" id="stateFilter">
-          <option value="">全部状态</option>
-          <option value="closed">正常</option>
-          <option value="open">熔断</option>
-          <option value="half">半开</option>
-          <option value="disabled">禁用</option>
+          <option value="">全部状态</option><option value="closed">正常</option><option value="open">熔断</option><option value="half">半开</option>
         </select>
       </div>
     </div>
     <div class="tbl">
       <table>
-        <thead>
-          <tr><th>槽位</th><th>池</th><th>状态</th><th>成功 / 失败</th><th>平均延迟</th><th>最近错误</th></tr>
-        </thead>
+        <thead><tr><th>槽位</th><th>池</th><th>状态</th><th>成功 / 失败</th><th>平均延迟</th><th>最近错误</th></tr></thead>
         <tbody id="provBody"></tbody>
       </table>
-    </div>
-    <div class="pools" id="poolChips"></div>
-  </section>
-
-  <section class="section split">
-    <div>
-      <div class="sec-head"><h2>实时日志</h2><span class="hint">最近 100 条</span><div class="spacer"></div><span class="pill" id="logCount">—</span></div>
-      <div class="tbl logs" id="logsBox"></div>
-    </div>
-    <div class="card pg">
-      <div class="sec-head" style="margin:0 0 8px"><h2>试一条</h2><span class="hint">走同一套池与熔断</span></div>
-      <div class="row" style="margin:0 0 8px">
-        <select class="input" id="pgModel"><option>chat</option><option>tools</option></select>
-        <input class="input" id="pgToken" type="password" placeholder="token（试跑用）" style="min-width:150px" autocomplete="off">
-        <button class="btn primary" id="pgSend">发送</button>
-        <button class="btn ghost" id="pgClear">清空</button>
-      </div>
-      <textarea id="pgPrompt" placeholder="问点什么…（Enter 发送，Shift+Enter 换行）">用一句话说明你是什么模型</textarea>
-      <div class="out" id="pgOut"><span class="meta">输出会显示在这里 · 流式</span></div>
     </div>
   </section>
 
   <section class="section">
-    <div class="card" style="display:flex;align-items:center;gap:14px;flex-wrap:wrap">
-      <div style="flex:1;min-width:260px">
-        <h3 style="margin:0 0 4px">给你的 agent 接上</h3>
-        <div class="dim" style="font-size:12px">OpenAI 兼容入口 · 两个模型：<span class="mono">tools</span> / <span class="mono">chat</span></div>
-      </div>
-      <code class="mono" id="curlSnippet" style="font-size:12px;color:#cfe9e4;background:#080d13;border:1px solid var(--line);padding:9px 12px;border-radius:10px;max-width:100%;overflow:auto"></code>
-      <button class="btn" id="copyCurl">复制</button>
-    </div>
+    <div class="sec-head"><h2>实时日志</h2><span class="hint">最近 100 条 · R=Responses C=Chat</span><div class="spacer"></div><span class="pill" id="logCount">—</span></div>
+    <div class="tbl logs" id="logsBox"></div>
   </section>
 </main>
 
@@ -253,7 +242,6 @@
 
 <script>
 (function(){
-  var STORE = 'relay_pg_token';
   var state = { providers: [], pools: {}, logs: [], metrics: null, health: null, timer: null };
   var $ = function(id){ return document.getElementById(id); };
 
@@ -274,30 +262,29 @@
     if(d < 3600000) return Math.round(d/60000)+'m 前';
     return Math.round(d/3600000)+'h 前';
   }
+  function pct(a, b){ return b ? Math.round(a / b * 100) : 0; }
+  function providerOf(id){ return state.providers.filter(function(p){ return p.id === id; })[0]; }
 
   function renderStats(){
     var m = (state.metrics && state.metrics.metrics) || {};
     var req = m.requests || 0, ok = m.successes || 0;
     $('sReq').textContent = fmtNum(req);
     $('sReqSub').textContent = '失败 ' + fmtNum(m.failures || 0);
-    var rate = req ? (ok / req * 100) : 0;
-    $('sOk').textContent = req ? rate.toFixed(1) + '%' : '—';
+    $('sOk').textContent = req ? pct(ok, req) + '%' : '—';
     $('sOkSub').textContent = ok + ' / ' + req;
     var oks = state.logs.filter(function(l){ return l.ev === 'ok'; }).slice(-100);
     var lat = oks.length ? Math.round(oks.reduce(function(a,b){ return a + (b.ms||0); },0)/oks.length) : null;
     $('sLat').textContent = lat == null ? '—' : fmtMs(lat);
-    var total = state.providers.filter(function(p){ return p.enabled !== false; }).length;
-    var open = state.providers.filter(function(p){ return p.enabled !== false && p.circuit === 'open'; }).length;
+    var total = state.providers.length;
+    var open = state.providers.filter(function(p){ return p.circuit === 'open'; }).length;
     $('sSlots').textContent = (total - open) + '/' + total;
     $('sOpen').textContent = open;
     $('sStream').textContent = fmtNum(m.streams || 0);
     var upt = (state.health && state.health.uptime_s) || 0;
     $('uptime').textContent = 'uptime ' + (upt >= 86400 ? (upt/86400).toFixed(1)+'d' : upt >= 3600 ? (upt/3600).toFixed(1)+'h' : Math.round(upt/60)+'m');
 
-    var okDot = $('statusDot');
-    var healthy = state.health && state.health.ok;
-    okDot.className = 'dot ' + (healthy ? 'ok' : 'bad');
-    $('statusText').textContent = healthy ? '服务正常' : '上游不可用';
+    $('statusDot').className = 'dot ' + (state.health && state.health.ok ? 'ok' : 'bad');
+    $('statusText').textContent = state.health && state.health.ok ? '服务正常' : '上游不可用';
   }
 
   function renderSpark(){
@@ -313,43 +300,115 @@
     svg.innerHTML = '<polyline fill="none" stroke="#2dd4bf" stroke-width="1.6" points="' + pts + '"/>';
   }
 
-  function renderTraffic(){
-    var svg = $('traffic');
+  function poolStats(name){
+    var members = state.pools[name] || [];
+    var list = members.map(providerOf).filter(Boolean);
+    var open = list.filter(function(p){ return p.circuit === 'open'; }).length;
+    var lat = list.filter(function(p){ return p.avg_latency_ms; });
+    var avg = lat.length ? Math.round(lat.reduce(function(a,b){ return a + b.avg_latency_ms; },0)/lat.length) : null;
+    var rows = state.logs.filter(function(l){ return l.model === name; });
+    var ok = rows.filter(function(l){ return l.ev === 'ok'; }).length;
+    var fail = rows.filter(function(l){ return l.ev === 'fail' || l.ev === 'relay_error'; }).length;
+    var current = list.filter(function(p){ return p.circuit !== 'open'; })[0] || null;
+    return { name: name, members: members, list: list, open: open, avg: avg, ok: ok, fail: fail, current: current, requests: rows.length };
+  }
+
+  function gauge(value, color){
+    var r = 40, c = 2 * Math.PI * r;
+    var off = c * (1 - Math.max(0, Math.min(1, value / 100)));
+    return '<div class="gauge"><svg width="96" height="96" viewBox="0 0 96 96">' +
+      '<circle cx="48" cy="48" r="' + r + '" fill="none" stroke="#172130" stroke-width="8"/>' +
+      '<circle cx="48" cy="48" r="' + r + '" fill="none" stroke="' + color + '" stroke-width="8" stroke-linecap="round" ' +
+      'stroke-dasharray="' + c.toFixed(1) + '" stroke-dashoffset="' + off.toFixed(1) + '"/>' +
+      '</svg><div class="val"><div><b>' + value + '%</b><span>成功率</span></div></div></div>';
+  }
+
+  function poolCard(s, color, customClass){
+    var rate = pct(s.ok, s.ok + s.fail);
+    var chips = s.list.map(function(p){
+      var cls = p.circuit === 'open' ? 'bad' : p.circuit === 'half-open' ? 'warn' : 'ok';
+      var hot = s.current && s.current.id === p.id ? ' hot' : '';
+      return '<span class="member' + hot + '"><i class="dot ' + cls + '"></i>' + h(p.id) + '</span>';
+    }).join('') || '<span class="dim">无成员</span>';
+    var route = s.current ? s.current.id : '无可用上游';
+    return '<div class="pool-top"><div><div class="pool-title">POOL</div><div class="pool-name">' + h(s.name) + '</div></div>' +
+      '<span class="pool-badge">' + s.members.length + ' 成员</span></div>' +
+      '<div class="pool-body">' + gauge(rate, color) +
+      '<div class="kv">' +
+        '<div><span>可用</span><b>' + (s.members.length - s.open) + ' / ' + s.members.length + '</b></div>' +
+        '<div><span>请求（日志窗口）</span><b>' + s.requests + '</b></div>' +
+        '<div><span>成功 / 失败</span><b>' + s.ok + ' / ' + s.fail + '</b></div>' +
+        '<div><span>平均延迟</span><b>' + fmtMs(s.avg) + '</b></div>' +
+      '</div></div>' +
+      '<div class="route"><span class="live-dot"></span>当前选定 API：<b>' + h(route) + '</b></div>' +
+      '<div class="members">' + chips + '</div>';
+  }
+
+  function renderPools(){
+    var tools = poolStats('tools');
+    var chat = poolStats('chat');
+    $('poolTools').innerHTML = poolCard(tools, '#34d399');
+    $('poolChat').innerHTML = poolCard(chat, '#22d3ee');
+  }
+
+  function renderUsage(){
+    var svg = $('usageChart');
     var now = Date.now();
     var buckets = [];
-    for(var i = 29; i >= 0; i--){
-      buckets.push({ t: now - i*60000, ok: 0, fail: 0 });
-    }
+    for(var i = 29; i >= 0; i--){ buckets.push({ tools: 0, chat: 0, fail: 0 }); }
     state.logs.forEach(function(l){
-      var ts = new Date(l.ts).getTime();
-      var idx = 29 - Math.floor((now - ts) / 60000);
+      var idx = 29 - Math.floor((now - new Date(l.ts).getTime()) / 60000);
       if(idx < 0 || idx > 29) return;
-      if(l.ev === 'ok') buckets[idx].ok++;
-      else if(l.ev === 'fail' || l.ev === 'relay_error') buckets[idx].fail++;
+      if(l.ev === 'fail' || l.ev === 'relay_error'){ buckets[idx].fail++; return; }
+      if(l.ev !== 'ok') return;
+      if(l.model === 'tools') buckets[idx].tools++;
+      else buckets[idx].chat++;
     });
     var max = 1;
-    buckets.forEach(function(b){ max = Math.max(max, b.ok + b.fail); });
-    var bw = 900 / 30;
-    var out = '';
+    buckets.forEach(function(b){ max = Math.max(max, b.tools + b.chat + b.fail); });
+    var bw = 900 / 30, out = '';
     buckets.forEach(function(b, i){
-      var x = i * bw + 3;
-      var w = bw - 6;
-      var totalH = (b.ok + b.fail) / max * 130;
-      var okH = b.ok / max * 130;
-      var base = 145;
-      if(b.ok + b.fail === 0){
+      var x = i * bw + 3, w = bw - 6, base = 150;
+      var hTools = b.tools / max * 130;
+      var hChat = b.chat / max * 130;
+      var hFail = b.fail / max * 130;
+      if(!b.tools && !b.chat && !b.fail){
         out += '<rect x="'+x+'" y="'+(base-2)+'" width="'+w+'" height="2" rx="1" fill="#1b2533"/>';
-      } else {
-        out += '<rect x="'+x+'" y="'+(base-totalH)+'" width="'+w+'" height="'+Math.max(1,totalH)+'" rx="2" fill="#f87171" opacity=".55"/>';
-        out += '<rect x="'+x+'" y="'+(base-okH)+'" width="'+w+'" height="'+Math.max(1,okH)+'" rx="2" fill="#2dd4bf" opacity=".9"/>';
+        return;
+      }
+      var y = base;
+      if(hFail){ y -= hFail; out += '<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+hFail+'" rx="2" fill="#f87171" opacity=".7"/>'; }
+      if(hTools){ y -= hTools; out += '<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+hTools+'" rx="2" fill="#34d399" opacity=".9"/>'; }
+      if(hChat){ y -= hChat; out += '<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+hChat+'" rx="2" fill="#22d3ee" opacity=".9"/>'; }
+    });
+    out += '<line x1="0" y1="151" x2="900" y2="151" stroke="#1c2634" stroke-width="1"/>';
+    svg.innerHTML = out;
+
+    var totals = { tools: 0, chat: 0, responses: 0, chatapi: 0 };
+    state.logs.forEach(function(l){
+      if(l.ev === 'ok'){
+        if(l.model === 'tools') totals.tools++; else totals.chat++;
+        if(l.api === 'responses') totals.responses++; else totals.chatapi++;
       }
     });
-    out += '<line x1="0" y1="146" x2="900" y2="146" stroke="#1c2634" stroke-width="1"/>';
-    svg.innerHTML = out;
+    var top = state.providers.slice().sort(function(a,b){ return (b.successes||0) - (a.successes||0); }).slice(0, 6);
+    var maxTop = Math.max.apply(null, top.map(function(p){ return p.successes || 1; }).concat([1]));
+    var apiTotal = totals.responses + totals.chatapi || 1;
+    $('apiSplit').innerHTML =
+      '<div><div class="pool-title">调用接口</div>' +
+        '<div class="api-row"><span class="mono">/v1/responses</span><div class="bar"><i style="width:' + pct(totals.responses, apiTotal) + '%"></i></div><span class="n">' + totals.responses + '</span></div>' +
+        '<div class="api-row"><span class="mono">/v1/chat</span><div class="bar"><i style="width:' + pct(totals.chatapi, apiTotal) + '%"></i></div><span class="n">' + totals.chatapi + '</span></div>' +
+      '</div>' +
+      '<div><div class="pool-title" style="margin-top:14px">上游成功数 TOP</div><div class="top-list">' +
+        top.map(function(p){
+          return '<div class="top-item"><span class="mono">' + h(p.id) + '</span>' +
+            '<div class="bar"><i style="width:' + Math.max(3, Math.round((p.successes||0)/maxTop*100)) + '%"></i></div>' +
+            '<b>' + (p.successes||0) + '</b></div>';
+        }).join('') +
+      '</div></div>';
   }
 
   function circuitLabel(p){
-    if(p.enabled === false) return { cls:'open', text:'禁用' };
     if(p.circuit === 'open') return { cls:'open', text:'熔断' };
     if(p.circuit === 'half-open') return { cls:'half', text:'半开' };
     return { cls:'closed', text:'正常' };
@@ -363,12 +422,9 @@
       if(q && (p.id + ' ' + (p.label||'')).toLowerCase().indexOf(q) < 0) return false;
       if(pool && (p.pools||[]).indexOf(pool) < 0) return false;
       var c = circuitLabel(p);
-      if(st === 'disabled' && p.enabled !== false) return false;
-      if(st && st !== 'disabled'){
-        if(st === 'open' && c.cls !== 'open') return false;
-        if(st === 'half' && c.cls !== 'half') return false;
-        if(st === 'closed' && c.cls !== 'closed') return false;
-      }
+      if(st === 'open' && c.cls !== 'open') return false;
+      if(st === 'half' && c.cls !== 'half') return false;
+      if(st === 'closed' && c.cls !== 'closed') return false;
       return true;
     });
     $('provCount').textContent = list.length + ' / ' + state.providers.length + ' 个槽位';
@@ -384,15 +440,10 @@
         '<td>' + tags + '</td>' +
         '<td><span class="st ' + c.cls + '"><i class="dot ' + (c.cls==='closed'?'ok':c.cls==='open'?'bad':'warn') + '"></i>' + c.text + (p.retry_at ? ' · ' + h(ago(p.retry_at)) : '') + '</span></td>' +
         '<td class="mono">' + (p.successes||0) + ' / ' + (p.failures||0) + '</td>' +
-        '<td><div style="display:flex;align-items:center;gap:8px"><div class="bar"><i style="width:' + barW + '%"></i></div><span class="mono dim">' + fmtMs(lat) + '</span></div></td>' +
+        '<td><div style="display:flex;align-items:center;gap:8px"><div class="bar-lat"><i style="width:' + barW + '%"></i></div><span class="mono dim">' + fmtMs(lat) + '</span></div></td>' +
         '<td>' + err + '</td>' +
       '</tr>';
     }).join('') || '<tr><td colspan="6" class="empty">没有匹配的槽位</td></tr>';
-
-    var pools = state.pools || {};
-    $('poolChips').innerHTML = Object.keys(pools).map(function(name){
-      return '<span class="pool ' + name + '">' + h(name) + ' · ' + pools[name].length + '</span>';
-    }).join('');
   }
 
   function renderLogs(){
@@ -416,17 +467,6 @@
     }).join('');
   }
 
-  function renderCurl(){
-    var host = location.origin;
-    var q = String.fromCharCode(39);
-    var nl = String.fromCharCode(10);
-    var body = '{"model":"chat","messages":[{"role":"user","content":"hi"}]}';
-    $('curlSnippet').textContent =
-      'curl ' + host + '/v1/chat/completions' + nl +
-      '  -H "Authorization: Bearer <YOUR_TOKEN>"' + nl +
-      '  -d ' + q + body + q;
-  }
-
   function load(){
     return fetch('/api/public', { cache: 'no-store' }).then(function(r){
       if(!r.ok) throw new Error('HTTP ' + r.status);
@@ -437,11 +477,11 @@
       state.pools = d.pools || {};
       state.logs = d.logs || [];
       state.metrics = { metrics: d.metrics || {} };
-      renderStats(); renderSpark(); renderTraffic(); renderProviders(); renderLogs();
+      renderStats(); renderSpark(); renderPools(); renderUsage(); renderProviders(); renderLogs();
     }).catch(function(err){
       $('statusDot').className = 'dot bad';
       $('statusText').textContent = '刷新失败';
-      toast('刷新失败：' + err.message + '（5s 后重试）');
+      toast('刷新失败：' + err.message);
     });
   }
 
@@ -456,68 +496,9 @@
     $(id).addEventListener('input', renderProviders);
     $(id).addEventListener('change', renderProviders);
   });
-  $('copyCurl').addEventListener('click', function(){
-    navigator.clipboard.writeText($('curlSnippet').textContent).then(function(){ toast('已复制'); });
-  });
-
-  /* playground */
-  function pgCred(){
-    var v = ($('pgToken').value || '').trim();
-    if(v){ try { localStorage.setItem(STORE, v); } catch(e){} return v; }
-    try { return localStorage.getItem(STORE) || ''; } catch(e){ return ''; }
-  }
-  function send(){
-    var prompt = $('pgPrompt').value.trim();
-    if(!prompt) return;
-    var cred = pgCred();
-    if(!cred){ toast('试跑需要填 token'); $('pgToken').focus(); return; }
-    var NL = String.fromCharCode(10);
-    var out = $('pgOut');
-    out.textContent = '';
-    var meta = document.createElement('span'); meta.className = 'meta';
-    meta.textContent = 'model=' + $('pgModel').value + ' · 流式中…';
-    out.appendChild(meta);
-    fetch('/v1/chat/completions', {
-      method: 'POST',
-      headers: { 'content-type':'application/json', authorization:'Bearer ' + cred },
-      body: JSON.stringify({ model: $('pgModel').value, stream: true, messages: [{ role:'user', content: prompt }] })
-    }).then(function(res){
-      if(res.status === 401){ out.textContent = 'token 无效或已轮换'; return; }
-      if(!res.ok) return res.text().then(function(t){ out.textContent = 'HTTP ' + res.status + ' - ' + t; });
-      var reader = res.body.getReader(); var dec = new TextDecoder(); var buf = '';
-      function pump(){
-        return reader.read().then(function(r){
-          if(r.done){ meta.textContent = '完成'; return; }
-          buf += dec.decode(r.value, { stream: true });
-          var parts = buf.split(NL + NL); buf = parts.pop();
-          parts.forEach(function(part){
-            var line = part.split(NL).filter(function(x){ return x.indexOf('data:') === 0; })[0];
-            if(!line) return;
-            var payload = line.slice(5).trim();
-            if(payload === '[DONE]') return;
-            try{
-              var j = JSON.parse(payload);
-              var d = j.choices && j.choices[0] && j.choices[0].delta;
-              if(d && d.content){ out.appendChild(document.createTextNode(d.content)); out.scrollTop = out.scrollHeight; }
-            }catch(e){}
-          });
-          return pump();
-        });
-      }
-      return pump();
-    }).catch(function(e){ out.textContent = '请求失败：' + e.message; });
-  }
-  $('pgSend').addEventListener('click', send);
-  $('pgClear').addEventListener('click', function(){ $('pgOut').innerHTML = '<span class="meta">输出会显示在这里 · 流式</span>'; });
-  $('pgPrompt').addEventListener('keydown', function(e){
-    if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); send(); }
-  });
-  $('pgToken').addEventListener('change', function(){ pgCred(); });
 
   start();
-  renderCurl();
 })();
-
 </script>
 </body>
 </html>
