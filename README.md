@@ -152,6 +152,7 @@ kilo -> llm7 -> ovh-oss20 -> ovh-oss120 -> ovh-llama70
 
 ## 更新日志
 
+- **v2.2.2**：`chat` 池在 `/v1/chat/completions`（非流式与流式）也会剥离 `reasoning` 字段，OpenClaw 等上游客户端不会再看到思维链。
 - **v2.2.1**：对话池（`chat`）不再注入推理提示、不再返回 `reasoning` 条目，避免把思维链暴露给用户；工具池（`tools`）保持原行为。
 - **v2.2.0**：Codex 功能对齐——`custom_tool_call`（apply_patch 等 freeform 工具）、`local_shell`、结构化输出（`text.format` / `json_schema`）、`previous_response_id` 链式上下文、`incomplete` 状态、cached / reasoning usage、`reasoning.encrypted_content` 兼容。
 - **v2.1.0**：`/v1/responses` 支持逐轮长思考（推理预算、思考摘要回填、reasoning 事件）；工具池与对话池同源头。

@@ -1435,7 +1435,45 @@ function eventPayloads(event) {
   return parseSseEvent(event).data;
 }
 
-function forwardOpenAIStream(res, prepared, logical, body, headers) {
+function stripReasoningFromEvent(rawEvent) {
+  const lines = rawEvent.split('\n');
+  const out = [];
+  for (const line of lines) {
+    if (!line.startsWith('data:')) {
+      out.push(line);
+      continue;
+    }
+    const payload = line.slice(5).trim();
+    if (!payload || payload === '[DONE]') {
+      out.push(line);
+      continue;
+    }
+    let chunk;
+    try {
+      chunk = JSON.parse(payload);
+    } catch {
+      out.push(line);
+      continue;
+    }
+    let touched = false;
+    for (const choice of chunk.choices || []) {
+      if (choice.delta && ('reasoning' in choice.delta || 'reasoning_content' in choice.delta)) {
+        delete choice.delta.reasoning;
+        delete choice.delta.reasoning_content;
+        touched = true;
+      }
+    }
+    if (touched) {
+      const choice = chunk.choices && chunk.choices[0];
+      const delta = choice && choice.delta || {};
+      if (!Object.keys(delta).length && !(choice && choice.finish_reason) && !chunk.usage) continue;
+    }
+    out.push('data: ' + JSON.stringify(chunk));
+  }
+  return out.join('\n');
+}
+
+function forwardOpenAIStream(res, prepared, logical, body, headers, options = {}) {
   sseHeaders(res, headers);
   const decoder = prepared.decoder || new StringDecoder('utf8');
   let buffer = prepared.prefix || '';
@@ -1474,7 +1512,7 @@ function forwardOpenAIStream(res, prepared, logical, body, headers) {
         safeWrite(res, 'data: [DONE]\n\n');
         sawDone = true;
       } else {
-        safeWrite(res, rawEvent + '\n\n');
+        safeWrite(res, (options.stripReasoning ? stripReasoningFromEvent(rawEvent) : rawEvent) + '\n\n');
       }
     }
     if (flush && buffer.trim()) {
@@ -1679,10 +1717,19 @@ async function handleChat(req, res, body, anthropic) {
           attempts: attempts.length,
           ms: Date.now() - started
         });
-        return forwardOpenAIStream(res, outcome.result, logical, body, responseHeaders);
+        return forwardOpenAIStream(res, outcome.result, logical, body, responseHeaders, {
+          stripReasoning: selection.stripTools
+        });
       }
 
       const completion = normalizeCompletion(outcome.result.raw, logical, provider.id, body);
+      if (selection.stripTools) {
+        const stripped = completion.choices && completion.choices[0] && completion.choices[0].message;
+        if (stripped) {
+          delete stripped.reasoning;
+          delete stripped.reasoning_content;
+        }
+      }
       if (
         bodyWantsTools(body) &&
         !(completion.choices && completion.choices[0] &&
