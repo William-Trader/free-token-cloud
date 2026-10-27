@@ -160,6 +160,7 @@ kilo -> llm7 -> ovh-oss20 -> ovh-oss120 -> ovh-llama70
 
 ## 更新日志
 
+- **v2.4.2**：修复控制台脚本语法错误（换行转义），状态栏不再卡在「连接中」；刷新失败会明确提示并在 5 秒后重试。
 - **v2.4.1**：控制台移除登录密码，改为公开只读 `/api/public`（`/v1/*` 仍鉴权）；Playground 单独填 token。
 - **v2.4.0**：新增 Web 控制台（`/`、`/dashboard`）：实时指标、30 分钟流量、槽位熔断状态、日志、流式 Playground。
 - **v2.2.2**：`chat` 池在 `/v1/chat/completions`（非流式与流式）也会剥离 `reasoning` 字段，OpenClaw 等上游客户端不会再看到思维链。

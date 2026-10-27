@@ -418,9 +418,13 @@
 
   function renderCurl(){
     var host = location.origin;
-    $('curlSnippet').textContent = 'curl ' + host + '/v1/chat/completions \
-  -H "Authorization: Bearer <YOUR_TOKEN>" \
-  -d \'{"model":"chat","messages":[{"role":"user","content":"hi"}]}\'';
+    var q = String.fromCharCode(39);
+    var nl = String.fromCharCode(10);
+    var body = '{"model":"chat","messages":[{"role":"user","content":"hi"}]}';
+    $('curlSnippet').textContent =
+      'curl ' + host + '/v1/chat/completions' + nl +
+      '  -H "Authorization: Bearer <YOUR_TOKEN>"' + nl +
+      '  -d ' + q + body + q;
   }
 
   function load(){
@@ -435,7 +439,9 @@
       state.metrics = { metrics: d.metrics || {} };
       renderStats(); renderSpark(); renderTraffic(); renderProviders(); renderLogs();
     }).catch(function(err){
-      toast('刷新失败：' + err.message);
+      $('statusDot').className = 'dot bad';
+      $('statusText').textContent = '刷新失败';
+      toast('刷新失败：' + err.message + '（5s 后重试）');
     });
   }
 
@@ -455,7 +461,7 @@
   });
 
   /* playground */
-  function playgroundToken(){
+  function pgCred(){
     var v = ($('pgToken').value || '').trim();
     if(v){ try { localStorage.setItem(STORE, v); } catch(e){} return v; }
     try { return localStorage.getItem(STORE) || ''; } catch(e){ return ''; }
@@ -463,8 +469,9 @@
   function send(){
     var prompt = $('pgPrompt').value.trim();
     if(!prompt) return;
-    var token = playgroundToken();
-    if(!token){ toast('试跑需要填 token'); $('pgToken').focus(); return; }
+    var cred = pgCred();
+    if(!cred){ toast('试跑需要填 token'); $('pgToken').focus(); return; }
+    var NL = String.fromCharCode(10);
     var out = $('pgOut');
     out.textContent = '';
     var meta = document.createElement('span'); meta.className = 'meta';
@@ -472,23 +479,19 @@
     out.appendChild(meta);
     fetch('/v1/chat/completions', {
       method: 'POST',
-      headers: { 'content-type':'application/json', authorization:'Bearer ' + token },
+      headers: { 'content-type':'application/json', authorization:'Bearer ' + cred },
       body: JSON.stringify({ model: $('pgModel').value, stream: true, messages: [{ role:'user', content: prompt }] })
     }).then(function(res){
       if(res.status === 401){ out.textContent = 'token 无效或已轮换'; return; }
-      if(!res.ok) return res.text().then(function(t){ out.textContent = 'HTTP ' + res.status + '
-' + t; });
+      if(!res.ok) return res.text().then(function(t){ out.textContent = 'HTTP ' + res.status + ' - ' + t; });
       var reader = res.body.getReader(); var dec = new TextDecoder(); var buf = '';
       function pump(){
         return reader.read().then(function(r){
           if(r.done){ meta.textContent = '完成'; return; }
           buf += dec.decode(r.value, { stream: true });
-          var parts = buf.split('
-
-'); buf = parts.pop();
+          var parts = buf.split(NL + NL); buf = parts.pop();
           parts.forEach(function(part){
-            var line = part.split('
-').filter(function(x){ return x.indexOf('data:') === 0; })[0];
+            var line = part.split(NL).filter(function(x){ return x.indexOf('data:') === 0; })[0];
             if(!line) return;
             var payload = line.slice(5).trim();
             if(payload === '[DONE]') return;
@@ -509,7 +512,7 @@
   $('pgPrompt').addEventListener('keydown', function(e){
     if(e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); send(); }
   });
-  $('pgToken').addEventListener('change', function(){ playgroundToken(); });
+  $('pgToken').addEventListener('change', function(){ pgCred(); });
 
   start();
   renderCurl();
