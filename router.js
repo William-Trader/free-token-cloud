@@ -1289,11 +1289,14 @@ function usageFromRaw(raw, body) {
   if (raw && raw.usage && Number.isFinite(Number(raw.usage.prompt_tokens))) {
     const prompt = Number(raw.usage.prompt_tokens) || 0;
     const completion = Number(raw.usage.completion_tokens) || 0;
-    return {
+    const usage = {
       prompt_tokens: prompt,
       completion_tokens: completion,
       total_tokens: Number(raw.usage.total_tokens) || prompt + completion
     };
+    if (raw.usage.prompt_tokens_details) usage.prompt_tokens_details = raw.usage.prompt_tokens_details;
+    if (raw.usage.completion_tokens_details) usage.completion_tokens_details = raw.usage.completion_tokens_details;
+    return usage;
   }
   return estimateUsage(body, messageText(raw));
 }
@@ -1657,7 +1660,14 @@ function anthropicEventsFromCompletion(completion, logical) {
         content: [],
         stop_reason: null,
         stop_sequence: null,
-        usage: { input_tokens: usage.prompt_tokens || 0, output_tokens: 0 }
+        usage: {
+          input_tokens: usage.prompt_tokens || 0,
+          output_tokens: 0,
+          cache_read_input_tokens: Number(
+            usage.prompt_tokens_details && usage.prompt_tokens_details.cached_tokens || 0
+          ),
+          cache_creation_input_tokens: 0
+        }
       }
     }],
     ['content_block_start', { type: 'content_block_start', index: 0, content_block: { type: 'text', text: '' } }]
@@ -1706,7 +1716,14 @@ function anthropicEventsFromCompletion(completion, logical) {
           : 'end_turn',
       stop_sequence: null
     },
-    usage: { output_tokens: usage.completion_tokens || 0 }
+    usage: {
+      input_tokens: usage.prompt_tokens || 0,
+      output_tokens: usage.completion_tokens || 0,
+      cache_read_input_tokens: Number(
+        usage.prompt_tokens_details && usage.prompt_tokens_details.cached_tokens || 0
+      ),
+      cache_creation_input_tokens: 0
+    }
   }]);
   events.push(['message_stop', { type: 'message_stop' }]);
   return events;
@@ -2922,7 +2939,11 @@ function openAIToAnthropic(completion, logical, providerId) {
     stop_sequence: null,
     usage: {
       input_tokens: usage.prompt_tokens || 0,
-      output_tokens: usage.completion_tokens || 0
+      output_tokens: usage.completion_tokens || 0,
+      cache_read_input_tokens: Number(
+        usage.prompt_tokens_details && usage.prompt_tokens_details.cached_tokens || 0
+      ),
+      cache_creation_input_tokens: 0
     },
     relay: { upstream: providerId }
   };
