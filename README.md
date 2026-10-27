@@ -15,6 +15,10 @@
 
 一句话：**你出机器和改造想法，框架已经把"多上游 + 故障切换 + 统一 token 入口"这部分写好了。**
 
+也可以直接让你的 agent（Codex / Claude Code / OpenClaw 等）把本项目部署到你的**本地电脑**上，
+给自己提供免费 token。但先说好：**别要求太高**，工程还在持续开发中，能跑通、能切换、能干活，
+但边角和稳定性还会变。觉得有用就点个 **Star** —— star 多一点，这个源才不容易断更、不容易失效。
+
 部署后把远端地址填进 `.env.local` 或 `RELAY_URL`，例如 `http://<RELAY_HOST>:8080`。  
 OpenClaw provider：`ai-relay`；模型：`ai-relay/tools`（默认）、`ai-relay/chat`。
 
