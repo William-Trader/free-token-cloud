@@ -32,6 +32,7 @@
     "tools": {
       "chain": [
         "llm7",
+        "llm7-codestral",
         "kilo-cohere",
         "kilo-dots",
         "kilo",
@@ -105,6 +106,7 @@
         "kilo-lightning",
         "kilo-laguna-xs",
         "llm7",
+        "llm7-codestral",
         "llm7-minimax",
         "llm7-nemo",
         "llm7-nemotron",
@@ -1504,6 +1506,36 @@
       "rpm": 20,
       "priority": 118,
       "toolPriority": 80
+    },
+    {
+      "id": "llm7-codestral",
+      "type": "openai-compatible",
+      "label": "LLM7 Codestral (native tools)",
+      "enabled": true,
+      "baseUrl": "https://api.llm7.io/v1",
+      "healthUrl": "https://api.llm7.io/v1/models",
+      "apiKeyFile": "/opt/ai-relay/keys/llm7.key",
+      "optionalAuth": true,
+      "modelMap": {
+        "auto": "codestral-latest",
+        "chat": "codestral-latest",
+        "fast": "codestral-latest",
+        "smart": "codestral-latest"
+      },
+      "pools": [
+        "tools",
+        "chat"
+      ],
+      "capabilities": {
+        "tools": true,
+        "stream": true,
+        "usage": true
+      },
+      "timeoutMs": 75000,
+      "maxConcurrency": 1,
+      "rpm": 15,
+      "priority": 119,
+      "toolPriority": 69
     }
   ],
   "streamPacing": {

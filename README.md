@@ -83,14 +83,14 @@ DSH Desktop / DeepSeek Harness 接入说明见 `docs/HARNESS.md`；Harness 默�
 | OVH AI Endpoints | `Qwen3.8-27B` | 不需要 | 是 | 文本桥 | 独立 2 RPM 配额 |
 | Pollinations | `openai-fast` | 可选 | 是 | 原生 | 最终兜底，匿名约 30 秒一次 |
 
-当前配置共 **44 个 provider 条目**（含需要 key 的扩展槽，缺 key 自动禁用、不占重试时间）；匿名池实际可用 **29 个对话槽位、19 个工具槽位**：
+当前配置共 **45 个 provider 条目**（含需要 key 的扩展槽，缺 key 自动禁用、不占重试时间）；匿名池实际可用 **30 个对话槽位、20 个工具槽位**：
 
 ```text
 # Kilo（共享账号额度，group=kilo）
 kilo, kilo-nemotron, kilo-beam, kilo-glyph, kilo-dots, kilo-cohere, kilo-openrouter,
 kilo-lfm, kilo-omni, kilo-ultra, kilo-laguna, kilo-flint, kilo-lightning, kilo-laguna-xs,
 # LLM7（匿名可用）
-llm7, llm7-minimax, llm7-nemo, llm7-nemotron,
+llm7, llm7-codestral, llm7-minimax, llm7-nemo, llm7-nemotron,
 # OVH（按模型独立限额）
 ovh-oss20, ovh-oss120, ovh-llama70, ovh-nemo, ovh-small,
 ovh-qwen36, ovh-qwen397, ovh-qwen-vl, ovh-qwen35-9b, ovh-qwen38-27b,
@@ -202,10 +202,11 @@ kilo -> llm7 -> ovh-oss20 -> ovh-oss120 -> ovh-llama70
 
 ## 更新日志
 
+- **v3.5.0**：全网匿名源复查——接入 LLM7 `codestral-latest`（原生 function calling，进 tools 池），淘汰 Kilo `xingchen`（429）与 `super-120b`（404）；现 30 对话 / 20 工具槽位、45 个 provider 条目。
 - **v3.4.6**：补工具参数校验回归测试；OpenClaw（chat completions）与 Codex（responses）工具调用端到端复测通过。
 - **v3.4.5**：工具参数按 schema 校验——缺必填字段不接收，向模型回传缺失项并重试一次；402/配额类统一冷却；最终错误脱敏（不再把上游 quota 原文透给客户端）。
 - **v3.4.4**：修复 agent 工具调用不稳——工具桥提示词改为「只输出 JSON，必须调用」并在无 tool_calls 时同 provider 重试一次；tools 链重排为 llm7 → kilo-cohere → kilo-dots → kilo → kilo-glyph。实测 5 次 4 次返回 tool_use。
-- **v3.4.3**：README 全面对齐实际状态——44 个 provider 条目 / 29 对话 / 19 工具槽位、Token 合并与分开视图、缓存口径与移动端说明；移除已删除的 Playground 描述。
+- **v3.4.3**：README 全面对齐实际状态——45 个 provider 条目 / 29 对话 / 19 工具槽位、Token 合并与分开视图、缓存口径与移动端说明；移除已删除的 Playground 描述。
 - **v3.4.2**：主 Token 卡拆成「读取 / 输出 / 缓存」三列 + 总计；缓存卡改为按请求的命中率；表格横向滚动、指标两列、池卡堆叠等移动端优化。
 - **v3.4.1**：控制台 Token 可视化改版——卡片内堆叠条（读取/缓存/输出）、合并视图 + 分开视图、日志显示 `in→out`、槽位表显示 `总量 (in→out)`。
 - **v3.4.0**：默认语言规则（`locale`）——仅对 `chat` 对话池注入「默认简体中文」，`tools`/编码链路不受影响；可用 `locale.routes` 调整范围。
