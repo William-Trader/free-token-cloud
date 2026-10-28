@@ -940,10 +940,11 @@ function buildCandidates(logical, body, options = {}) {
       const wins = wantsTools ? (state.toolSuccesses || 0) : (state.successes || 0);
       const reliability = (wins + 1) / (attempts + 2);
       const latency = state.avgLatencyMs == null ? 4000 : state.avgLatencyMs;
-      const speed = 1 / (1 + latency / 3000);
+      const speed = 1 / (1 + latency / 2000);
+      const slowPenalty = latency > 8000 ? 0.15 : 0;
       const idle = state.inFlight > 0 ? 0 : 0.12;
       const priorityBonus = Math.max(0, (200 - (candidate.provider.toolPriority || candidate.provider.priority)) / 2000);
-      return reliability * 0.62 + speed * 0.2 + idle + priorityBonus + Math.random() * 0.04;
+      return reliability * 0.55 + speed * 0.3 + idle + priorityBonus - slowPenalty + Math.random() * 0.03;
     };
     candidates.sort((left, right) => rank(right) - rank(left));
   } else {
@@ -2524,7 +2525,12 @@ async function handleChat(req, res, body, anthropic) {
   }
 
   const attempts = [];
+  const budgetMs = Number(selection.definition && selection.definition.budgetMs) || 0;
   for (const candidate of selection.candidates) {
+    if (budgetMs && Date.now() - started > budgetMs) {
+      log({ ev: 'budget_exceeded', request_id: requestId, model: logical, ms: Date.now() - started, budget_ms: budgetMs });
+      break;
+    }
     const provider = candidate.provider;
     const providerStarted = Date.now();
     try {
@@ -3193,7 +3199,12 @@ async function handleResponses(req, res, body) {
   }
 
   const attempts = [];
+  const budgetMs = Number(selection.definition && selection.definition.budgetMs) || 0;
   for (const candidate of selection.candidates) {
+    if (budgetMs && Date.now() - started > budgetMs) {
+      log({ ev: 'budget_exceeded', api: 'responses', request_id: requestId, model: logical, ms: Date.now() - started, budget_ms: budgetMs });
+      break;
+    }
     const provider = candidate.provider;
     const providerStarted = Date.now();
     try {
