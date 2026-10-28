@@ -2,6 +2,8 @@
 Description=ai-relay multi-provider AI router
 After=network-online.target
 Wants=network-online.target
+StartLimitIntervalSec=0
+StartLimitBurst=0
 
 [Service]
 Type=simple

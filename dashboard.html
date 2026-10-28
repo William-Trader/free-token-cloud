@@ -621,11 +621,16 @@
       state.metrics = { metrics: d.metrics || {} };
       state.usage = d.usage || {};
       state.setup = d.providerSetup || null;
+      clearTimeout(state.retryTimer);
+      $('statusDot').className = 'dot ok';
+      $('statusText').textContent = '服务正常';
       renderStats(); renderSpark(); renderPools(); renderUsage(); renderProviders(); renderLogs();
     }).catch(function(err){
-      $('statusDot').className = 'dot bad';
-      $('statusText').textContent = '刷新失败';
-      toast('刷新失败：' + err.message);
+      $('statusDot').className = 'dot warn';
+      $('statusText').textContent = '重连中…';
+      toast('连接中断：' + err.message + '，4 秒后自动重试');
+      clearTimeout(state.retryTimer);
+      state.retryTimer = setTimeout(load, 4000);
     });
   }
 
