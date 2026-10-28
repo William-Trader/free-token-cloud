@@ -1,6 +1,6 @@
 {
   "name": "free-token-cloud",
-  "version": "4.1.3",
+  "version": "4.1.4",
   "description": "2C1G 服务器上的免费模型聚合中转：OpenAI/Anthropic 兼容入口 + token 分发 + 自动故障切换",
   "license": "PolyForm-Noncommercial-1.0.0",
   "type": "commonjs",

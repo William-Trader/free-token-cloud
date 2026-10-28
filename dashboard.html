@@ -47,6 +47,7 @@
   main{padding:22px 0 60px}
   .grid{display:grid;gap:14px}
   .stats{grid-template-columns:repeat(auto-fit,minmax(168px,1fr))}
+  .tok-card{grid-column:span 2}
   .card{background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,0)),var(--panel);
     border:1px solid var(--line);border-radius:var(--radius);padding:16px}
   .card h3{margin:0 0 2px;font-size:12px;color:var(--muted);font-weight:500;letter-spacing:.4px}
@@ -176,6 +177,7 @@
   }
   @media (max-width:720px){
     .stats{grid-template-columns:repeat(2,1fr)}
+    .tok-card{grid-column:span 2}
     .tok-row b{font-size:17px}
     .pool-body{grid-template-columns:80px 1fr;gap:10px}
     .kv{grid-template-columns:1fr 1fr}
@@ -291,6 +293,7 @@
 <script>
 (function(){
   var state = { providers: [], pools: {}, logs: [], metrics: null, health: null, setup: null, timer: null };
+  var usageMode = '30m';
   var $ = function(id){ return document.getElementById(id); };
 
   function toast(msg){
