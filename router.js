@@ -68,6 +68,8 @@ const metrics = {
   cacheHits: 0,
   usageEvents: 0
 };
+let usageHistory = {};
+
 const usagePersistence = {
   timer: null,
   updatedAt: null,
@@ -171,6 +173,7 @@ function loadUsageState() {
     };
   }
 
+  usageHistory = saved.history && typeof saved.history === 'object' ? saved.history : {};
   usagePersistence.updatedAt = saved.updatedAt || null;
   usagePersistence.loadedAt = nowIso();
   usagePersistence.startedAt = saved.startedAt || usagePersistence.startedAt;
@@ -194,6 +197,7 @@ function usageSnapshot() {
     startedAt: usagePersistence.startedAt,
     updatedAt: nowIso(),
     metrics: Object.assign({}, metrics),
+    history: usageHistory,
     providers
   };
 }
@@ -739,6 +743,21 @@ function loadProviderKeys(raw) {
     const value = readTextFile(file);
     if (value) keys.push(value);
   }
+  // 多 key 扩容：同目录下 <id>*.key 全部纳入轮换（合法多账号/多 key）
+  try {
+    const base = raw.apiKeyFile;
+    if (base) {
+      const dir = path.dirname(base);
+      const prefix = path.basename(base).replace(/\.key$/, '');
+      for (const name of fs.readdirSync(dir)) {
+        if (!name.endsWith('.key')) continue;
+        if (name === path.basename(base)) continue;
+        if (!name.startsWith(prefix)) continue;
+        const value = readTextFile(path.join(dir, name));
+        if (value) keys.push(value);
+      }
+    }
+  } catch {}
   return [...new Set(keys.map(value => value.trim()).filter(Boolean))];
 }
 
@@ -1000,6 +1019,16 @@ function addUsage(providerId, usage) {
     usage.completion_tokens_details && usage.completion_tokens_details.reasoning_tokens ||
     usage.output_tokens_details && usage.output_tokens_details.reasoning_tokens || 0
   );
+  const dayKey = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Shanghai' });
+  const bucket = usageHistory[dayKey] || (usageHistory[dayKey] = {
+    prompt: 0, completion: 0, cached: 0, reasoning: 0, total: 0, requests: 0
+  });
+  bucket.prompt += prompt;
+  bucket.completion += completion;
+  bucket.cached += cached;
+  bucket.reasoning += reasoning;
+  bucket.total += total;
+  bucket.requests += 1;
   metrics.promptTokens += prompt;
   metrics.completionTokens += completion;
   metrics.totalTokens += total;
@@ -3707,6 +3736,24 @@ function routeModels() {
   });
 }
 
+function usageRollup() {
+  const today = new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Shanghai' });
+  const month = today.slice(0, 7);
+  const days = Object.keys(usageHistory).sort();
+  const last30 = days.slice(-30).map(day => Object.assign({ date: day }, usageHistory[day]));
+  const monthTotals = { prompt: 0, completion: 0, cached: 0, reasoning: 0, total: 0, requests: 0 };
+  for (const day of days) {
+    if (!day.startsWith(month)) continue;
+    const item = usageHistory[day] || {};
+    for (const key of Object.keys(monthTotals)) monthTotals[key] += Number(item[key] || 0);
+  }
+  return {
+    today: Object.assign({ date: today }, usageHistory[today] || { prompt: 0, completion: 0, cached: 0, reasoning: 0, total: 0, requests: 0 }),
+    month: Object.assign({ month }, monthTotals),
+    history: last30
+  };
+}
+
 function publicView() {
   const health = healthView();
   return {
@@ -3715,6 +3762,7 @@ function publicView() {
     uptime_s: health.uptime_s,
     routes: health.routes,
     metrics,
+    usage: usageRollup(),
     pools: poolView(),
     providerSetup: providerSetupSummary(),
     providers: providers.filter(provider => provider.enabled).map(provider => {
