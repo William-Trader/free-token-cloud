@@ -283,6 +283,7 @@
     <div class="sec-head"><h2>实时日志</h2><span class="hint">最近 100 条 · R=Responses C=Chat</span><div class="spacer"></div><span class="pill" id="logCount">—</span></div>
     <div class="tbl logs" id="logsBox"></div>
   </section>
+  <div id="renderError" style="display:none;margin:16px 22px;padding:10px 14px;border:1px solid #5b2020;background:rgba(248,113,113,.08);color:#fecaca;border-radius:10px;font-size:12px"></div>
 </main>
 
 <div class="toast" id="toast"></div>
@@ -436,7 +437,7 @@
     for(var i = 29; i >= 0; i--){ buckets.push({ tools: 0, chat: 0, fail: 0 }); }
     state.logs.forEach(function(l){
       var idx = 29 - Math.floor((now - new Date(l.ts).getTime()) / 60000);
-      if(idx < 0 || idx > 29) return;
+      if(!Number.isFinite(idx) || idx < 0 || idx > 29) return;
       if(l.ev === 'fail' || l.ev === 'relay_error'){ buckets[idx].fail++; return; }
       if(l.ev !== 'ok') return;
       if(l.model === 'tools') buckets[idx].tools++;
@@ -609,6 +610,18 @@
     }).join('');
   }
 
+  function renderSafe(name, fn){
+    try { fn(); }
+    catch (error) {
+      console.error('[dashboard] render ' + name + ' failed', error);
+      var box = document.getElementById('renderError');
+      if (box) {
+        box.style.display = 'block';
+        box.textContent = '渲染 ' + name + ' 失败：' + (error && error.message ? error.message : error);
+      }
+    }
+  }
+
   function load(){
     return fetch('/api/public', { cache: 'no-store' }).then(function(r){
       if(!r.ok) throw new Error('HTTP ' + r.status);
@@ -624,7 +637,12 @@
       clearTimeout(state.retryTimer);
       $('statusDot').className = 'dot ok';
       $('statusText').textContent = '服务正常';
-      renderStats(); renderSpark(); renderPools(); renderUsage(); renderProviders(); renderLogs();
+      renderSafe('stats', renderStats);
+      renderSafe('spark', renderSpark);
+      renderSafe('pools', renderPools);
+      renderSafe('usage', renderUsage);
+      renderSafe('providers', renderProviders);
+      renderSafe('logs', renderLogs);
     }).catch(function(err){
       $('statusDot').className = 'dot warn';
       $('statusText').textContent = '重连中…';
