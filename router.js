@@ -69,6 +69,7 @@ const metrics = {
   usageEvents: 0
 };
 let usageHistory = {};
+let usageHourly = {};
 
 const usagePersistence = {
   timer: null,
@@ -112,6 +113,21 @@ function nowIso() {
 
 function log(event) {
   const record = Object.assign({ ts: nowIso() }, event);
+  try {
+    if (record.model && (record.ev === 'ok' || record.ev === 'fail' || record.ev === 'relay_error')) {
+      const now = new Date();
+      const day = now.toLocaleDateString('sv-SE', { timeZone: 'Asia/Shanghai' });
+      const hour = now.toLocaleTimeString('en-GB', { hour: '2-digit', hour12: false, timeZone: 'Asia/Shanghai' });
+      const key = day + 'T' + hour;
+      const bucket = usageHourly[key] || (usageHourly[key] = { tools: 0, chat: 0, fail: 0, tokens: 0 });
+      if (record.ev !== 'ok') bucket.fail += 1;
+      else if (record.model === 'tools') bucket.tools += 1;
+      else bucket.chat += 1;
+      bucket.tokens += Number(record.tokens || 0);
+      const keys = Object.keys(usageHourly).sort();
+      while (keys.length > 72) { delete usageHourly[keys.shift()]; }
+    }
+  } catch {}
   logs.push(record);
   if (logs.length > MAX_LOGS) logs.shift();
   try {
@@ -174,6 +190,7 @@ function loadUsageState() {
   }
 
   usageHistory = saved.history && typeof saved.history === 'object' ? saved.history : {};
+  usageHourly = saved.hourly && typeof saved.hourly === 'object' ? saved.hourly : {};
   usagePersistence.updatedAt = saved.updatedAt || null;
   usagePersistence.loadedAt = nowIso();
   usagePersistence.startedAt = saved.startedAt || usagePersistence.startedAt;
@@ -198,6 +215,7 @@ function usageSnapshot() {
     updatedAt: nowIso(),
     metrics: Object.assign({}, metrics),
     history: usageHistory,
+    hourly: usageHourly,
     providers
   };
 }
@@ -3750,7 +3768,8 @@ function usageRollup() {
   return {
     today: Object.assign({ date: today }, usageHistory[today] || { prompt: 0, completion: 0, cached: 0, reasoning: 0, total: 0, requests: 0 }),
     month: Object.assign({ month }, monthTotals),
-    history: last30
+    history: last30,
+    hourly: Object.keys(usageHourly).sort().slice(-24).map(key => Object.assign({ hour: key }, usageHourly[key]))
   };
 }
 

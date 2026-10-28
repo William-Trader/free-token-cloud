@@ -239,7 +239,7 @@
   </section>
 
   <section class="section">
-    <div class="sec-head"><h2>用量</h2><span class="hint">最近 30 分钟 · 按池与接口拆分</span><div class="spacer"></div>
+    <div class="sec-head"><h2>用量</h2><span class="hint" id="usageHint">最近 30 分钟 · 按池与接口拆分</span><div class="spacer"></div><div class="toolbar" style="margin-right:10px"><button class="btn" id="mode30" style="border-color:#2dd4bf;color:#2dd4bf">30 分钟</button><button class="btn" id="mode24">24 小时</button></div>
       <div class="legend">
         <span><i style="background:var(--green)"></i>tools</span>
         <span><i style="background:var(--cyan)"></i>chat</span>
@@ -429,6 +429,7 @@
   }
 
   function renderUsage(){
+    if (usageMode === '24h') return renderHourly();
     var svg = $('usageChart');
     var now = Date.now();
     var buckets = [];
@@ -504,6 +505,37 @@
     return { cls:'closed', text:'正常' };
   }
 
+  function renderHourly(){
+    var svg = $('usageChart');
+    var rows = (state.usage && state.usage.hourly) || [];
+    var empty = !rows.length;
+    var buckets = [];
+    for (var i = 23; i >= 0; i--){
+      var d = new Date(Date.now() - i * 3600000);
+      var day = d.toLocaleDateString('sv-SE');
+      var hour = d.toLocaleTimeString('en-GB', { hour: '2-digit', hour12: false });
+      var key = day + 'T' + hour;
+      var hit = rows.filter(function(r){ return r.hour === key; })[0] || { tools: 0, chat: 0, fail: 0 };
+      buckets.push({ label: hour, tools: hit.tools || 0, chat: hit.chat || 0, fail: hit.fail || 0 });
+    }
+    var max = 1;
+    buckets.forEach(function(b){ max = Math.max(max, b.tools + b.chat + b.fail); });
+    var bw = 900 / 24, out = '';
+    buckets.forEach(function(b, i){
+      var x = i * bw + 3, w = bw - 6, base = 145;
+      var hT = b.tools / max * 125, hC = b.chat / max * 125, hF = b.fail / max * 125;
+      var y = base;
+      if (hF){ y -= hF; out += '<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+hF+'" rx="2" fill="#f87171" opacity=".75"/>'; }
+      if (hT){ y -= hT; out += '<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+hT+'" rx="2" fill="#34d399" opacity=".9"/>'; }
+      if (hC){ y -= hC; out += '<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+hC+'" rx="2" fill="#22d3ee" opacity=".9"/>'; }
+      if (!b.tools && !b.chat && !b.fail){ out += '<rect x="'+x+'" y="143" width="'+w+'" height="2" rx="1" fill="#1b2533"/>'; }
+      if (i % 3 === 0){ out += '<text x="'+(x+2)+'" y="158" fill="#5d6b7d" font-size="9">'+b.label+'</text>'; }
+    });
+    out += '<line x1="0" y1="146" x2="900" y2="146" stroke="#1c2634" stroke-width="1"/>';
+    svg.innerHTML = out;
+    $('usageHint').textContent = '最近 24 小时 · 按小时聚合（tools / chat / 失败）';
+  }
+
   function renderTrend(history){
     var svg = $('trendChart');
     if (!svg) return;
@@ -514,8 +546,8 @@
     history.forEach(function(day, i){
       var value = day.total || 0;
       var h = value / max * 110;
-      var x = i * bw + 3;
-      var w = Math.max(2, bw - 6);
+      var w = Math.min(26, Math.max(3, bw - 6));
+      var x = i * bw + (bw - w) / 2;
       out += '<rect x="' + x + '" y="' + (125 - h) + '" width="' + w + '" height="' + Math.max(1, h) + '" rx="2" fill="#2dd4bf" opacity=".85"><title>' + day.date + ' · ' + fmtNum(value) + ' tokens</title></rect>';
     });
     out += '<line x1="0" y1="126" x2="900" y2="126" stroke="#1c2634" stroke-width="1"/>';
@@ -603,6 +635,19 @@
     state.timer = setInterval(load, 5000);
   }
 
+  $('mode30').addEventListener('click', function(){
+    usageMode = '30m';
+    $('mode30').style.borderColor = '#2dd4bf'; $('mode30').style.color = '#2dd4bf';
+    $('mode24').style.borderColor = ''; $('mode24').style.color = '';
+    $('usageHint').textContent = '最近 30 分钟 · 按池与接口拆分';
+    renderUsage();
+  });
+  $('mode24').addEventListener('click', function(){
+    usageMode = '24h';
+    $('mode24').style.borderColor = '#2dd4bf'; $('mode24').style.color = '#2dd4bf';
+    $('mode30').style.borderColor = ''; $('mode30').style.color = '';
+    renderUsage();
+  });
   $('refreshBtn').addEventListener('click', function(){ load(); toast('已刷新'); });
   ['search','poolFilter','stateFilter'].forEach(function(id){
     $(id).addEventListener('input', renderProviders);
