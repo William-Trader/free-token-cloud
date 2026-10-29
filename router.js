@@ -4066,14 +4066,22 @@ async function handleRequest(req, res) {
       return writeJson(res, 200, { ok: true, provider: updated || null });
     }
     if (pathname === '/api/score/run' && req.method === 'POST') {
-      const targets = providers.filter(provider => provider.enabled && provider.endpoint);
+      const targets = providers.filter(provider =>
+        provider.enabled &&
+        provider.endpoint &&
+        provider.type !== 'pi-agent' &&
+        provider.pools.length > 0
+      );
       const results = [];
-      const concurrency = 4;
+      const concurrency = 6;
       for (let start = 0; start < targets.length; start += concurrency) {
         const batch = targets.slice(start, start + concurrency);
         /* eslint-disable no-await-in-loop */
         await Promise.all(batch.map(async provider => {
           const startedAt = Date.now();
+          const probe = Object.assign({}, provider, {
+            timeoutMs: Math.min(Number(provider.timeoutMs) || 15000, 12000)
+          });
           const body = {
             model: provider.modelMap.auto || provider.modelMap.chat || 'auto',
             messages: [{ role: 'user', content: 'ping' }],
@@ -4081,7 +4089,7 @@ async function handleRequest(req, res) {
             stream: false
           };
           try {
-            await providerJsonAttempt(provider, body.model, body, { toolPolicy: 'strict' }, provider.keys[0]);
+            await providerJsonAttempt(probe, body.model, body, { toolPolicy: 'strict' }, provider.keys[0]);
             bumpScore(provider.id, true, Date.now() - startedAt);
             results.push({ id: provider.id, ok: true, ms: Date.now() - startedAt });
           } catch (error) {
