@@ -161,6 +161,73 @@ function finiteNumber(value) {
   return Number.isFinite(number) && number >= 0 ? number : 0;
 }
 
+let providerScores = null;
+let scoreLastRun = null;
+let scoreSaveTimer = null;
+
+function scoresFile() {
+  return CFG && CFG.scoresFile ? CFG.scoresFile : null;
+}
+
+function ensureScores() {
+  if (providerScores) return providerScores;
+  providerScores = {};
+  const file = scoresFile();
+  if (file) {
+    const saved = readJsonIfExists(file, null);
+    if (saved && typeof saved === 'object') {
+      providerScores = saved.scores || {};
+      scoreLastRun = saved.lastRun || null;
+    }
+  }
+  return providerScores;
+}
+
+function saveScores() {
+  const file = scoresFile();
+  if (!file) return false;
+  try {
+    fs.mkdirSync(path.dirname(file), { recursive: true, mode: 0o700 });
+    const temp = file + '.' + process.pid + '.tmp';
+    fs.writeFileSync(temp, JSON.stringify({ version: 1, lastRun: scoreLastRun, scores: ensureScores() }, null, 2) + '\n', { mode: 0o600 });
+    fs.renameSync(temp, file);
+    return true;
+  } catch (error) {
+    log({ ev: 'score_persist_failed', error: String(error.message || error) });
+    return false;
+  }
+}
+
+function scheduleScoreSave() {
+  if (scoreSaveTimer) return;
+  scoreSaveTimer = setTimeout(() => { scoreSaveTimer = null; saveScores(); }, 5000);
+  scoreSaveTimer.unref();
+}
+
+function scoreInstant(ok, latencyMs) {
+  if (!ok) return 5;
+  return Math.max(20, Math.min(100, 100 - Number(latencyMs || 0) / 50));
+}
+
+function bumpScore(id, ok, latencyMs) {
+  const scores = ensureScores();
+  const previous = scores[id] && Number(scores[id].score);
+  const instant = scoreInstant(ok, latencyMs);
+  const score = previous == null ? Math.round(instant) : Math.round(previous * 0.6 + instant * 0.4);
+  scores[id] = {
+    score,
+    latencyMs: Number(latencyMs || 0),
+    ok: Boolean(ok),
+    checkedAt: nowIso()
+  };
+  scheduleScoreSave();
+}
+
+function scoreFor(id) {
+  const item = ensureScores()[id];
+  return item && Number.isFinite(item.score) ? item.score : 50;
+}
+
 function loadUsageState() {
   if (!CFG || !CFG.usageStateFile) return null;
   const saved = readJsonIfExists(CFG.usageStateFile, null);
@@ -944,7 +1011,8 @@ function buildCandidates(logical, body, options = {}) {
       const slowPenalty = latency > 8000 ? 0.15 : 0;
       const idle = state.inFlight > 0 ? 0 : 0.12;
       const priorityBonus = Math.max(0, (200 - (candidate.provider.toolPriority || candidate.provider.priority)) / 2000);
-      return reliability * 0.55 + speed * 0.3 + idle + priorityBonus - slowPenalty + Math.random() * 0.03;
+      const scoreBonus = (scoreFor(candidate.provider.id) / 100) * 0.1;
+      return reliability * 0.55 + speed * 0.3 + idle + priorityBonus + scoreBonus - slowPenalty + Math.random() * 0.03;
     };
     candidates.sort((left, right) => rank(right) - rank(left));
   } else {
@@ -998,6 +1066,7 @@ function openCircuit(state, provider, cooldownMs) {
 
 function markFailure(provider, error, elapsedMs) {
   const state = stateFor(provider.id);
+  bumpScore(provider.id, false, elapsedMs);
   const failure = error.classification || classifyFailure(error);
   const circuit = CFG.circuit || {};
   state.failures += 1;
@@ -1069,6 +1138,7 @@ function addUsage(providerId, usage) {
 
 function markSuccess(provider, elapsedMs, usage) {
   const state = stateFor(provider.id);
+  bumpScore(provider.id, true, elapsedMs);
   addUsage(provider.id, usage);
   state.successes += 1;
   state.attempts += 1;
@@ -3793,6 +3863,8 @@ function publicView() {
     routes: health.routes,
     metrics,
     usage: usageRollup(),
+    scoreLastRun,
+    scores: Object.entries(ensureScores()).map(([id, item]) => Object.assign({ id }, item)).sort((a, b) => (b.score || 0) - (a.score || 0)),
     pools: poolView(),
     providerSetup: providerSetupSummary(),
     providers: providers.filter(provider => provider.enabled).map(provider => {
@@ -3992,6 +4064,47 @@ async function handleRequest(req, res) {
       const updated = providerSetupView().find(item => item.id === providerId);
       log({ ev: 'provider_setting_changed', provider: providerId, enabled: body.enabled });
       return writeJson(res, 200, { ok: true, provider: updated || null });
+    }
+    if (pathname === '/api/score/run' && req.method === 'POST') {
+      const targets = providers.filter(provider => provider.enabled && provider.endpoint);
+      const results = [];
+      const concurrency = 4;
+      for (let start = 0; start < targets.length; start += concurrency) {
+        const batch = targets.slice(start, start + concurrency);
+        /* eslint-disable no-await-in-loop */
+        await Promise.all(batch.map(async provider => {
+          const startedAt = Date.now();
+          const body = {
+            model: provider.modelMap.auto || provider.modelMap.chat || 'auto',
+            messages: [{ role: 'user', content: 'ping' }],
+            max_tokens: 8,
+            stream: false
+          };
+          try {
+            await providerJsonAttempt(provider, body.model, body, { toolPolicy: 'strict' }, provider.keys[0]);
+            bumpScore(provider.id, true, Date.now() - startedAt);
+            results.push({ id: provider.id, ok: true, ms: Date.now() - startedAt });
+          } catch (error) {
+            bumpScore(provider.id, false, Date.now() - startedAt);
+            results.push({
+              id: provider.id,
+              ok: false,
+              ms: Date.now() - startedAt,
+              error: String(error && error.message || error).slice(0, 100)
+            });
+          }
+        }));
+      }
+      scoreLastRun = nowIso();
+      saveScores();
+      log({ ev: 'score_run', checked: results.length, failed: results.filter(item => !item.ok).length });
+      return writeJson(res, 200, {
+        ok: true,
+        lastRun: scoreLastRun,
+        checked: results.length,
+        failed: results.filter(item => !item.ok).length,
+        results
+      });
     }
     if (pathname === '/api/pools' && req.method === 'GET') {
       return writeJson(res, 200, {

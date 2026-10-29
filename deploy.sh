@@ -33,9 +33,10 @@ ssh "$HOST" "
   test -f /etc/systemd/system/ai-relay.service && cp -p /etc/systemd/system/ai-relay.service '$BACKUP_DIR/ai-relay.service' || true
 "
 
-scp "$LOCAL_DIR/router.js" "$LOCAL_DIR/config.json" "$LOCAL_DIR/watchdog.sh" "$LOCAL_DIR/dashboard.html" "$LOCAL_DIR/provider-setup.html" "$LOCAL_DIR/provider-catalog.json" "$HOST:$REMOTE_DIR/"
+scp "$LOCAL_DIR/router.js" "$LOCAL_DIR/config.json" "$LOCAL_DIR/watchdog.sh" "$LOCAL_DIR/dashboard.html" "$LOCAL_DIR/provider-setup.html" "$LOCAL_DIR/provider-catalog.json" "$LOCAL_DIR/score-run.sh" "$HOST:$REMOTE_DIR/"
 scp "$LOCAL_DIR/systemd/ai-relay.service" "$HOST:/etc/systemd/system/ai-relay.service"
 scp "$LOCAL_DIR/systemd/ai-relay-watchdog.service" "$LOCAL_DIR/systemd/ai-relay-watchdog.timer" "$HOST:/etc/systemd/system/"
+scp "$LOCAL_DIR/systemd/ai-relay-score.service" "$LOCAL_DIR/systemd/ai-relay-score.timer" "$HOST:/etc/systemd/system/"
 
 if ! ssh "$HOST" "
   set -e
@@ -45,6 +46,8 @@ if ! ssh "$HOST" "
   node --check '$REMOTE_DIR/router.js'
   systemctl daemon-reload
   systemctl enable --now ai-relay-watchdog.timer
+  chmod 755 '$REMOTE_DIR/score-run.sh'
+  systemctl enable --now ai-relay-score.timer
   systemctl restart ai-relay
   for i in \$(seq 1 30); do
     code=\$(curl -s -o /dev/null -w '%{http_code}' --max-time 2 http://127.0.0.1:8801/health || echo 000)

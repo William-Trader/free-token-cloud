@@ -1,0 +1,9 @@
+[Unit]
+Description=ai-relay provider scoring run
+After=network-online.target ai-relay.service
+Wants=ai-relay.service
+
+[Service]
+Type=oneshot
+ExecStart=/opt/ai-relay/score-run.sh
+TimeoutStartSec=900
