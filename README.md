@@ -3,7 +3,7 @@
 一台 **2 核 1G** 的服务器（或者只要你的 PC），就能把一堆免费模型聚合成**你自己的** OpenAI / Anthropic 兼容入口，
 给远程设备、Agent、手机发 token 用——限流、超时、报错时自动换上游，客户端只认一个地址。
 
-## v5.0 关键能力
+## v5.1 关键能力
 
 | 能力 | 说明 |
 |---|---|
@@ -15,6 +15,8 @@
 | 多 key 轮换 | 同目录 `<provider>*.key` 自动纳入，401/429 换下一把 |
 | 自愈 | watchdog 巡检 health/ready/public 与 nginx/mihomo，异常自动重启 |
 | 并发 | 队列 24 并发；瞬时全限流等待 6×400ms 再挑，不直接 503 |
+| 深度思考 | `reasoning_effort` 全链路转发；`chat` 与 `tools` 都回传 `reasoning`，客户端声明 `reasoning: true` 即显示思维链 |
+| Agent 工具稳定 | 合成流补发 `reasoning_content`、`model` 固定为逻辑名；带 `tool_calls` 时思考不会混进正文 |
 
 实测：10 个相同请求并发 → **1 次上游调用 + 9 次合并**，总耗时 **1.67s**（优化前 10 次上游、20.25s）。
 
