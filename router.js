@@ -71,6 +71,7 @@ const metrics = {
 };
 let usageHistory = {};
 let usageHourly = {};
+let providerDaily = {};
 
 const usagePersistence = {
   timer: null,
@@ -308,6 +309,7 @@ function loadUsageState() {
 
   usageHistory = saved.history && typeof saved.history === 'object' ? saved.history : {};
   usageHourly = saved.hourly && typeof saved.hourly === 'object' ? saved.hourly : {};
+  providerDaily = saved.providerDaily && typeof saved.providerDaily === 'object' ? saved.providerDaily : {};
   usagePersistence.updatedAt = saved.updatedAt || null;
   usagePersistence.loadedAt = nowIso();
   usagePersistence.startedAt = saved.startedAt || usagePersistence.startedAt;
@@ -333,6 +335,7 @@ function usageSnapshot() {
     metrics: Object.assign({}, metrics),
     history: usageHistory,
     hourly: usageHourly,
+    providerDaily,
     providers
   };
 }
@@ -947,9 +950,29 @@ function pruneRequestTimes(state) {
   state.requestTimes = state.requestTimes.filter(value => value >= cutoff);
 }
 
+function dailyKey() {
+  return new Date().toLocaleDateString('sv-SE', { timeZone: 'Asia/Shanghai' });
+}
+
+function dailyUsed(providerId) {
+  const day = providerDaily[dailyKey()];
+  return day && Number(day[providerId]) || 0;
+}
+
+function bumpDailyUsed(providerId) {
+  const key = dailyKey();
+  const day = providerDaily[key] || (providerDaily[key] = {});
+  day[providerId] = (Number(day[providerId]) || 0) + 1;
+  const keys = Object.keys(providerDaily).sort();
+  while (keys.length > 7) delete providerDaily[keys.shift()];
+  scheduleUsageSave();
+}
+
 function providerLimited(provider) {
   const state = stateFor(provider.id);
   pruneRequestTimes(state);
+  const dailyLimit = Number(provider.dailyLimit) || 0;
+  if (dailyLimit > 0 && dailyUsed(provider.id) >= dailyLimit) return 'daily_quota';
   if (state.inFlight >= provider.maxConcurrency) return 'concurrency_limit';
   if (provider.rpm > 0 && state.requestTimes.length >= provider.rpm) return 'rpm_limit';
   const group = groupStateFor(provider.group);
@@ -1209,6 +1232,7 @@ function markSuccess(provider, elapsedMs, usage) {
 }
 
 function beginProviderAttempt(provider) {
+  bumpDailyUsed(provider.id);
   const state = stateFor(provider.id);
   state.inFlight += 1;
   state.lastAttemptAt = nowIso();
@@ -2630,25 +2654,32 @@ async function handleChat(req, res, body, anthropic) {
   }
   applyDefaultLocale(body, logical);
   let selection;
-
-  try {
-    selection = await selectProvider(logical, body, wantStream);
-  } catch (error) {
-    bumpMetric('failures');
-    log({
-      ev: 'relay_unavailable',
-      request_id: requestId,
-      model: logical,
-      skipped: error.skipped
-    });
-    return writeJson(res, 503, {
-      error: {
-        message: 'No compatible AI upstream is currently available.',
-        type: 'relay_unavailable',
-        code: 'no_candidates',
-        skipped: error.skipped || []
+  for (let attempt = 0; ; attempt += 1) {
+    try {
+      selection = await selectProvider(logical, body, wantStream);
+      break;
+    } catch (error) {
+      // 并发瞬时打满限流时短暂等待再挑，避免直接 503
+      if (attempt < 6) {
+        await sleep(400);
+        continue;
       }
-    });
+      bumpMetric('failures');
+      log({
+        ev: 'relay_unavailable',
+        request_id: requestId,
+        model: logical,
+        skipped: error.skipped
+      });
+      return writeJson(res, 503, {
+        error: {
+          message: 'No compatible AI upstream is currently available.',
+          type: 'relay_unavailable',
+          code: 'no_candidates',
+          skipped: error.skipped || []
+        }
+      });
+    }
   }
 
   const attempts = [];
@@ -3921,6 +3952,13 @@ function publicView() {
     routes: health.routes,
     metrics,
     usage: usageRollup(),
+    quotas: providers.filter(provider => provider.enabled && Number(provider.dailyLimit) > 0).map(provider => ({
+      id: provider.id,
+      used: dailyUsed(provider.id),
+      limit: Number(provider.dailyLimit),
+      pct: Math.min(100, Math.round(dailyUsed(provider.id) / Number(provider.dailyLimit) * 100)),
+      resetAt: dailyKey() + 'T24:00+08:00'
+    })),
     scoreLastRun,
     scores: Object.entries(ensureScores()).map(([id, item]) => Object.assign({ id }, item)).sort((a, b) => (b.score || 0) - (a.score || 0)),
     pools: poolView(),

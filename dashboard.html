@@ -286,6 +286,16 @@
     <div class="tbl logs" id="logsBox"></div>
   </section>
   <section class="section">
+    <div class="sec-head"><h2>免费额度</h2><span class="hint">每日请求计数 · 到达上限自动跳过</span><div class="spacer"></div><span class="pill" id="quotaReset">—</span></div>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>上游</th><th>今日已用</th><th>进度</th><th>占比</th></tr></thead>
+        <tbody id="quotaBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="section">
     <div class="sec-head"><h2>源评分与巡检</h2><span class="hint">每天 09:00 自动巡检一次 · 分数综合连通性与延迟</span><div class="spacer"></div><span class="pill" id="scoreRunAt">—</span></div>
     <div class="tbl">
       <table>
@@ -569,6 +579,27 @@
     $('trendRange').textContent = history[0].date + ' → ' + history[history.length - 1].date;
   }
 
+  function renderQuotas(){
+    var rows = (state.quotas || []).slice().sort(function(a, b){ return (b.pct || 0) - (a.pct || 0); });
+    var body = $('quotaBody');
+    if (!body) return;
+    if (!rows.length){
+      body.innerHTML = '<tr><td colspan="4" class="empty">暂无额度数据</td></tr>';
+    } else {
+      body.innerHTML = rows.map(function(item){
+        var pct = Math.max(0, Math.min(100, item.pct || 0));
+        var color = pct >= 90 ? '#f87171' : pct >= 70 ? '#fbbf24' : '#34d399';
+        return '<tr>' +
+          '<td><b>' + h(item.id) + '</b></td>' +
+          '<td class="mono">' + fmtNum(item.used) + ' / ' + fmtNum(item.limit) + '</td>' +
+          '<td><div class="bar-lat" style="min-width:120px"><i style="width:' + pct + '%;background:' + color + '"></i></div></td>' +
+          '<td class="mono dim">' + pct + '%</td>' +
+        '</tr>';
+      }).join('');
+    }
+    $('quotaReset').textContent = '每日 00:00 重置';
+  }
+
   function renderScores(){
     var rows = state.scores || [];
     var body = $('scoreBody');
@@ -671,6 +702,7 @@
       state.metrics = { metrics: d.metrics || {} };
       state.usage = d.usage || {};
       state.scores = d.scores || [];
+      state.quotas = d.quotas || [];
       state.scoreLastRun = d.scoreLastRun || null;
       state.setup = d.providerSetup || null;
       clearTimeout(state.retryTimer);
@@ -682,6 +714,7 @@
       renderSafe('usage', renderUsage);
       renderSafe('providers', renderProviders);
       renderSafe('logs', renderLogs);
+      renderSafe('quotas', renderQuotas);
       renderSafe('scores', renderScores);
     }).catch(function(err){
       $('statusDot').className = 'dot warn';
