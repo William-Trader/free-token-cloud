@@ -191,7 +191,7 @@ kilo -> llm7 -> ovh-oss20 -> ovh-oss120 -> ovh-llama70
 2. 从用户请求里优先提取明确提到的工具（例如 `exec`），最多注入 12 个相关工具，避免大工具表淹没小模型。
 3. 扫描正文、`reasoning`、`reasoning_content`，兼容 `functions.exec`、`tool.exec` 等前缀。
 4. 空工具响应不记成功，自动切下一个上游。
-5. OpenClaw 只暴露两个模型：`ai-relay/chat` 为仅对话，`ai-relay/tools` 为工具池。
+5. OpenClaw 暴露两个模型：`ai-relay/chat` 为纯对话（不接工具，但支持深度思考），`ai-relay/tools` 为工具池（工具调用 + 深度思考）。两者都返回 `reasoning`，客户端按 `reasoning: true` 声明即可显示思维链。
 
 真实本地 agent 验收已通过：OpenClaw 通过 `ai-relay/tools` 调用 `exec` 创建临时文件，
 文件确实落到本机磁盘，返回 `toolSummary.calls=1`、`tools=["exec"]`、`failures=0`。
@@ -217,6 +217,7 @@ kilo -> llm7 -> ovh-oss20 -> ovh-oss120 -> ovh-llama70
 
 ## 更新日志
 
+- **v5.1.0**：Agent 接入修复——① chat / tools 两个池都接受 `reasoning_effort` 并注入推理指令，`chat` 不再被强制剥离思维链；② `reasoning_effort` 进入转发字段，上游能真正提高推理档位；③ 透传流的每个 chunk 把 `model` 改回逻辑名，修掉 OpenClaw「Model route changed」与模型归属错乱；④ 合成流补发 `reasoning_content`，深度思考在客户端可见；⑤ 带工具调用时把上游写进 `content` 的思维链降级到 `reasoning`，正文不再出现大段思考；⑥ Responses 侧 `reasoning.effort` 同时设置 `reasoning_effort`，仅显式 `stripReasoning` 才隐藏。实测 OpenClaw `ai-relay/chat` 5s 出结论、`ai-relay/tools` 20s 完成 `exec`，工具 3/3 成功且正文为空、思维链独立。
 - **v5.0.0**：私有算力池大版本——请求单飞（相同并发合并）、响应缓存、额度感知调度与每日限额、队列 24、评分巡检、自愈；实测相同请求 10 并发 1 次上游 / 1.67s（原 10 次 / 20.25s）。
 - **v4.5.0**：免费额度与多并发——每上游每日计数（无 key 600 / keyed 1000）达限额自动跳过；控制台新增「免费额度」面板；队列并发提到 24，瞬时全限流时 6×400ms 等待重挑。实测 10 并发 10/10 成功。
 - **v4.4.0**：三项扩容落地——多 key 目录轮换（`<provider>*.key` 自动纳入）、keyed 槽位预置（填 key 即启用）、响应缓存（120s，非流式/温度≤0.5/无工具）+ 请求队列（12 并发，排队 20s）。实测缓存命中 1.78s → 0.076s。
@@ -290,9 +291,12 @@ kilo -> llm7 -> ovh-oss20 -> ovh-oss120 -> ovh-llama70
 
 | 能力 | 状态 |
 |---|---|
-| `ai-relay/tools`（工具池） | ✅ 工具调用、并行、文本桥；OpenClaw 实测 `exec` 成功 |
-| `ai-relay/chat`（对话池） | ✅ 只对话，`toolPolicy=strip` |
-| 思维链隐藏 | ✅ `chat` 池在 Responses **与** Chat Completions（含流式）都剥离 `reasoning` |
+| `ai-relay/tools`（工具池） | ✅ 工具调用、并行、文本桥 + 深度思考；OpenClaw 实测 `exec` 成功 |
+| `ai-relay/chat`（对话池） | ✅ 纯对话（`toolPolicy=strip`），同样支持深度思考 |
+| 思维链回传 | ✅ 两个池都回传 `reasoning`（流式 `reasoning`/`reasoning_content`），客户端 `reasoning: true` 即可显示 |
+| 模型名一致性 | ✅ 流式与合成的每个 chunk 的 `model` 都是请求的逻辑名，不会泄露上游模型名导致客户端判定路由漂移 |
+| 工具响应纯净度 | ✅ 带 `tool_calls` 时，上游写进 `content` 的思维链会降级到 `reasoning`，正文不再混入思考过程 |
+| 显式隐藏思维链 | ✅ 路由设 `stripReasoning: true` 时仍可剥离（默认关闭） |
 | 多上游熔断 / 冷却 / 半开 | ✅ 两个入口共用一套路由 |
 | Anthropic 兼容 | ✅ `/v1/messages`（含流式事件合成） |
 | usage / 估算 token | ✅ 上游缺失时补齐 |

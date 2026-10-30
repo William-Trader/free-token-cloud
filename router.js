@@ -107,7 +107,8 @@ const CHAT_FIELDS = [
   'response_format',
   'n',
   'user',
-  'service_tier'
+  'service_tier',
+  'reasoning_effort'
 ];
 
 function nowIso() {
@@ -1357,7 +1358,7 @@ function reasoningEffort(body) {
 
 function withReasoningInstruction(body, logical) {
   const effort = reasoningEffort(body);
-  if (!effort || logical === 'chat' || !Array.isArray(body.messages)) return body;
+  if (!effort || !Array.isArray(body.messages)) return body;
   const marked = body.messages.some(message =>
     message && String(message.content || '').includes('[Relay reasoning mode]')
   );
@@ -1838,6 +1839,26 @@ function messageText(raw) {
   return contentText(message.content) + toolText;
 }
 
+function demoteLeakedThinking(message, limit = 240) {
+  if (!message || !Array.isArray(message.tool_calls) || !message.tool_calls.length) return message;
+  const text = contentText(message.content).trim();
+  if (!text) return message;
+  const reasoning = String(message.reasoning || message.reasoning_content || '').trim();
+  // 正文与思维链重复：上游把同一段思考同时写进 reasoning 和 content。
+  if (reasoning && text.length <= reasoning.length + 40 &&
+      (reasoning.includes(text) || text.includes(reasoning))) {
+    message.content = '';
+    return message;
+  }
+  if (text.length <= limit) return message;
+  // 不少免费上游把思维链写进 content；带工具调用时这段长文会被客户端当成正式回答。
+  // 把它降级成 reasoning，正文清空，工具调用保持原样。
+  message.reasoning = [reasoning, text].filter(Boolean).join('\n');
+  delete message.reasoning_content;
+  message.content = '';
+  return message;
+}
+
 function normalizeCompletion(raw, logical, provider, body) {
   const choice = raw && raw.choices && raw.choices[0] || {};
   const message = choice.message || {};
@@ -1849,11 +1870,11 @@ function normalizeCompletion(raw, logical, provider, body) {
     model: logical,
     choices: [{
       index: 0,
-      message: Object.assign(
+      message: demoteLeakedThinking(Object.assign(
         { role: 'assistant', content },
         message.reasoning ? { reasoning: message.reasoning } : {},
         message.tool_calls ? { tool_calls: message.tool_calls } : {}
-      ),
+      )),
       finish_reason: choice.finish_reason || (message.tool_calls ? 'tool_calls' : 'stop')
     }],
     usage: usageFromRaw(raw, body),
@@ -2154,7 +2175,12 @@ function fakeOpenAIStream(res, completion, logical, headers) {
   const toolCalls = completion.choices && completion.choices[0] && completion.choices[0].message
     ? completion.choices[0].message.tool_calls || []
     : [];
+  const message = completion.choices && completion.choices[0] && completion.choices[0].message || {};
+  const reasoning = String(message.reasoning || message.reasoning_content || '');
   safeWrite(res, 'data: ' + JSON.stringify(openAIChunk(id, logical, { role: 'assistant', content: '' }, null)) + '\n\n');
+  for (let index = 0; index < reasoning.length; index += 120) {
+    safeWrite(res, 'data: ' + JSON.stringify(openAIChunk(id, logical, { reasoning_content: reasoning.slice(index, index + 120) }, null)) + '\n\n');
+  }
   for (let index = 0; index < toolCalls.length; index += 1) {
     const call = toolCalls[index];
     safeWrite(res, 'data: ' + JSON.stringify(openAIChunk(id, logical, {
@@ -2330,6 +2356,7 @@ async function collectOpenAIStreamToCompletion(prepared, logical) {
       .sort((left, right) => left[0] - right[0])
       .map(entry => entry[1]);
   }
+  demoteLeakedThinking(message);
   return {
     id: 'relay-' + crypto.randomUUID(),
     object: 'chat.completion',
@@ -2380,7 +2407,7 @@ function eventPayloads(event) {
   return parseSseEvent(event).data;
 }
 
-function stripReasoningFromEvent(rawEvent) {
+function normalizeStreamEvent(rawEvent, logical, stripReasoning) {
   const lines = rawEvent.split('\n');
   const out = [];
   for (const line of lines) {
@@ -2400,12 +2427,17 @@ function stripReasoningFromEvent(rawEvent) {
       out.push(line);
       continue;
     }
+    // 客户端必须看到自己请求的逻辑模型名，而不是上游具体模型；
+    // 否则 OpenClaw 会判定「Model route changed」并打乱会话路由。
+    if (logical) chunk.model = logical;
     let touched = false;
-    for (const choice of chunk.choices || []) {
-      if (choice.delta && ('reasoning' in choice.delta || 'reasoning_content' in choice.delta)) {
-        delete choice.delta.reasoning;
-        delete choice.delta.reasoning_content;
-        touched = true;
+    if (stripReasoning) {
+      for (const choice of chunk.choices || []) {
+        if (choice.delta && ('reasoning' in choice.delta || 'reasoning_content' in choice.delta)) {
+          delete choice.delta.reasoning;
+          delete choice.delta.reasoning_content;
+          touched = true;
+        }
       }
     }
     if (touched) {
@@ -2458,7 +2490,7 @@ function forwardOpenAIStream(res, prepared, logical, body, headers, options = {}
         safeWrite(res, 'data: [DONE]\n\n');
         sawDone = true;
       } else {
-        safeWrite(res, (options.stripReasoning ? stripReasoningFromEvent(rawEvent) : rawEvent) + '\n\n');
+        safeWrite(res, normalizeStreamEvent(rawEvent, logical, Boolean(options.stripReasoning)) + '\n\n');
       }
     }
     if (flush && buffer.trim()) {
@@ -2688,6 +2720,7 @@ async function handleChat(req, res, body, anthropic) {
   }
 
   const attempts = [];
+  const stripReasoning = Boolean(selection.definition && selection.definition.stripReasoning);
   const budgetMs = Number(selection.definition && selection.definition.budgetMs) || 0;
   for (const candidate of selection.candidates) {
     if (budgetMs && Date.now() - started > budgetMs) {
@@ -2713,11 +2746,14 @@ async function handleChat(req, res, body, anthropic) {
           {
             const stripped = completion.choices[0].message;
             const fallback = String(stripped.reasoning || stripped.reasoning_content || '').trim();
-            if (selection.stripTools) {
+            if (stripReasoning) {
               delete stripped.reasoning;
               delete stripped.reasoning_content;
             }
-            if (!contentText(stripped.content).trim() && fallback) stripped.content = fallback;
+            if (!contentText(stripped.content).trim() && fallback &&
+                !(Array.isArray(stripped.tool_calls) && stripped.tool_calls.length)) {
+              stripped.content = fallback;
+            }
           }
           markSuccess(provider, outcome.elapsedMs, completion.usage);
           if (bodyWantsTools(body)) {
@@ -2755,7 +2791,7 @@ async function handleChat(req, res, body, anthropic) {
           ms: Date.now() - started
         });
         return forwardOpenAIStream(res, outcome.result, logical, body, responseHeaders, {
-          stripReasoning: selection.stripTools,
+          stripReasoning,
           onUsage: usage => addUsage(provider.id, usage)
         });
       }
@@ -2765,13 +2801,16 @@ async function handleChat(req, res, body, anthropic) {
         const stripped = completion.choices && completion.choices[0] && completion.choices[0].message;
         if (stripped) {
           const fallback = String(stripped.reasoning || stripped.reasoning_content || '').trim();
-          if (selection.stripTools) {
+          if (stripReasoning) {
             delete stripped.reasoning;
             delete stripped.reasoning_content;
           }
           // 正文为空但模型只在 reasoning 里说话时，回退成正文：
           // 避免客户端拿到空回答，也避免 tok/s 用 0 时长算出天文数字。
-          if (!contentText(stripped.content).trim() && fallback) stripped.content = fallback;
+          if (!contentText(stripped.content).trim() && fallback &&
+              !(Array.isArray(stripped.tool_calls) && stripped.tool_calls.length)) {
+            stripped.content = fallback;
+          }
         }
       }
       if (
@@ -3100,15 +3139,14 @@ function responsesRequestToChat(body) {
   if (Number.isFinite(Number(body.max_output_tokens))) chat.max_tokens = Number(body.max_output_tokens);
   chat.__include = Array.isArray(body.include) ? body.include.slice() : [];
   chat.__store = body.store !== false;
-  // 纯对话池（toolPolicy=strip）不注入也不回传思维链
+  // 只有显式声明 stripReasoning 的路由才丢弃思维链；strip 工具不等于不要思考
   const definition = routeDefinition(chat.model);
-  const hideReasoning = definition
-    ? definition.toolPolicy === 'strip'
-    : chat.model === 'chat';
+  const hideReasoning = Boolean(definition && definition.stripReasoning);
   chat.__hideReasoning = hideReasoning;
   const reasoning = body.reasoning || {};
   const effort = typeof reasoning.effort === 'string' ? reasoning.effort : '';
   if (!hideReasoning && effort && effort !== 'none') {
+    chat.reasoning_effort = effort;
     chat.messages.push({
       role: 'system',
       content:

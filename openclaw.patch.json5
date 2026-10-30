@@ -8,9 +8,12 @@
             name: "AI Relay Tools",
             contextWindow: 200000,
             maxTokens: 8192,
+            reasoning: true,
             compat: {
               supportsTools: true,
-              supportsUsageInStreaming: true
+              supportsUsageInStreaming: true,
+              supportsReasoningEffort: true,
+              supportedReasoningEfforts: ["low", "medium", "high"]
             }
           },
           {
@@ -18,9 +21,12 @@
             name: "AI Relay Chat",
             contextWindow: 200000,
             maxTokens: 8192,
+            reasoning: true,
             compat: {
               supportsTools: false,
-              supportsUsageInStreaming: true
+              supportsUsageInStreaming: true,
+              supportsReasoningEffort: true,
+              supportedReasoningEfforts: ["low", "medium", "high"]
             }
           }
         ]
@@ -34,10 +40,12 @@
       },
       models: {
         "ai-relay/tools": {
-          alias: "Relay Tools"
+          alias: "Relay Tools",
+          params: { thinking: "medium" }
         },
         "ai-relay/chat": {
-          alias: "Relay Chat"
+          alias: "Relay Chat",
+          params: { thinking: "medium" }
         },
         "ai-relay/auto": null,
         "ai-relay/fast": null,
