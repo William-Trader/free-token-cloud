@@ -67,7 +67,8 @@ const metrics = {
   reasoningTokens: 0,
   cacheHits: 0,
   usageEvents: 0,
-  cacheResponses: 0
+  cacheResponses: 0,
+  dedupeHits: 0
 };
 let usageHistory = {};
 let usageHourly = {};
@@ -164,6 +165,7 @@ function finiteNumber(value) {
 }
 
 const responseCache = new Map();
+const inflightRequests = new Map();
 const CACHE_MAX = 200;
 let activeRequests = 0;
 
@@ -1085,7 +1087,10 @@ function buildCandidates(logical, body, options = {}) {
       const idle = state.inFlight > 0 ? 0 : 0.12;
       const priorityBonus = Math.max(0, (200 - (candidate.provider.toolPriority || candidate.provider.priority)) / 2000);
       const scoreBonus = (scoreFor(candidate.provider.id) / 100) * 0.1;
-      return reliability * 0.55 + speed * 0.3 + idle + priorityBonus + scoreBonus - slowPenalty + Math.random() * 0.03;
+      const dailyLimit = Number(candidate.provider.dailyLimit) || 0;
+      const quotaLeft = dailyLimit > 0 ? Math.max(0, 1 - dailyUsed(candidate.provider.id) / dailyLimit) : 1;
+      const quotaBonus = quotaLeft * 0.06;
+      return reliability * 0.55 + speed * 0.3 + idle + priorityBonus + scoreBonus + quotaBonus - slowPenalty + Math.random() * 0.03;
     };
     candidates.sort((left, right) => rank(right) - rank(left));
   } else {
@@ -3951,6 +3956,7 @@ function publicView() {
     uptime_s: health.uptime_s,
     routes: health.routes,
     metrics,
+    queueDepth: activeRequests,
     usage: usageRollup(),
     quotas: providers.filter(provider => provider.enabled && Number(provider.dailyLimit) > 0).map(provider => ({
       id: provider.id,
@@ -4271,7 +4277,27 @@ async function handleRequest(req, res) {
           error: { message: 'messages is required', type: 'invalid_request_error' }
         });
       }
-      return withRequestSlot(res, () => handleChat(req, res, body, false));
+      return withRequestSlot(res, async () => {
+        const key = cacheKeyFor(String(body.model || 'auto'), body);
+        if (key && inflightRequests.has(key)) {
+          await inflightRequests.get(key).catch(() => {});
+          const cached = cacheGet(key);
+          if (cached) {
+            metrics.dedupeHits += 1;
+            return writeJson(res, 200, cached, { 'x-relay-dedupe': 'hit' });
+          }
+        }
+        let release = null;
+        if (key) inflightRequests.set(key, new Promise(resolve => { release = resolve; }));
+        try {
+          return await handleChat(req, res, body, false);
+        } finally {
+          if (key) {
+            inflightRequests.delete(key);
+            if (release) release();
+          }
+        }
+      });
     }
     if (pathname === '/v1/responses' && req.method === 'POST') {
       const body = await readRequestBody(req);

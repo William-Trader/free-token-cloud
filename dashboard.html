@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Free Token Cloud · Relay Console</title>
+<title>Free Token Cloud 私有算力池</title>
 <style>
   :root{
     --bg:#070a0f; --panel:#0d1219; --panel-2:#111823; --line:#1c2634;
@@ -208,7 +208,7 @@
   <div class="wrap hd">
     <div class="logo">
       <div class="mark">FT</div>
-      <div>Free Token Cloud<small>RELAY CONSOLE · 101</small></div>
+      <div>Free Token Cloud 私有算力池<small>PRIVATE COMPUTE POOL · RELAY CONSOLE</small></div>
     </div>
     <div class="spacer"></div>
     <div class="pill live" id="statusPill"><i class="dot" id="statusDot"></i><span id="statusText">加载中…</span></div>
@@ -231,6 +231,16 @@
     <div class="card"><h3>今日用量</h3><div class="big" id="sToday">—</div><div class="sub" id="sTodaySub">in — / out —</div></div>
     <div class="card"><h3>本月用量</h3><div class="big" id="sMonth">—</div><div class="sub" id="sMonthSub">请求 — · 缓存 —</div></div>
   </div>
+
+  <section class="section">
+    <div class="sec-head"><h2>算力榨取</h2><span class="hint">缓存 / 合并 / 队列 / 额度利用率</span></div>
+    <div class="grid stats">
+      <div class="card"><h3>缓存命中</h3><div class="big" id="xCache">—</div><div class="sub">次 · 命中即返回</div></div>
+      <div class="card"><h3>请求合并</h3><div class="big" id="xDedupe">—</div><div class="sub">次 · 相同请求共享</div></div>
+      <div class="card"><h3>队列深度</h3><div class="big" id="xQueue">—</div><div class="sub">并发上限 24</div></div>
+      <div class="card"><h3>额度利用率</h3><div class="big" id="xQuota">—</div><div class="sub">所有上游平均</div></div>
+    </div>
+  </section>
 
   <section class="section">
     <div class="sec-head"><h2>双池</h2><span class="hint">tools 走工具链，chat 只对话；两池共用熔断与冷却</span></div>
@@ -375,6 +385,15 @@
     $('sMonth').textContent = fmtNum(month.total || 0);
     $('sMonthSub').textContent = '请求 ' + fmtNum(month.requests || 0) + ' · 缓存 ' + fmtNum(month.cached || 0);
     renderTrend(usage.history || []);
+    var mm = (state.metrics && state.metrics.metrics) || {};
+    var quotas = state.quotas || [];
+    var avgQuota = quotas.length
+      ? Math.round(quotas.reduce(function(a, b){ return a + (b.pct || 0); }, 0) / quotas.length)
+      : 0;
+    if ($('xCache')) $('xCache').textContent = fmtNum(mm.cacheResponses || 0);
+    if ($('xDedupe')) $('xDedupe').textContent = fmtNum(mm.dedupeHits || 0);
+    if ($('xQueue')) $('xQueue').textContent = fmtNum(state.queueDepth || 0);
+    if ($('xQuota')) $('xQuota').textContent = avgQuota + '%';
     $('sCache').textContent = hitRate + '%';
     $('sCacheSub').textContent = '命中 ' + (m.cacheHits || 0) + ' / ' + (m.usageEvents || 0) + ' 次 · ' + fmtNum(cachedTok) + ' tokens';
     var upt = (state.health && state.health.uptime_s) || 0;
@@ -701,6 +720,7 @@
       state.logs = d.logs || [];
       state.metrics = { metrics: d.metrics || {} };
       state.usage = d.usage || {};
+      state.queueDepth = d.queueDepth || 0;
       state.scores = d.scores || [];
       state.quotas = d.quotas || [];
       state.scoreLastRun = d.scoreLastRun || null;
