@@ -66,7 +66,8 @@ const metrics = {
   cachedTokens: 0,
   reasoningTokens: 0,
   cacheHits: 0,
-  usageEvents: 0
+  usageEvents: 0,
+  cacheResponses: 0
 };
 let usageHistory = {};
 let usageHourly = {};
@@ -159,6 +160,55 @@ function readJsonIfExists(file, fallback) {
 function finiteNumber(value) {
   const number = Number(value);
   return Number.isFinite(number) && number >= 0 ? number : 0;
+}
+
+const responseCache = new Map();
+const CACHE_MAX = 200;
+let activeRequests = 0;
+
+function cacheKeyFor(logical, body) {
+  if (!body || body.stream) return null;
+  if (Array.isArray(body.tools) && body.tools.length) return null;
+  const temperature = body.temperature == null ? 1 : Number(body.temperature);
+  if (!(temperature <= 0.5)) return null;
+  if (!Array.isArray(body.messages) || !body.messages.length) return null;
+  return crypto.createHash('sha256')
+    .update(JSON.stringify({ model: logical, messages: body.messages, temperature, max_tokens: body.max_tokens || null }))
+    .digest('hex');
+}
+
+function cacheGet(key) {
+  if (!key) return null;
+  const hit = responseCache.get(key);
+  if (!hit) return null;
+  const ttl = Number(CFG && CFG.cache && CFG.cache.ttlMs) || 120000;
+  if (Date.now() - hit.at > ttl) { responseCache.delete(key); return null; }
+  return hit.payload;
+}
+
+function cacheSet(key, payload) {
+  if (!key) return;
+  responseCache.set(key, { at: Date.now(), payload });
+  while (responseCache.size > CACHE_MAX) {
+    const oldest = responseCache.keys().next().value;
+    responseCache.delete(oldest);
+  }
+}
+
+async function acquireRequestSlot() {
+  const limit = Number(CFG && CFG.queue && CFG.queue.maxConcurrent) || 12;
+  const waitMs = Number(CFG && CFG.queue && CFG.queue.waitMs) || 20000;
+  const startedAt = Date.now();
+  while (activeRequests >= limit) {
+    if (Date.now() - startedAt > waitMs) return false;
+    await sleep(50);
+  }
+  activeRequests += 1;
+  return true;
+}
+
+function releaseRequestSlot() {
+  activeRequests = Math.max(0, activeRequests - 1);
 }
 
 let providerScores = null;
@@ -2571,6 +2621,13 @@ async function handleChat(req, res, body, anthropic) {
   const requestId = req.headers['x-request-id'] || 'relay-' + crypto.randomUUID();
   const wantStream = Boolean(body.stream);
   const started = Date.now();
+  const cacheKey = cacheKeyFor(logical, body);
+  const cached = cacheGet(cacheKey);
+  if (cached) {
+    metrics.cacheResponses = (metrics.cacheResponses || 0) + 1;
+    log({ ev: 'cache_hit', request_id: requestId, model: logical });
+    return writeJson(res, 200, cached, { 'x-relay-cache': 'hit', 'x-request-id': requestId });
+  }
   applyDefaultLocale(body, logical);
   let selection;
 
@@ -2691,6 +2748,7 @@ async function handleChat(req, res, body, anthropic) {
         throw new Error('empty tool response');
       }
       markSuccess(provider, outcome.elapsedMs, completion.usage);
+      if (cacheKey) cacheSet(cacheKey, completion);
       if (bodyWantsTools(body)) {
         const toolState = stateFor(provider.id);
         toolState.toolAttempts = (toolState.toolAttempts || 0) + 1;
@@ -3900,6 +3958,20 @@ function publicView() {
   };
 }
 
+async function withRequestSlot(res, fn) {
+  const acquired = await acquireRequestSlot();
+  if (!acquired) {
+    return writeJson(res, 503, {
+      error: { message: 'Relay is busy, please retry shortly.', type: 'relay_busy' }
+    });
+  }
+  try {
+    return await fn();
+  } finally {
+    releaseRequestSlot();
+  }
+}
+
 async function handleRequest(req, res) {
   res.on('error', () => {});
   req.on('error', () => {});
@@ -4161,11 +4233,11 @@ async function handleRequest(req, res) {
           error: { message: 'messages is required', type: 'invalid_request_error' }
         });
       }
-      return handleChat(req, res, body, false);
+      return withRequestSlot(res, () => handleChat(req, res, body, false));
     }
     if (pathname === '/v1/responses' && req.method === 'POST') {
       const body = await readRequestBody(req);
-      return handleResponses(req, res, body);
+      return withRequestSlot(res, () => handleResponses(req, res, body));
     }
     if (pathname === '/v1/messages' && req.method === 'POST') {
       const body = await readRequestBody(req);
@@ -4174,7 +4246,7 @@ async function handleRequest(req, res) {
           error: { message: 'messages is required', type: 'invalid_request_error' }
         });
       }
-      return handleChat(req, res, anthropicToOpenAI(body), true);
+      return withRequestSlot(res, () => handleChat(req, res, anthropicToOpenAI(body), true));
     }
     return writeJson(res, 404, {
       error: { message: 'not found: ' + pathname, type: 'not_found' }
