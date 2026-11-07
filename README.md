@@ -3,6 +3,19 @@
 一台 **2 核 1G** 的服务器（或者只要你的 PC），就能把一堆免费模型聚合成**你自己的** OpenAI / Anthropic 兼容入口，
 给远程设备、Agent、手机发 token 用——限流、超时、报错时自动换上游，客户端只认一个地址。
 
+## v5.2 质量优化
+
+| 能力 | 说明 |
+|---|---|
+| 思考参数自学习 | 上游用 400 明确拒绝 `reasoning_effort` 时，自动去掉该字段重试一次并记住，后续请求不再浪费一次失败尝试 |
+| 单次尝试预算 | `budgetMs` 不只在候选之间生效，单次上游调用的超时被剩余预算封顶；坏源不会再让一轮请求飙到 29s |
+| 限流不计差评 | 每日巡检遇到 429 只记 `rate_limited`，不把可用源打到 5 分；限流冷却降到 10s，半开探测更早恢复 |
+| 工具原生优先 | tools 路由对原生 function calling 源 +0.22 排序加成、桥接源 -0.08，中转耗时更稳 |
+| system 消息合并 | 桥接协议与思考提示并入首条 system，修掉 OVH「System message must be at the beginning」400 |
+| 链路剪枝 | 下线上游已移除的模型槽位（ovh-nemo / kilo-laguna / llm7-minimax），tools 链只留实测可调用源 |
+
+实测（2026-11-08）：chat 10/10 成功、平均 2.8s（ollama-cloud）；tools 10/10 成功、平均 4.3s；最坏单轮由 29s 收敛到预算内。
+
 ## v5.1 关键能力
 
 | 能力 | 说明 |
@@ -219,6 +232,7 @@ kilo -> llm7 -> ovh-oss20 -> ovh-oss120 -> ovh-llama70
 
 ## 更新日志
 
+- **v5.2.0**：API 质量优化——① `reasoning_effort` 被上游 400 拒绝时自动剥离并持久化记忆，OVH / LLM7 一类“不支持推理参数”的源不再每次失败；② 单次尝试超时按剩余预算封顶，坏源不再突破 `budgetMs`（实测从 29s 收敛到 20s 内）；③ 巡检把 429 记为 `rate_limited` 而非失败，避免把被限流的可用源打到 5 分；④ tools 路由原生 function calling +0.22、桥接 -0.08、高 rpm +0.04；⑤ 桥接与思考提示并入首条 system，修掉 OVH `System message must be at the beginning`；⑥ 限流冷却 30s→10s、全候选冷却时按最近 retry 窗口等待，503 显著减少；⑦ 链路剪枝（ovh-nemo / kilo-laguna / llm7-minimax）并按实测重排 tools/chat。回归：chat 10/10 @2.8s，tools 10/10 @4.3s。
 - **v5.1.0**：Agent 接入修复——① chat / tools 两个池都接受 `reasoning_effort` 并注入推理指令，`chat` 不再被强制剥离思维链；② `reasoning_effort` 进入转发字段，上游能真正提高推理档位；③ 透传流的每个 chunk 把 `model` 改回逻辑名，修掉 OpenClaw「Model route changed」与模型归属错乱；④ 合成流补发 `reasoning_content`，深度思考在客户端可见；⑤ 带工具调用时把上游写进 `content` 的思维链降级到 `reasoning`，正文不再出现大段思考；⑥ Responses 侧 `reasoning.effort` 同时设置 `reasoning_effort`，仅显式 `stripReasoning` 才隐藏。实测 OpenClaw `ai-relay/chat` 5s 出结论、`ai-relay/tools` 20s 完成 `exec`，工具 3/3 成功且正文为空、思维链独立。
 - **v5.0.0**：私有算力池大版本——请求单飞（相同并发合并）、响应缓存、额度感知调度与每日限额、队列 24、评分巡检、自愈；实测相同请求 10 并发 1 次上游 / 1.67s（原 10 次 / 20.25s）。
 - **v4.5.0**：免费额度与多并发——每上游每日计数（无 key 600 / keyed 1000）达限额自动跳过；控制台新增「免费额度」面板；队列并发提到 24，瞬时全限流时 6×400ms 等待重挑。实测 10 并发 10/10 成功。

@@ -9,8 +9,8 @@
   "credentialsKeyFile": "/opt/ai-relay/secrets/master.key",
   "providerCatalogFile": "/opt/ai-relay/provider-catalog.json",
   "timeouts": {
-    "firstEventMs": 45000,
-    "providerMs": 90000
+    "firstEventMs": 20000,
+    "providerMs": 45000
   },
   "healthProbeIntervalMs": 120000,
   "healthProbeFailThreshold": 3,
@@ -31,36 +31,28 @@
   "routes": {
     "tools": {
       "chain": [
+        "llm7",
+        "pollinations",
         "gemini",
-        "kilo-ultra",
-        "kilo-omni",
-        "kilo-lightning",
-        "kilo-laguna",
-        "kilo-nemotron",
-        "kilo-beam",
+        "llm7-codestral",
         "kilo-cohere",
         "kilo-dots",
-        "kilo-glyph",
-        "kilo-openrouter",
-        "llm7",
-        "llm7-codestral",
-        "llm7-minimax",
-        "llm7-nemo",
-        "llm7-nemotron",
-        "ovh-oss120",
-        "ovh-oss20",
-        "ovh-qwen397",
-        "ovh-qwen38-27b",
-        "ovh-qwen35-9b",
+        "kilo-nemotron",
+        "kilo-beam",
         "ovh-small",
-        "ovh-nemo",
         "ovh-qwen-vl",
-        "pollinations"
+        "kilo-openrouter",
+        "kilo-glyph",
+        "ovh-qwen397",
+        "ovh-qwen35-9b",
+        "llm7-nemo",
+        "llm7-nemotron"
       ],
       "toolPolicy": "strict",
-      "strategy": "ordered",
+      "strategy": "adaptive",
       "allowLastResort": true,
-      "contextWindow": 200000
+      "contextWindow": 200000,
+      "budgetMs": 20000
     },
     "auto": {
       "alias": "tools",
@@ -77,44 +69,57 @@
     },
     "chat": {
       "chain": [
-        "gemini",
         "ollama-cloud",
-        "kilo-ultra",
-        "kilo-omni",
         "kilo-lightning",
-        "kilo-laguna",
-        "kilo-nemotron",
-        "kilo-beam",
+        "llm7",
+        "ovh-qwen397",
+        "kilo-omni",
         "kilo-cohere",
+        "kilo-nemotron",
+        "kilo-ultra",
+        "kilo-beam",
+        "ovh-qwen-vl",
+        "ovh-oss120",
+        "ovh-small",
+        "pollinations",
+        "gemini",
+        "kilo-openrouter",
+        "llm7-nemo",
+        "ovh-oss20",
         "kilo-dots",
         "kilo-glyph",
-        "kilo-openrouter",
-        "llm7",
-        "llm7-codestral",
-        "llm7-minimax",
-        "llm7-nemo",
-        "llm7-nemotron",
-        "ovh-oss120",
-        "ovh-oss20",
-        "ovh-qwen397",
-        "ovh-qwen38-27b",
         "ovh-qwen35-9b",
-        "ovh-small",
-        "ovh-nemo",
-        "ovh-qwen-vl",
-        "pollinations"
+        "llm7-codestral",
+        "llm7-nemotron"
       ],
       "toolPolicy": "strip",
-      "strategy": "ordered",
+      "strategy": "adaptive",
       "allowLastResort": true,
-      "contextWindow": 200000
+      "contextWindow": 200000,
+      "budgetMs": 25000
     },
     "fast": {
       "hidden": true,
       "chain": [
+        "ollama-cloud",
+        "kilo-lightning",
+        "llm7",
+        "ovh-qwen397",
+        "kilo-cohere",
+        "kilo-nemotron",
+        "kilo-beam",
+        "ovh-qwen-vl",
+        "ovh-oss120",
+        "ovh-small",
+        "pollinations",
+        "kilo-openrouter",
+        "ovh-oss20",
+        "kilo-glyph",
+        "kilo-dots",
+        "gemini",
+        "ovh-qwen35-9b",
         "cohere",
         "modelscope",
-        "ollama-cloud",
         "siliconflow",
         "huggingface",
         "qwen",
@@ -123,47 +128,45 @@
         "deepinfra",
         "novita",
         "kilo",
-        "kilo-nemotron",
-        "kilo-beam",
-        "kilo-glyph",
-        "kilo-dots",
-        "kilo-cohere",
-        "kilo-openrouter",
-        "kilo-lightning",
         "kilo-laguna-xs",
-        "llm7",
-        "ovh-oss20",
-        "ovh-oss120",
         "ovh-llama70",
-        "ovh-nemo",
-        "ovh-small",
         "ovh-qwen36",
-        "ovh-qwen397",
-        "ovh-qwen-vl",
-        "ovh-qwen35-9b",
         "ovh-qwen38-27b",
-        "pollinations",
         "groq",
-        "gemini",
         "kilo-lfm",
         "llm7-nemotron"
       ],
       "toolPolicy": "strict",
-      "strategy": "ordered",
+      "strategy": "adaptive",
       "allowLastResort": true,
-      "contextWindow": 128000
+      "contextWindow": 128000,
+      "budgetMs": 15000
     },
     "smart": {
       "hidden": true,
       "chain": [
-        "openrouter",
+        "ollama-cloud",
+        "llm7",
+        "ovh-qwen397",
+        "kilo-cohere",
+        "kilo-nemotron",
+        "kilo-beam",
+        "ovh-qwen-vl",
+        "ovh-oss120",
+        "ovh-small",
+        "pollinations",
+        "kilo-openrouter",
+        "ovh-oss20",
+        "kilo-glyph",
+        "kilo-dots",
         "gemini",
+        "ovh-qwen35-9b",
+        "openrouter",
         "nvidia",
         "mistral",
         "groq",
         "cohere",
         "modelscope",
-        "ollama-cloud",
         "siliconflow",
         "huggingface",
         "qwen",
@@ -172,29 +175,15 @@
         "deepinfra",
         "novita",
         "kilo",
-        "kilo-nemotron",
-        "kilo-beam",
-        "kilo-glyph",
-        "kilo-dots",
-        "kilo-cohere",
-        "kilo-openrouter",
-        "llm7",
-        "ovh-oss20",
-        "ovh-oss120",
         "ovh-llama70",
-        "ovh-nemo",
-        "ovh-small",
         "ovh-qwen36",
-        "ovh-qwen397",
-        "ovh-qwen-vl",
-        "ovh-qwen35-9b",
-        "ovh-qwen38-27b",
-        "pollinations"
+        "ovh-qwen38-27b"
       ],
       "toolPolicy": "strict",
-      "strategy": "ordered",
+      "strategy": "adaptive",
       "allowLastResort": true,
-      "contextWindow": 200000
+      "contextWindow": 200000,
+      "budgetMs": 25000
     },
     "ollama": {
       "chain": [
@@ -236,7 +225,7 @@
         "stream": true,
         "usage": true
       },
-      "timeoutMs": 90000,
+      "timeoutMs": 30000,
       "maxConcurrency": 4,
       "rpm": 20,
       "priority": 20
@@ -265,7 +254,7 @@
         "usage": true,
         "vision": true
       },
-      "timeoutMs": 90000,
+      "timeoutMs": 45000,
       "maxConcurrency": 2,
       "rpm": 10,
       "priority": 30,
@@ -296,7 +285,7 @@
         "stream": true,
         "usage": true
       },
-      "timeoutMs": 60000,
+      "timeoutMs": 30000,
       "maxConcurrency": 4,
       "rpm": 30,
       "priority": 40
@@ -325,7 +314,7 @@
         "stream": true,
         "usage": true
       },
-      "timeoutMs": 90000,
+      "timeoutMs": 30000,
       "maxConcurrency": 2,
       "rpm": 40,
       "priority": 50
@@ -354,7 +343,7 @@
         "usage": true,
         "vision": true
       },
-      "timeoutMs": 90000,
+      "timeoutMs": 30000,
       "maxConcurrency": 1,
       "rpm": 30,
       "priority": 60
@@ -381,7 +370,7 @@
         "stream": true,
         "usage": true
       },
-      "timeoutMs": 90000,
+      "timeoutMs": 30000,
       "maxConcurrency": 1,
       "rpm": 20,
       "priority": 61
@@ -409,7 +398,7 @@
         "stream": true,
         "usage": true
       },
-      "timeoutMs": 90000,
+      "timeoutMs": 30000,
       "maxConcurrency": 1,
       "rpm": 30,
       "priority": 62
@@ -438,7 +427,7 @@
         "stream": true,
         "usage": true
       },
-      "timeoutMs": 90000,
+      "timeoutMs": 45000,
       "maxConcurrency": 1,
       "rpm": 20,
       "priority": 63
@@ -465,7 +454,7 @@
         "stream": true,
         "usage": true
       },
-      "timeoutMs": 90000,
+      "timeoutMs": 30000,
       "maxConcurrency": 1,
       "rpm": 30,
       "priority": 64
@@ -493,7 +482,7 @@
         "stream": true,
         "usage": true
       },
-      "timeoutMs": 90000,
+      "timeoutMs": 30000,
       "maxConcurrency": 1,
       "rpm": 20,
       "priority": 65
@@ -521,7 +510,7 @@
         "usage": true,
         "vision": true
       },
-      "timeoutMs": 100000,
+      "timeoutMs": 30000,
       "maxConcurrency": 1,
       "rpm": 20,
       "priority": 30
@@ -550,7 +539,7 @@
         "usage": true,
         "vision": true
       },
-      "timeoutMs": 90000,
+      "timeoutMs": 30000,
       "maxConcurrency": 2,
       "rpm": 30,
       "priority": 28,
@@ -579,7 +568,7 @@
         "stream": true,
         "usage": true
       },
-      "timeoutMs": 100000,
+      "timeoutMs": 30000,
       "maxConcurrency": 1,
       "rpm": 20,
       "priority": 29
@@ -608,7 +597,7 @@
         "usage": true,
         "vision": true
       },
-      "timeoutMs": 100000,
+      "timeoutMs": 30000,
       "maxConcurrency": 1,
       "rpm": 20,
       "priority": 31
@@ -637,7 +626,7 @@
         "usage": true,
         "vision": true
       },
-      "timeoutMs": 100000,
+      "timeoutMs": 30000,
       "maxConcurrency": 1,
       "rpm": 20,
       "priority": 32
@@ -659,7 +648,7 @@
         "stream": false,
         "usage": true
       },
-      "timeoutMs": 320000,
+      "timeoutMs": 120000,
       "maxConcurrency": 1,
       "rpm": 4,
       "priority": 1
@@ -718,7 +707,7 @@
         "usage": true,
         "vision": true
       },
-      "timeoutMs": 90000,
+      "timeoutMs": 30000,
       "maxConcurrency": 1,
       "rpm": 2,
       "priority": 101,
@@ -748,7 +737,7 @@
         "stream": true,
         "usage": true
       },
-      "timeoutMs": 90000,
+      "timeoutMs": 30000,
       "maxConcurrency": 1,
       "rpm": 2,
       "priority": 102,
@@ -778,7 +767,7 @@
         "stream": true,
         "usage": true
       },
-      "timeoutMs": 90000,
+      "timeoutMs": 30000,
       "maxConcurrency": 1,
       "rpm": 2,
       "priority": 103,
@@ -809,7 +798,7 @@
         "usage": true,
         "vision": true
       },
-      "timeoutMs": 90000,
+      "timeoutMs": 30000,
       "maxConcurrency": 1,
       "rpm": 2,
       "priority": 104,
@@ -839,7 +828,7 @@
         "stream": true,
         "usage": true
       },
-      "timeoutMs": 90000,
+      "timeoutMs": 30000,
       "maxConcurrency": 1,
       "rpm": 2,
       "priority": 105,
@@ -870,7 +859,7 @@
         "usage": true,
         "vision": true
       },
-      "timeoutMs": 90000,
+      "timeoutMs": 30000,
       "maxConcurrency": 1,
       "rpm": 2,
       "priority": 106,
@@ -901,11 +890,12 @@
         "stream": true,
         "usage": true
       },
-      "timeoutMs": 75000,
+      "timeoutMs": 30000,
       "maxConcurrency": 1,
       "rpm": 30,
       "priority": 110,
-      "toolPriority": 70
+      "toolPriority": 70,
+      "supportsReasoningEffort": false
     },
     {
       "id": "ovh-oss20",
@@ -930,11 +920,12 @@
         "stream": true,
         "usage": true
       },
-      "timeoutMs": 75000,
+      "timeoutMs": 30000,
       "maxConcurrency": 1,
       "rpm": 2,
       "priority": 120,
-      "toolPriority": 20
+      "toolPriority": 20,
+      "supportsReasoningEffort": false
     },
     {
       "id": "ovh-oss120",
@@ -959,11 +950,12 @@
         "stream": true,
         "usage": true
       },
-      "timeoutMs": 75000,
+      "timeoutMs": 30000,
       "maxConcurrency": 1,
       "rpm": 2,
       "priority": 121,
-      "toolPriority": 10
+      "toolPriority": 10,
+      "supportsReasoningEffort": false
     },
     {
       "id": "ovh-llama70",
@@ -998,7 +990,7 @@
       "id": "ovh-nemo",
       "type": "openai-compatible",
       "label": "OVH Mistral Nemo anonymous",
-      "enabled": true,
+      "enabled": false,
       "baseUrl": "https://oai.endpoints.kepler.ai.cloud.ovh.net/v1",
       "healthUrl": "https://oai.endpoints.kepler.ai.cloud.ovh.net/v1/models",
       "modelMap": {
@@ -1017,11 +1009,13 @@
         "stream": true,
         "usage": true
       },
-      "timeoutMs": 75000,
+      "timeoutMs": 30000,
       "maxConcurrency": 1,
       "rpm": 2,
       "priority": 123,
-      "toolPriority": 30
+      "toolPriority": 30,
+      "supportsReasoningEffort": false,
+      "disabledReason": "model_removed_upstream"
     },
     {
       "id": "ovh-small",
@@ -1046,11 +1040,12 @@
         "stream": true,
         "usage": true
       },
-      "timeoutMs": 75000,
+      "timeoutMs": 30000,
       "maxConcurrency": 1,
       "rpm": 2,
       "priority": 124,
-      "toolPriority": 40
+      "toolPriority": 40,
+      "supportsReasoningEffort": false
     },
     {
       "id": "ovh-qwen36",
@@ -1104,11 +1099,12 @@
         "stream": true,
         "usage": true
       },
-      "timeoutMs": 90000,
+      "timeoutMs": 30000,
       "maxConcurrency": 1,
       "rpm": 2,
       "priority": 126,
-      "toolPriority": 25
+      "toolPriority": 25,
+      "supportsReasoningEffort": false
     },
     {
       "id": "ovh-qwen-vl",
@@ -1134,11 +1130,12 @@
         "usage": true,
         "vision": true
       },
-      "timeoutMs": 90000,
+      "timeoutMs": 30000,
       "maxConcurrency": 1,
       "rpm": 2,
       "priority": 127,
-      "toolPriority": 35
+      "toolPriority": 35,
+      "supportsReasoningEffort": false
     },
     {
       "id": "ovh-qwen35-9b",
@@ -1163,11 +1160,12 @@
         "stream": true,
         "usage": true
       },
-      "timeoutMs": 90000,
+      "timeoutMs": 30000,
       "maxConcurrency": 1,
       "rpm": 2,
       "priority": 128,
-      "toolPriority": 42
+      "toolPriority": 42,
+      "supportsReasoningEffort": false
     },
     {
       "id": "ovh-qwen38-27b",
@@ -1192,11 +1190,12 @@
         "stream": true,
         "usage": true
       },
-      "timeoutMs": 90000,
+      "timeoutMs": 30000,
       "maxConcurrency": 1,
       "rpm": 2,
       "priority": 129,
-      "toolPriority": 14
+      "toolPriority": 14,
+      "supportsReasoningEffort": false
     },
     {
       "id": "pollinations",
@@ -1225,7 +1224,7 @@
         "stream": true,
         "usage": false
       },
-      "timeoutMs": 60000,
+      "timeoutMs": 30000,
       "maxTokens": 4096,
       "maxConcurrency": 1,
       "rpm": 2,
@@ -1284,7 +1283,7 @@
         "stream": true,
         "usage": true
       },
-      "timeoutMs": 90000,
+      "timeoutMs": 30000,
       "maxConcurrency": 1,
       "rpm": 2,
       "priority": 112,
@@ -1313,7 +1312,7 @@
         "stream": true,
         "usage": true
       },
-      "timeoutMs": 90000,
+      "timeoutMs": 30000,
       "maxConcurrency": 1,
       "rpm": 2,
       "priority": 113,
@@ -1323,7 +1322,7 @@
       "id": "kilo-laguna",
       "type": "openai-compatible",
       "label": "Kilo Poolside Laguna S 2.1",
-      "enabled": true,
+      "enabled": false,
       "group": "kilo",
       "baseUrl": "https://api.kilo.ai/api/gateway/v1",
       "healthUrl": "https://api.kilo.ai/api/gateway/v1/models",
@@ -1342,11 +1341,12 @@
         "stream": true,
         "usage": true
       },
-      "timeoutMs": 90000,
+      "timeoutMs": 30000,
       "maxConcurrency": 1,
       "rpm": 2,
       "priority": 114,
-      "toolPriority": 13
+      "toolPriority": 13,
+      "disabledReason": "model_removed_upstream"
     },
     {
       "id": "kilo-flint",
@@ -1400,7 +1400,7 @@
         "stream": true,
         "usage": true
       },
-      "timeoutMs": 90000,
+      "timeoutMs": 30000,
       "maxConcurrency": 1,
       "rpm": 2,
       "priority": 119,
@@ -1439,7 +1439,7 @@
       "id": "llm7-minimax",
       "type": "openai-compatible",
       "label": "LLM7 MiniMax M2.7",
-      "enabled": true,
+      "enabled": false,
       "baseUrl": "https://api.llm7.io/v1",
       "healthUrl": "https://api.llm7.io/v1/models",
       "apiKeyFile": "/opt/ai-relay/keys/llm7.key",
@@ -1459,11 +1459,13 @@
         "stream": true,
         "usage": true
       },
-      "timeoutMs": 75000,
+      "timeoutMs": 30000,
       "maxConcurrency": 1,
       "rpm": 20,
       "priority": 116,
-      "toolPriority": 80
+      "toolPriority": 80,
+      "supportsReasoningEffort": false,
+      "disabledReason": "model_unavailable_upstream"
     },
     {
       "id": "llm7-nemo",
@@ -1489,11 +1491,12 @@
         "stream": true,
         "usage": true
       },
-      "timeoutMs": 75000,
+      "timeoutMs": 30000,
       "maxConcurrency": 1,
       "rpm": 20,
       "priority": 117,
-      "toolPriority": 80
+      "toolPriority": 80,
+      "supportsReasoningEffort": false
     },
     {
       "id": "llm7-nemotron",
@@ -1519,11 +1522,12 @@
         "stream": true,
         "usage": true
       },
-      "timeoutMs": 75000,
+      "timeoutMs": 30000,
       "maxConcurrency": 1,
       "rpm": 20,
       "priority": 118,
-      "toolPriority": 80
+      "toolPriority": 80,
+      "supportsReasoningEffort": false
     },
     {
       "id": "llm7-codestral",
@@ -1549,11 +1553,12 @@
         "stream": true,
         "usage": true
       },
-      "timeoutMs": 75000,
+      "timeoutMs": 30000,
       "maxConcurrency": 1,
       "rpm": 15,
       "priority": 119,
-      "toolPriority": 69
+      "toolPriority": 69,
+      "supportsReasoningEffort": false
     },
     {
       "id": "zhipu",
@@ -1578,7 +1583,7 @@
         "stream": true,
         "usage": true
       },
-      "timeoutMs": 90000,
+      "timeoutMs": 30000,
       "maxConcurrency": 2,
       "rpm": 20,
       "priority": 201,
@@ -1607,7 +1612,7 @@
         "stream": true,
         "usage": true
       },
-      "timeoutMs": 90000,
+      "timeoutMs": 30000,
       "maxConcurrency": 2,
       "rpm": 20,
       "priority": 202,
@@ -1636,7 +1641,7 @@
         "stream": true,
         "usage": true
       },
-      "timeoutMs": 90000,
+      "timeoutMs": 30000,
       "maxConcurrency": 2,
       "rpm": 30,
       "priority": 203,
@@ -1665,7 +1670,7 @@
         "stream": true,
         "usage": true
       },
-      "timeoutMs": 90000,
+      "timeoutMs": 30000,
       "maxConcurrency": 2,
       "rpm": 20,
       "priority": 204,
@@ -1694,7 +1699,7 @@
         "stream": true,
         "usage": true
       },
-      "timeoutMs": 90000,
+      "timeoutMs": 30000,
       "maxConcurrency": 2,
       "rpm": 20,
       "priority": 205,
@@ -1723,7 +1728,7 @@
         "stream": true,
         "usage": true
       },
-      "timeoutMs": 90000,
+      "timeoutMs": 30000,
       "maxConcurrency": 2,
       "rpm": 20,
       "priority": 206,
@@ -1751,7 +1756,7 @@
         "stream": true,
         "usage": true
       },
-      "timeoutMs": 90000,
+      "timeoutMs": 30000,
       "maxConcurrency": 2,
       "rpm": 15,
       "priority": 207
@@ -1779,7 +1784,7 @@
         "stream": true,
         "usage": true
       },
-      "timeoutMs": 90000,
+      "timeoutMs": 30000,
       "maxConcurrency": 2,
       "rpm": 30,
       "priority": 208,
@@ -1808,7 +1813,7 @@
         "stream": true,
         "usage": true
       },
-      "timeoutMs": 90000,
+      "timeoutMs": 30000,
       "maxConcurrency": 2,
       "rpm": 30,
       "priority": 209,
@@ -1837,7 +1842,7 @@
         "stream": true,
         "usage": true
       },
-      "timeoutMs": 90000,
+      "timeoutMs": 30000,
       "maxConcurrency": 2,
       "rpm": 30,
       "priority": 120

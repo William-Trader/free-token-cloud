@@ -218,6 +218,7 @@ function releaseRequestSlot() {
 let providerScores = null;
 let scoreLastRun = null;
 let scoreSaveTimer = null;
+const reasoningUnsupported = new Set();
 
 function scoresFile() {
   return CFG && CFG.scoresFile ? CFG.scoresFile : null;
@@ -232,6 +233,8 @@ function ensureScores() {
     if (saved && typeof saved === 'object') {
       providerScores = saved.scores || {};
       scoreLastRun = saved.lastRun || null;
+      reasoningUnsupported.clear();
+      for (const id of saved.reasoningUnsupported || []) reasoningUnsupported.add(String(id));
     }
   }
   return providerScores;
@@ -243,7 +246,12 @@ function saveScores() {
   try {
     fs.mkdirSync(path.dirname(file), { recursive: true, mode: 0o700 });
     const temp = file + '.' + process.pid + '.tmp';
-    fs.writeFileSync(temp, JSON.stringify({ version: 1, lastRun: scoreLastRun, scores: ensureScores() }, null, 2) + '\n', { mode: 0o600 });
+    fs.writeFileSync(temp, JSON.stringify({
+      version: 1,
+      lastRun: scoreLastRun,
+      scores: ensureScores(),
+      reasoningUnsupported: Array.from(reasoningUnsupported)
+    }, null, 2) + '\n', { mode: 0o600 });
     fs.renameSync(temp, file);
     return true;
   } catch (error) {
@@ -280,6 +288,39 @@ function bumpScore(id, ok, latencyMs) {
 function scoreFor(id) {
   const item = ensureScores()[id];
   return item && Number.isFinite(item.score) ? item.score : 50;
+}
+
+// 只有明确支持的上游才转发 reasoning_effort；被 400 拒绝过的上游记下来，后续请求直接省略。
+function supportsReasoningEffort(provider) {
+  if (!provider) return false;
+  if (provider.supportsReasoningEffort === false) return false;
+  ensureScores();
+  return !reasoningUnsupported.has(provider.id);
+}
+
+function markReasoningUnsupported(provider) {
+  if (!provider || reasoningUnsupported.has(provider.id)) return;
+  ensureScores();
+  reasoningUnsupported.add(provider.id);
+  scheduleScoreSave();
+  log({ ev: 'reasoning_effort_unsupported', provider: provider.id });
+}
+
+function stripReasoningEffortFields(body) {
+  if (!body || typeof body !== 'object') return body;
+  if (body.reasoning_effort === undefined && body.reasoning === undefined && body.thinking === undefined) return body;
+  const next = Object.assign({}, body);
+  delete next.reasoning_effort;
+  delete next.reasoning;
+  delete next.thinking;
+  return next;
+}
+
+function isReasoningRejected(error) {
+  if (!error || Number(error.status) !== 400) return false;
+  const message = String(error.message || '').toLowerCase();
+  if (!/reasoning|thinking|effort/.test(message)) return false;
+  return /not (currently )?supported|does not support|unsupported|not allowed|invalid/.test(message);
 }
 
 function loadUsageState() {
@@ -1084,14 +1125,18 @@ function buildCandidates(logical, body, options = {}) {
       const reliability = (wins + 1) / (attempts + 2);
       const latency = state.avgLatencyMs == null ? 4000 : state.avgLatencyMs;
       const speed = 1 / (1 + latency / 2000);
-      const slowPenalty = latency > 8000 ? 0.15 : 0;
+      const slowPenalty = latency > 12000 ? 0.35 : latency > 8000 ? 0.2 : latency > 5000 ? 0.08 : 0;
       const idle = state.inFlight > 0 ? 0 : 0.12;
       const priorityBonus = Math.max(0, (200 - (candidate.provider.toolPriority || candidate.provider.priority)) / 2000);
       const scoreBonus = (scoreFor(candidate.provider.id) / 100) * 0.1;
       const dailyLimit = Number(candidate.provider.dailyLimit) || 0;
       const quotaLeft = dailyLimit > 0 ? Math.max(0, 1 - dailyUsed(candidate.provider.id) / dailyLimit) : 1;
       const quotaBonus = quotaLeft * 0.06;
-      return reliability * 0.55 + speed * 0.3 + idle + priorityBonus + scoreBonus + quotaBonus - slowPenalty + Math.random() * 0.03;
+      const nativeToolBonus = wantsTools && candidate.provider.capabilities.tools ? 0.22 : 0;
+      const bridgeToolPenalty = wantsTools && candidate.provider.capabilities.toolBridge && !candidate.provider.capabilities.tools ? 0.08 : 0;
+      const rpmBonus = Number(candidate.provider.rpm) >= 20 ? 0.04 : 0;
+      return reliability * 0.55 + speed * 0.3 + idle + priorityBonus + scoreBonus + quotaBonus
+        + nativeToolBonus + rpmBonus - bridgeToolPenalty - slowPenalty + Math.random() * 0.03;
     };
     candidates.sort((left, right) => rank(right) - rank(left));
   } else {
@@ -1120,7 +1165,7 @@ function classifyFailure(error) {
     return { code: 'auth', status, cooldownMs: retryAfter || 10 * 60 * 1000 };
   }
   if (status === 402 || status === 429 || /rate.?limit|too many requests|free.?limit|quota|insufficient_quota|credits?|balance|billing/.test(lower)) {
-    return { code: 'rate_limit', status, cooldownMs: retryAfter || 30 * 1000 };
+    return { code: 'rate_limit', status, cooldownMs: retryAfter || 10 * 1000 };
   }
   if (/model.*(not found|not available|unsupported|unknown)|invalid model/.test(lower)) {
     return { code: 'model_unavailable', status, cooldownMs: retryAfter || 10 * 60 * 1000 };
@@ -1306,7 +1351,9 @@ function buildOpenAIBody(provider, logical, body, stream, stripTools) {
     model: mappedModel(provider, logical, body.model),
     messages: body.messages || []
   };
+  const allowReasoning = supportsReasoningEffort(provider);
   for (const field of CHAT_FIELDS) {
+    if (field === 'reasoning_effort' && !allowReasoning) continue;
     if (body[field] !== undefined) output[field] = body[field];
   }
   if (Array.isArray(body.tools) && body.tools.length && !stripTools && provider.capabilities.tools) {
@@ -1363,14 +1410,21 @@ function withReasoningInstruction(body, logical) {
     message && String(message.content || '').includes('[Relay reasoning mode]')
   );
   if (marked) return body;
-  body.messages = [{
-    role: 'system',
-    content:
-      '[Relay reasoning mode]\n' +
-      'Before answering, reason internally, decompose the task, verify assumptions, and self-check the result. ' +
-      'For tool tasks, choose tools deliberately and validate their outputs. ' +
-      'Reasoning effort: ' + effort + '.'
-  }, ...body.messages];
+  const instruction =
+    '[Relay reasoning mode]\n' +
+    'Before answering, reason internally, decompose the task, verify assumptions, and self-check the result. ' +
+    'For tool tasks, choose tools deliberately and validate their outputs. ' +
+    'Reasoning effort: ' + effort + '.';
+  const messages = body.messages.slice();
+  // 上游只接受置顶 system 时，把提示并入首条 system，而不是再插一条。
+  if (messages.length && messages[0] && messages[0].role === 'system') {
+    messages[0] = Object.assign({}, messages[0], {
+      content: instruction + '\n\n' + contentText(messages[0].content)
+    });
+    body.messages = messages;
+    return body;
+  }
+  body.messages = [{ role: 'system', content: instruction }, ...messages];
   return body;
 }
 
@@ -1544,12 +1598,17 @@ function parseBridgeToolCalls(answer, tools) {
 }
 
 function messagesWithToolBridge(body, tools, strict, hint) {
-  return Object.assign({}, body, {
-    messages: [{
-      role: 'system',
-      content: toolBridgeProtocol(tools, strict, hint)
-    }].concat(body.messages || [])
-  });
+  const protocol = toolBridgeProtocol(tools, strict, hint);
+  const messages = (body.messages || []).slice();
+  const merged = [{ role: 'system', content: protocol }].concat(messages);
+  // 部分上游（OVH 等）只允许一条且必须置顶的 system 消息：合并而不是叠加。
+  if (messages.length && messages[0] && messages[0].role === 'system') {
+    messages[0] = Object.assign({}, messages[0], {
+      content: protocol + '\n\n' + contentText(messages[0].content)
+    });
+    return Object.assign({}, body, { messages });
+  }
+  return Object.assign({}, body, { messages: merged });
 }
 
 function latestUserText(body) {
@@ -2557,7 +2616,7 @@ function shouldForceJsonForTools(body) {
   return bodyWantsTools(body) && (!CFG.tools || CFG.tools.forceNonStream !== false);
 }
 
-async function tryProvider(provider, logical, body, route, wantStream) {
+async function tryProvider(provider, logical, body, route, wantStream, deadline) {
   const started = Date.now();
   if (provider.type === 'pi-agent') {
     beginProviderAttempt(provider);
@@ -2574,26 +2633,40 @@ async function tryProvider(provider, logical, body, route, wantStream) {
   }
   const keys = orderedKeys(provider);
   const keyAttempts = [];
+  // 预算不只在候选之间生效：单次尝试也不能独占超过剩余预算。
+  const remainingBudget = deadline ? Math.max(2000, deadline - Date.now()) : 0;
+  const attemptProvider = remainingBudget
+    ? Object.assign({}, provider, { timeoutMs: Math.min(Number(provider.timeoutMs) || 45000, remainingBudget) })
+    : provider;
   beginProviderAttempt(provider);
   try {
     for (let index = 0; index < keys.length; index += 1) {
       const apiKey = keys[index];
-      try {
-        const forceJson = shouldForceJsonForTools(body);
+      const runAttempt = async attemptBody => {
+        const forceJson = shouldForceJsonForTools(attemptBody);
         if (wantStream && provider.capabilities.stream && !forceJson) {
-          const result = await openStreamAttempt(provider, logical, body, route, apiKey);
-          return {
-            provider,
-            result,
-            elapsedMs: Date.now() - started
-          };
+          const result = await openStreamAttempt(attemptProvider, logical, attemptBody, route, apiKey);
+          return { provider, result, elapsedMs: Date.now() - started };
         }
-        const raw = await providerJson(provider, logical, body, route, apiKey);
-        return {
-          provider,
-          result: { kind: 'json', raw },
-          elapsedMs: Date.now() - started
-        };
+        const raw = await providerJson(attemptProvider, logical, attemptBody, route, apiKey);
+        return { provider, result: { kind: 'json', raw }, elapsedMs: Date.now() - started };
+      };
+      try {
+        let attemptBody = supportsReasoningEffort(provider) ? body : stripReasoningEffortFields(body);
+        try {
+          return await runAttempt(attemptBody);
+        } catch (error) {
+          if (
+            supportsReasoningEffort(provider) &&
+            reasoningEffort(attemptBody) &&
+            isReasoningRejected(error)
+          ) {
+            markReasoningUnsupported(provider);
+            attemptBody = stripReasoningEffortFields(attemptBody);
+            return await runAttempt(attemptBody);
+          }
+          throw error;
+        }
       } catch (error) {
         const classification = classifyFailure(error);
         keyAttempts.push({
@@ -2634,6 +2707,22 @@ async function selectProvider(logical, body, wantStream) {
   const primary = buildCandidates(logical, body);
   let candidates = primary.candidates;
   let lastResort = false;
+  // 全部候选只是短暂限流冷却时，等最近的 retry 窗口再试一次，不直接 503。
+  if (!candidates.length && primary.definition) {
+    let earliest = 0;
+    for (const id of primary.definition.chain || []) {
+      const provider = providerById.get(id);
+      if (!provider || !provider.enabled) continue;
+      const state = stateFor(id);
+      if (state.openUntil > Date.now() && (!earliest || state.openUntil < earliest)) earliest = state.openUntil;
+    }
+    const waitMs = earliest ? earliest - Date.now() : 0;
+    if (waitMs > 0 && waitMs <= 5000) {
+      await sleep(waitMs + 50);
+      const retried = buildCandidates(logical, body);
+      if (retried.candidates.length) candidates = retried.candidates;
+    }
+  }
   if (!candidates.length && primary.definition && primary.definition.allowLastResort) {
     const fallback = buildCandidates(logical, body, { ignoreCircuit: true });
     if (fallback.candidates.length) {
@@ -2696,9 +2785,9 @@ async function handleChat(req, res, body, anthropic) {
       selection = await selectProvider(logical, body, wantStream);
       break;
     } catch (error) {
-      // 并发瞬时打满限流时短暂等待再挑，避免直接 503
+      // 并发瞬时打满限流时按退避等待再挑，避免直接 503
       if (attempt < 6) {
-        await sleep(400);
+        await sleep([400, 800, 1200, 1600, 2000, 2600][attempt] || 2600);
         continue;
       }
       bumpMetric('failures');
@@ -2722,6 +2811,7 @@ async function handleChat(req, res, body, anthropic) {
   const attempts = [];
   const stripReasoning = Boolean(selection.definition && selection.definition.stripReasoning);
   const budgetMs = Number(selection.definition && selection.definition.budgetMs) || 0;
+  const deadline = budgetMs ? started + budgetMs : 0;
   for (const candidate of selection.candidates) {
     if (budgetMs && Date.now() - started > budgetMs) {
       log({ ev: 'budget_exceeded', request_id: requestId, model: logical, ms: Date.now() - started, budget_ms: budgetMs });
@@ -2730,7 +2820,7 @@ async function handleChat(req, res, body, anthropic) {
     const provider = candidate.provider;
     const providerStarted = Date.now();
     try {
-      const outcome = await tryProvider(provider, logical, body, selection.definition, wantStream);
+      const outcome = await tryProvider(provider, logical, body, selection.definition, wantStream, deadline);
 
       const responseHeaders = {
         'x-request-id': requestId,
@@ -4247,6 +4337,12 @@ async function handleRequest(req, res) {
             bumpScore(provider.id, true, Date.now() - startedAt);
             results.push({ id: provider.id, ok: true, ms: Date.now() - startedAt });
           } catch (error) {
+            const failure = classifyFailure(error);
+            // 被限流只说明此刻忙，不代表上游质量差，不能把评分打到 5 分
+            if (failure.code === 'rate_limit') {
+              results.push({ id: provider.id, ok: false, limited: true, ms: Date.now() - startedAt, error: 'rate_limited' });
+              return;
+            }
             bumpScore(provider.id, false, Date.now() - startedAt);
             results.push({
               id: provider.id,
