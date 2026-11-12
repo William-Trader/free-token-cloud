@@ -200,14 +200,17 @@ test('structured output and incomplete status are mapped', () => {
   assert.equal(response.incomplete_details.reason, 'max_output_tokens');
 });
 
-test('chat pool never exposes chain of thought', () => {
+// v5.1 起 chat 与 tools 都转发 reasoning_effort 并回传思维链（见 README 深度思考）。
+// 只有路由显式声明 stripReasoning 才在请求侧隐藏；本用例原先断言 chat 恒隐藏，
+// 与 v5.1+ 语义脱节，且因 npm test 只跑 router.test.js 而长期未被发现。
+test('chat pool keeps reasoning; hideReasoning only strips response output', () => {
   const chat = responsesRequestToChat({
     model: 'chat',
     reasoning: { effort: 'high', summary: 'auto' },
     input: '你是什么模型'
   });
-  assert.equal(chat.__hideReasoning, true);
-  assert.ok(!chat.messages.some(m => m.role === 'system' && m.content.includes('推理预算')));
+  assert.equal(chat.__hideReasoning, false);
+  assert.ok(chat.messages.some(m => m.role === 'system' && m.content.includes('推理预算')));
   const response = responseFromCompletion({
     choices: [{ index: 0, message: { role: 'assistant', content: '我是中转聊天的模型', reasoning: '内部推理' } }]
   }, { model: 'chat' }, { hideReasoning: true });

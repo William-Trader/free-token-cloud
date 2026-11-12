@@ -34,9 +34,26 @@ ssh "$HOST" "
 "
 
 scp "$LOCAL_DIR/router.js" "$LOCAL_DIR/config.json" "$LOCAL_DIR/watchdog.sh" "$LOCAL_DIR/dashboard.html" "$LOCAL_DIR/provider-setup.html" "$LOCAL_DIR/provider-catalog.json" "$LOCAL_DIR/score-run.sh" "$HOST:$REMOTE_DIR/"
+
+# v6.0.0：源维护管道（scripts/ + data/ + docs/）整体同步，不触碰 token/secrets/state/logs。
+# 用 tar 一次传完，避免逐个 scp 漏文件；data/ 里的 history/audit 是追加型证据，远端同名文件会被本机版本覆盖。
+TARBALL="/tmp/ftc-sources-$STAMP.tgz"
+# COPYFILE_DISABLE=1：macOS tar 默认写入 com.apple.provenance 扩展头，Linux tar 会刷警告
+COPYFILE_DISABLE=1 tar --no-xattrs -C "$LOCAL_DIR" -czf "$TARBALL" scripts data docs
+scp "$TARBALL" "$HOST:/tmp/ftc-sources-$STAMP.tgz"
+rm -f "$TARBALL"
+ssh "$HOST" "
+  set -e
+  mkdir -p '$REMOTE_DIR/scripts' '$REMOTE_DIR/data' '$REMOTE_DIR/docs'
+  tar -xzf /tmp/ftc-sources-$STAMP.tgz -C '$REMOTE_DIR'
+  rm -f /tmp/ftc-sources-$STAMP.tgz
+  chmod 755 '$REMOTE_DIR/scripts/sources-cron.sh' '$REMOTE_DIR/score-run.sh'
+"
+
 scp "$LOCAL_DIR/systemd/ai-relay.service" "$HOST:/etc/systemd/system/ai-relay.service"
 scp "$LOCAL_DIR/systemd/ai-relay-watchdog.service" "$LOCAL_DIR/systemd/ai-relay-watchdog.timer" "$HOST:/etc/systemd/system/"
 scp "$LOCAL_DIR/systemd/ai-relay-score.service" "$LOCAL_DIR/systemd/ai-relay-score.timer" "$HOST:/etc/systemd/system/"
+scp "$LOCAL_DIR/systemd/ai-relay-sources.service" "$LOCAL_DIR/systemd/ai-relay-sources.timer" "$HOST:/etc/systemd/system/"
 
 if ! ssh "$HOST" "
   set -e
@@ -46,15 +63,18 @@ if ! ssh "$HOST" "
   node --check '$REMOTE_DIR/router.js'
   systemctl daemon-reload
   systemctl enable --now ai-relay-watchdog.timer
-  chmod 755 '$REMOTE_DIR/score-run.sh'
+  chmod 755 '$REMOTE_DIR/score-run.sh' '$REMOTE_DIR/scripts/sources-cron.sh'
   systemctl enable --now ai-relay-score.timer
+  systemctl enable --now ai-relay-sources.timer
   systemctl restart ai-relay
   for i in \$(seq 1 30); do
     code=\$(curl -s -o /dev/null -w '%{http_code}' --max-time 2 http://127.0.0.1:8801/health || echo 000)
-    [ \"\$code\" = 200 ] && exit 0
+    [ \"\$code\" = 200 ] && break
     sleep 1
   done
-  exit 1
+  [ \"\$code\" = 200 ] || { echo 'health check failed' >&2; exit 1; }
+  curl -s --max-time 3 http://127.0.0.1:8801/api/info | grep -q version || { echo 'api/info failed' >&2; exit 1; }
+  exit 0
 "; then
   ssh "$HOST" "
     set -e

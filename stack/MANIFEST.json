@@ -1,7 +1,7 @@
 {
   "name": "free-token-cloud",
-  "version": "3.1.1",
-  "license": "Unlicense",
+  "version": "6.0.0",
+  "license": "PolyForm-Noncommercial-1.0.0",
   "description": "A free, self-hosted token cloud composed of a routing core and a login-capable provider hub.",
   "components": {
     "relay-core": {
@@ -34,7 +34,15 @@
   },
   "automation": {
     "watchdog": "ai-relay-watchdog.timer",
+    "providerScoring": "ai-relay-score.timer",
+    "sourceMaintenance": "ai-relay-sources.timer + .github/workflows/sources.yml",
+    "ci": ".github/workflows/ci.yml",
     "providerActivation": "Encrypted credential save triggers config reload and provider activation"
+  },
+  "sourceRegistry": {
+    "path": "/opt/ai-relay/data/sources.json",
+    "pipeline": "/opt/ai-relay/scripts/sources.mjs",
+    "generated": ["provider-catalog.json", "docs/SOURCES.md", "docs/SOURCE-AUDIT.md", "data/metrics.json"]
   },
   "data": {
     "providerSecrets": "/opt/ai-relay/keys",

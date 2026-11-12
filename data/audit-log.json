@@ -1,0 +1,268 @@
+{
+  "version": 1,
+  "events": [
+    {
+      "at": "2026-11-12T07:43:19.005Z",
+      "type": "registry-init",
+      "added": 64,
+      "total": 64,
+      "seedVersion": "6.0.0"
+    },
+    {
+      "at": "2026-11-12T07:43:19.058Z",
+      "type": "discovery",
+      "feeds": 3,
+      "candidates": 59,
+      "newLeads": 21
+    },
+    {
+      "at": "2026-11-12T07:43:19.058Z",
+      "type": "verification",
+      "checked": 62,
+      "reachable": 60,
+      "changes": []
+    },
+    {
+      "at": "2026-11-12T07:43:19.058Z",
+      "type": "reconcile",
+      "before": 64,
+      "after": 64,
+      "duplicates": [],
+      "lifecycle": []
+    },
+    {
+      "at": "2026-11-12T07:43:19.058Z",
+      "type": "catalog-sync",
+      "from": 61,
+      "to": 62
+    },
+    {
+      "at": "2026-11-12T07:55:56.774Z",
+      "type": "discovery",
+      "feeds": 3,
+      "candidates": 59,
+      "newLeads": 21
+    },
+    {
+      "at": "2026-11-12T07:55:56.774Z",
+      "type": "verification",
+      "checked": 62,
+      "reachable": 59,
+      "changes": [
+        {
+          "id": "nvidia",
+          "from": "active",
+          "to": "degraded",
+          "at": "2026-11-12T07:55:56.774Z"
+        },
+        {
+          "id": "xiaomi-mimo",
+          "from": "unverified",
+          "to": "degraded",
+          "at": "2026-11-12T07:55:56.774Z"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-12T07:55:56.774Z",
+      "type": "reconcile",
+      "before": 64,
+      "after": 64,
+      "duplicates": [],
+      "lifecycle": []
+    },
+    {
+      "at": "2026-11-12T07:55:56.774Z",
+      "type": "catalog-sync",
+      "from": 62,
+      "to": 62
+    },
+    {
+      "at": "2026-11-12T07:59:03.355Z",
+      "type": "discovery",
+      "feeds": 3,
+      "candidates": 59,
+      "newLeads": 21
+    },
+    {
+      "at": "2026-11-12T07:59:03.355Z",
+      "type": "verification",
+      "checked": 62,
+      "reachable": 60,
+      "changes": [
+        {
+          "id": "nvidia",
+          "from": "degraded",
+          "to": "active",
+          "at": "2026-11-12T07:59:03.355Z"
+        },
+        {
+          "id": "minimax",
+          "from": "unverified",
+          "to": "degraded",
+          "at": "2026-11-12T07:59:03.355Z"
+        },
+        {
+          "id": "xiaomi-mimo",
+          "from": "degraded",
+          "to": "deprecated",
+          "at": "2026-11-12T07:59:03.355Z"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-12T07:59:03.355Z",
+      "type": "reconcile",
+      "before": 64,
+      "after": 64,
+      "duplicates": [],
+      "lifecycle": []
+    },
+    {
+      "at": "2026-11-12T07:59:03.355Z",
+      "type": "catalog-sync",
+      "from": 62,
+      "to": 62
+    },
+    {
+      "at": "2026-11-12T08:16:22.101Z",
+      "type": "discovery",
+      "feeds": 3,
+      "candidates": 59,
+      "newLeads": 0
+    },
+    {
+      "at": "2026-11-12T08:16:22.101Z",
+      "type": "verification",
+      "checked": 62,
+      "reachable": 60,
+      "changes": [
+        {
+          "id": "minimax",
+          "from": "degraded",
+          "to": "unverified",
+          "at": "2026-11-12T08:16:22.101Z"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-12T08:16:22.101Z",
+      "type": "reconcile",
+      "before": 64,
+      "after": 64,
+      "duplicates": [],
+      "lifecycle": []
+    },
+    {
+      "at": "2026-11-12T08:16:22.101Z",
+      "type": "catalog-sync",
+      "from": 62,
+      "to": 62
+    },
+    {
+      "at": "2026-11-12T08:19:46.574Z",
+      "type": "discovery",
+      "feeds": 3,
+      "candidates": 52,
+      "newLeads": 14
+    },
+    {
+      "at": "2026-11-12T08:19:46.574Z",
+      "type": "verification",
+      "checked": 62,
+      "reachable": 60,
+      "changes": [
+        {
+          "id": "mobile-moma",
+          "from": "unverified",
+          "to": "degraded",
+          "at": "2026-11-12T08:19:46.574Z"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-12T08:19:46.574Z",
+      "type": "reconcile",
+      "before": 64,
+      "after": 64,
+      "duplicates": [],
+      "lifecycle": []
+    },
+    {
+      "at": "2026-11-12T08:19:46.574Z",
+      "type": "catalog-sync",
+      "from": 62,
+      "to": 62
+    },
+    {
+      "at": "2026-11-12T08:21:35.358Z",
+      "type": "discovery",
+      "feeds": 3,
+      "candidates": 34,
+      "newLeads": 0
+    },
+    {
+      "at": "2026-11-12T08:21:35.358Z",
+      "type": "verification",
+      "checked": 62,
+      "reachable": 61,
+      "changes": [
+        {
+          "id": "mobile-moma",
+          "from": "degraded",
+          "to": "unverified",
+          "at": "2026-11-12T08:21:35.358Z"
+        }
+      ]
+    },
+    {
+      "at": "2026-11-12T08:21:35.358Z",
+      "type": "reconcile",
+      "before": 64,
+      "after": 64,
+      "duplicates": [],
+      "lifecycle": []
+    },
+    {
+      "at": "2026-11-12T08:21:35.358Z",
+      "type": "catalog-sync",
+      "from": 62,
+      "to": 62
+    },
+    {
+      "at": "2026-11-12T08:23:42.339Z",
+      "type": "discovery",
+      "feeds": 3,
+      "candidates": 40,
+      "newLeads": 1
+    },
+    {
+      "at": "2026-11-12T08:23:42.339Z",
+      "type": "verification",
+      "checked": 62,
+      "reachable": 61,
+      "changes": []
+    },
+    {
+      "at": "2026-11-12T08:23:42.339Z",
+      "type": "reconcile",
+      "before": 64,
+      "after": 64,
+      "duplicates": [],
+      "lifecycle": []
+    },
+    {
+      "at": "2026-11-12T08:23:42.339Z",
+      "type": "catalog-sync",
+      "from": 62,
+      "to": 62
+    },
+    {
+      "at": "2026-11-12T08:25:36.920Z",
+      "type": "discovery",
+      "feeds": 3,
+      "candidates": 40,
+      "newLeads": 0
+    }
+  ]
+}

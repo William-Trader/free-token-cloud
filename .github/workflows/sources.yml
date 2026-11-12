@@ -1,0 +1,49 @@
+name: sources
+
+# 每日自动维护免费源：发现 → 可用性校验 → 去重分类 → 状态更新/失效剔除 → 同步目录 → 重生成文档。
+on:
+  schedule:
+    - cron: '17 1 * * *'   # 每日 UTC 01:17（北京时间 09:17）
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sources-maintenance
+  cancel-in-progress: false
+
+jobs:
+  maintain:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: 运行源维护全流程
+        env:
+          SOURCES_TIMEOUT_MS: '10000'
+          SOURCES_CONCURRENCY: '8'
+        run: npm run sources:all
+      - name: 校验生成物
+        run: |
+          npm run check
+          node -e "
+            const m=require('./data/metrics.json');
+            if(m.coverage.totalSources<40){console.error('registry unexpectedly small');process.exit(1)}
+            if(m.availability.endpointReachableRate<50){console.error('probe mass failure, refusing to commit');process.exit(1)}
+            console.log('metrics OK:',m.coverage.totalSources,'sources,',m.availability.endpointReachableRate+'% reachable');
+          "
+      - name: 提交每日更新
+        if: github.event_name != 'pull_request'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data docs/SOURCES.md docs/SOURCE-AUDIT.md provider-catalog.json README.md
+          if git diff --cached --quiet; then
+            echo "no source changes today"
+          else
+            git commit -m "chore(sources): daily source refresh $(date -u +%F)"
+            git push
+          fi

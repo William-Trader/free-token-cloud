@@ -1,0 +1,58 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: 语法与 JSON 校验
+        run: npm run check
+      - name: 单元测试（路由 + Responses + 源管道）
+        run: npm test
+      - name: 版本号一致性
+        run: |
+          node -e "
+            const fs=require('node:fs');
+            const pkg=JSON.parse(fs.readFileSync('package.json','utf8'));
+            const m=fs.readFileSync('router.js','utf8').match(/const APP_VERSION = '([^']+)'/);
+            if(!m||m[1]!==pkg.version){console.error('version mismatch',pkg.version,m&&m[1]);process.exit(1)}
+            console.log('version OK:',pkg.version);
+          "
+      - name: 源注册表 schema 校验
+        run: |
+          node -e "
+            const fs=require('node:fs');
+            const d=JSON.parse(fs.readFileSync('data/sources.json','utf8'));
+            const required=['id','name','category','auth','region','status','confidence','evidence','firstSeenAt','quota'];
+            const ids=new Set(); let bad=0;
+            for(const s of d.sources){
+              for(const k of required) if(!s[k]){console.error(s.id,'missing',k);bad++}
+              if(ids.has(s.id)){console.error('duplicate id',s.id);bad++} ids.add(s.id);
+              if(!Array.isArray(s.evidence)||!s.evidence.length){console.error(s.id,'no evidence');bad++}
+              for(const e of s.evidence||[]) if(!/^https?:\/\//.test(e.url)){console.error(s.id,'bad evidence url',e.url);bad++}
+            }
+            const p=JSON.parse(fs.readFileSync('provider-catalog.json','utf8'));
+            const cid=new Set();
+            for(const c of p.providers){if(cid.has(c.id)){console.error('duplicate catalog id',c.id);bad++}cid.add(c.id);
+              for(const k of ['id','name','kind','pool','loginUrl','docsUrl','models','quota','note']) if(!c[k]){console.error(c.id,'missing',k);bad++}}
+            console.log('registry',d.sources.length,'sources / catalog',p.providers.length,'providers / errors',bad);
+            if(bad) process.exit(1);
+          "
+      - name: 文档完整性
+        run: |
+          for f in README.md CHANGELOG.md CONTRIBUTING.md LICENSE docs/ARCHITECTURE.md docs/SOURCES.md docs/SOURCE-AUDIT.md docs/MAINTENANCE.md docs/BENCHMARK.md; do
+            test -s "$f" || { echo "missing $f"; exit 1; }
+          done
+          echo "documents OK"

@@ -4,6 +4,7 @@
   "tokenFile": "/opt/ai-relay/token",
   "logFile": "/opt/ai-relay/logs/relay.jsonl",
   "usageStateFile": "/opt/ai-relay/state/usage.json",
+  "scoresFile": "/opt/ai-relay/state/scores.json",
   "providerSettingsFile": "/opt/ai-relay/state/provider-settings.json",
   "credentialsFile": "/opt/ai-relay/secrets/credentials.enc.json",
   "credentialsKeyFile": "/opt/ai-relay/secrets/master.key",

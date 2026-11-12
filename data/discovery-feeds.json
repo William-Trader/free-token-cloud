@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "updatedAt": "2026-11-12",
+  "description": "公开免费源清单发现源。只抓公开文档/清单，不抓凭据、不绕过鉴权。每条 feed 的抓取结果写入 data/candidates.json 并保留原始出处。",
+  "transportNote": "使用 api.github.com 的 contents?ref=main + Accept: application/vnd.github.raw 读取原文，而非 raw.githubusercontent.com：101 服务器（阿里云上海）直连 raw.githubusercontent.com 返回 000，api.github.com 返回 200。CI 与服务器可共用同一端点；未认证调用 60 次/小时，每日 3 次足够。",
+  "feeds": [
+    {
+      "id": "awesome-free-llm-apis",
+      "name": "mnfst/awesome-free-llm-apis (permanent free tiers)",
+      "url": "https://api.github.com/repos/mnfst/awesome-free-llm-apis/contents/README.md",
+      "sourceUrl": "https://github.com/mnfst/awesome-free-llm-apis/blob/main/README.md",
+      "accept": "application/vnd.github.raw",
+      "kind": "aggregator",
+      "license": "CC0-1.0",
+      "enabled": true,
+      "parse": "markdown-h3",
+      "note": "只收永久免费层，剔除试用额度；每条带 base URL、限额、文档链接。"
+    },
+    {
+      "id": "free-llm-api-resources",
+      "name": "free-llm-api-resources (free tiers + trial credits)",
+      "url": "https://api.github.com/repos/steelburn/free-llm-api-resources/contents/README.md",
+      "sourceUrl": "https://github.com/steelburn/free-llm-api-resources/blob/main/README.md",
+      "accept": "application/vnd.github.raw",
+      "kind": "aggregator",
+      "license": "MIT",
+      "enabled": true,
+      "parse": "markdown-h3",
+      "note": "上游 cheahjs 仓库 2026-11 已不可达，改用该 fork 镜像；含 Free Providers 与 trial credits 两组。"
+    },
+    {
+      "id": "freellmapi",
+      "name": "tashfeenahmed/freellmapi (aggregated provider list)",
+      "url": "https://api.github.com/repos/tashfeenahmed/freellmapi/contents/README.md",
+      "sourceUrl": "https://github.com/tashfeenahmed/freellmapi/blob/main/README.md",
+      "accept": "application/vnd.github.raw",
+      "kind": "aggregator",
+      "license": "MIT",
+      "enabled": true,
+      "parse": "html-b",
+      "note": "自托管聚合器，用于交叉验证 provider 覆盖面；不作为额度事实来源。其 README 的 provider 列表是 HTML <b> 标签而非 markdown 标题，故用 html-b 解析器。"
+    },
+    {
+      "id": "provider-official-docs",
+      "name": "逐源官方文档链接（registry.evidence 内）",
+      "url": "local://data/sources.json",
+      "kind": "official",
+      "enabled": true,
+      "parse": "registry-evidence",
+      "note": "官方限额页由 verify 阶段直接校验可达性，额度文本以官方页为准。"
+    }
+  ]
+}

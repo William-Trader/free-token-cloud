@@ -1,0 +1,68 @@
+{
+  "version": 1,
+  "updatedAt": "2026-11-12",
+  "categories": {
+    "permanent-free": "永久免费层（无期限、无需信用卡）",
+    "free-model": "平台内部分模型永久零价，其余付费",
+    "anonymous": "无需注册/无需 key 的匿名免费调用",
+    "trial-credit": "注册赠金或试用额度，有有效期",
+    "open-quota": "开发者计划/开源社区配额，需申请或验证",
+    "gateway": "聚合网关提供的免费路由或免费模型池",
+    "subscription": "用户自有订阅附带的合法额度（非共享账号）",
+    "local": "本地自托管推理，不消耗外部额度"
+  },
+  "authTypes": ["api-key", "anonymous", "oauth", "token", "local", "custom"],
+  "statuses": ["active", "degraded", "unverified", "deprecated", "removed"],
+  "verification": {
+    "timeoutMs": 12000,
+    "concurrency": 8,
+    "userAgent": "free-token-cloud-source-verifier/6.0 (+https://github.com/William-Trader/free-token-cloud)",
+    "okStatuses": [200, 201, 204, 301, 302, 307, 308, 401, 403, 405, 429],
+    "note": "401/403/405/429 均视为『端点在线且按预期要求鉴权或限流』，不算失效；5xx/超时/DNS 失败才算探测失败。"
+  },
+  "lifecycle": {
+    "degradeAfterConsecutiveFailures": 2,
+    "deprecateAfterConsecutiveFailures": 3,
+    "staleAfterDays": 14,
+    "removeAfterDays": 30,
+    "keepTombstones": true,
+    "note": "失效剔除不删除记录：置 status=removed 并保留 removedAt/原因，保证审计可追溯。"
+  },
+  "dedupe": {
+    "normalizeHost": true,
+    "stripWww": true,
+    "stripTrailingSlash": true,
+    "aliases": {
+      "z-ai": "zhipu",
+      "z.ai": "zhipu",
+      "glm": "zhipu",
+      "google-ai-studio": "gemini",
+      "google-gemini": "gemini",
+      "google": "gemini",
+      "qwen-bailian": "qwen",
+      "alibaba-model-studio": "qwen",
+      "modelscope": "modelscope",
+      "siliconflow-cn": "siliconflow",
+      "kilo-gateway": "kilo",
+      "kilo-code": "kilo",
+      "ovhcloud": "ovh",
+      "hugging-face": "huggingface",
+      "open-router": "openrouter",
+      "cloudflare": "cloudflare-workers-ai"
+    }
+  },
+  "exclusions": {
+    "rules": [
+      "逆向聊天机器人/网页会话导出的非官方端点",
+      "共享、租借、倒卖的 API key 或账号池",
+      "CAPTCHA 绕过、配额规避、多账号刷额度",
+      "需要他人凭据才能使用的入口"
+    ],
+    "note": "命中排除规则的候选写入 candidates.json 且标记 rejected，不进入 registry。"
+  },
+  "probe": {
+    "preferUrl": "docsUrl",
+    "fallbackUrls": ["pricingUrl", "keyUrl", "endpoint"],
+    "skipLocal": true
+  }
+}

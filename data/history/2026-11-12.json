@@ -1,0 +1,1040 @@
+{
+  "date": "2026-11-12",
+  "generatedAt": "2026-11-12T08:23:42.339Z",
+  "checked": 62,
+  "reachable": 61,
+  "results": [
+    {
+      "id": "gemini",
+      "checkedAt": "2026-11-12T08:23:51.567Z",
+      "url": "https://ai.google.dev/gemini-api/docs",
+      "result": "reachable",
+      "ok": true,
+      "httpStatus": 200,
+      "latencyMs": 4666,
+      "attempts": [
+        {
+          "url": "https://ai.google.dev/gemini-api/docs",
+          "httpStatus": 200,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "groq",
+      "checkedAt": "2026-11-12T08:23:51.568Z",
+      "url": "https://console.groq.com/docs/rate-limits",
+      "result": "reachable",
+      "ok": true,
+      "httpStatus": 200,
+      "latencyMs": 1988,
+      "attempts": [
+        {
+          "url": "https://console.groq.com/docs/rate-limits",
+          "httpStatus": 200,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "nvidia",
+      "checkedAt": "2026-11-12T08:23:51.569Z",
+      "url": "https://docs.nvidia.com/nim/",
+      "result": "reachable",
+      "ok": true,
+      "httpStatus": 200,
+      "latencyMs": 1818,
+      "attempts": [
+        {
+          "url": "https://docs.nvidia.com/nim/",
+          "httpStatus": 200,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "mistral",
+      "checkedAt": "2026-11-12T08:23:51.570Z",
+      "url": "https://mistral.ai/pricing",
+      "result": "reachable",
+      "ok": true,
+      "httpStatus": 200,
+      "latencyMs": 7885,
+      "attempts": [
+        {
+          "url": "https://docs.mistral.ai/deployment/laplateforme/overview",
+          "httpStatus": 404,
+          "ok": false
+        },
+        {
+          "url": "https://mistral.ai/pricing",
+          "httpStatus": 200,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "openrouter",
+      "checkedAt": "2026-11-12T08:23:51.571Z",
+      "url": "https://openrouter.ai/docs/api-reference/limits",
+      "result": "reachable",
+      "ok": true,
+      "httpStatus": 200,
+      "latencyMs": 5058,
+      "attempts": [
+        {
+          "url": "https://openrouter.ai/docs/api-reference/limits",
+          "httpStatus": 200,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "cohere",
+      "checkedAt": "2026-11-12T08:23:51.572Z",
+      "url": "https://docs.cohere.com/docs/rate-limits",
+      "result": "reachable",
+      "ok": true,
+      "httpStatus": 200,
+      "latencyMs": 2217,
+      "attempts": [
+        {
+          "url": "https://docs.cohere.com/docs/rate-limits",
+          "httpStatus": 200,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "modelscope",
+      "checkedAt": "2026-11-12T08:23:51.573Z",
+      "url": "https://modelscope.cn/docs/model-service/API-Inference/intro",
+      "result": "reachable",
+      "ok": true,
+      "httpStatus": 200,
+      "latencyMs": 2588,
+      "attempts": [
+        {
+          "url": "https://modelscope.cn/docs/model-service/API-Inference/intro",
+          "httpStatus": 200,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "ollama-cloud",
+      "checkedAt": "2026-11-12T08:23:51.574Z",
+      "url": "https://docs.ollama.com/cloud",
+      "result": "reachable",
+      "ok": true,
+      "httpStatus": 200,
+      "latencyMs": 1810,
+      "attempts": [
+        {
+          "url": "https://docs.ollama.com/cloud",
+          "httpStatus": 200,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "siliconflow",
+      "checkedAt": "2026-11-12T08:23:53.384Z",
+      "url": "https://docs.siliconflow.cn/",
+      "result": "reachable",
+      "ok": true,
+      "httpStatus": 200,
+      "latencyMs": 8583,
+      "attempts": [
+        {
+          "url": "https://docs.siliconflow.cn/",
+          "httpStatus": 200,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "huggingface",
+      "checkedAt": "2026-11-12T08:23:53.387Z",
+      "url": "https://huggingface.co/docs/inference-providers/index",
+      "result": "reachable",
+      "ok": true,
+      "httpStatus": 200,
+      "latencyMs": 3072,
+      "attempts": [
+        {
+          "url": "https://huggingface.co/docs/inference-providers/index",
+          "httpStatus": 200,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "qwen",
+      "checkedAt": "2026-11-12T08:23:53.556Z",
+      "url": "https://help.aliyun.com/zh/model-studio/",
+      "result": "reachable",
+      "ok": true,
+      "httpStatus": 200,
+      "latencyMs": 8342,
+      "attempts": [
+        {
+          "url": "https://help.aliyun.com/zh/model-studio/",
+          "httpStatus": 200,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "cerebras",
+      "checkedAt": "2026-11-12T08:23:53.789Z",
+      "url": "https://inference-docs.cerebras.ai/",
+      "result": "reachable",
+      "ok": true,
+      "httpStatus": 200,
+      "latencyMs": 2765,
+      "attempts": [
+        {
+          "url": "https://inference-docs.cerebras.ai/",
+          "httpStatus": 200,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "sambanova",
+      "checkedAt": "2026-11-12T08:23:54.161Z",
+      "url": "https://docs.sambanova.ai/cloud/",
+      "result": "reachable",
+      "ok": true,
+      "httpStatus": 200,
+      "latencyMs": 6210,
+      "attempts": [
+        {
+          "url": "https://docs.sambanova.ai/cloud/",
+          "httpStatus": 200,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "deepinfra",
+      "checkedAt": "2026-11-12T08:23:56.233Z",
+      "url": "https://deepinfra.com/docs",
+      "result": "reachable",
+      "ok": true,
+      "httpStatus": 200,
+      "latencyMs": 5373,
+      "attempts": [
+        {
+          "url": "https://deepinfra.com/docs",
+          "httpStatus": 200,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "novita",
+      "checkedAt": "2026-11-12T08:23:56.459Z",
+      "url": "https://novita.ai/docs",
+      "result": "reachable",
+      "ok": true,
+      "httpStatus": 200,
+      "latencyMs": 5041,
+      "attempts": [
+        {
+          "url": "https://novita.ai/docs",
+          "httpStatus": 200,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "piagent",
+      "checkedAt": "2026-11-12T08:23:56.554Z",
+      "url": "",
+      "result": "skipped",
+      "ok": true,
+      "reason": "local source"
+    },
+    {
+      "id": "llm7",
+      "checkedAt": "2026-11-12T08:23:56.554Z",
+      "url": "https://docs.llm7.io/guides/models-api",
+      "result": "reachable",
+      "ok": true,
+      "httpStatus": 200,
+      "latencyMs": 2248,
+      "attempts": [
+        {
+          "url": "https://docs.llm7.io/guides/models-api",
+          "httpStatus": 200,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "pollinations",
+      "checkedAt": "2026-11-12T08:23:56.629Z",
+      "url": "https://github.com/pollinations/pollinations/blob/master/APIDOCS.md",
+      "result": "reachable",
+      "ok": true,
+      "httpStatus": 200,
+      "latencyMs": 3233,
+      "attempts": [
+        {
+          "url": "https://github.com/pollinations/pollinations/blob/master/APIDOCS.md",
+          "httpStatus": 200,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "cloudflare-workers-ai",
+      "checkedAt": "2026-11-12T08:23:58.802Z",
+      "url": "https://developers.cloudflare.com/workers-ai/",
+      "result": "reachable",
+      "ok": true,
+      "httpStatus": 200,
+      "latencyMs": 2988,
+      "attempts": [
+        {
+          "url": "https://developers.cloudflare.com/workers-ai/",
+          "httpStatus": 200,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "requesty",
+      "checkedAt": "2026-11-12T08:23:59.455Z",
+      "url": "https://docs.requesty.ai/",
+      "result": "reachable",
+      "ok": true,
+      "httpStatus": 200,
+      "latencyMs": 4357,
+      "attempts": [
+        {
+          "url": "https://docs.requesty.ai/",
+          "httpStatus": 200,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "vercel-ai-gateway",
+      "checkedAt": "2026-11-12T08:23:59.863Z",
+      "url": "https://vercel.com/docs/ai-gateway",
+      "result": "reachable",
+      "ok": true,
+      "httpStatus": 200,
+      "latencyMs": 2734,
+      "attempts": [
+        {
+          "url": "https://vercel.com/docs/ai-gateway",
+          "httpStatus": 200,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "github-copilot",
+      "checkedAt": "2026-11-12T08:24:00.371Z",
+      "url": "https://docs.github.com/en/copilot",
+      "result": "reachable",
+      "ok": true,
+      "httpStatus": 200,
+      "latencyMs": 2294,
+      "attempts": [
+        {
+          "url": "https://docs.github.com/en/copilot",
+          "httpStatus": 200,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "claude-code",
+      "checkedAt": "2026-11-12T08:24:01.500Z",
+      "url": "https://docs.anthropic.com/en/docs/claude-code/overview",
+      "result": "reachable",
+      "ok": true,
+      "httpStatus": 200,
+      "latencyMs": 3068,
+      "attempts": [
+        {
+          "url": "https://docs.anthropic.com/en/docs/claude-code/overview",
+          "httpStatus": 200,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "codex-chatgpt",
+      "checkedAt": "2026-11-12T08:24:01.606Z",
+      "url": "https://developers.openai.com/codex/",
+      "result": "reachable",
+      "ok": true,
+      "httpStatus": 200,
+      "latencyMs": 4781,
+      "attempts": [
+        {
+          "url": "https://developers.openai.com/codex/",
+          "httpStatus": 200,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "kimi-code",
+      "checkedAt": "2026-11-12T08:24:01.790Z",
+      "url": "https://platform.moonshot.cn/docs/",
+      "result": "reachable",
+      "ok": true,
+      "httpStatus": 200,
+      "latencyMs": 8147,
+      "attempts": [
+        {
+          "url": "https://platform.moonshot.cn/docs/",
+          "httpStatus": 200,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "zhipu",
+      "checkedAt": "2026-11-12T08:24:01.898Z",
+      "url": "https://docs.bigmodel.cn/cn/guide/models/free/glm-4.7-flash",
+      "result": "reachable",
+      "ok": true,
+      "httpStatus": 200,
+      "latencyMs": 2209,
+      "attempts": [
+        {
+          "url": "https://docs.bigmodel.cn/cn/guide/models/free/glm-4.7-flash",
+          "httpStatus": 200,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "moonshot",
+      "checkedAt": "2026-11-12T08:24:01.967Z",
+      "url": "https://platform.moonshot.cn/docs/",
+      "result": "reachable",
+      "ok": true,
+      "httpStatus": 200,
+      "latencyMs": 6507,
+      "attempts": [
+        {
+          "url": "https://platform.moonshot.cn/docs/",
+          "httpStatus": 200,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "together",
+      "checkedAt": "2026-11-12T08:24:02.597Z",
+      "url": "https://docs.together.ai/docs/",
+      "result": "reachable",
+      "ok": true,
+      "httpStatus": 200,
+      "latencyMs": 3745,
+      "attempts": [
+        {
+          "url": "https://docs.together.ai/docs/",
+          "httpStatus": 200,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "nebius",
+      "checkedAt": "2026-11-12T08:24:02.665Z",
+      "url": "https://docs.nebius.ai/",
+      "result": "reachable",
+      "ok": true,
+      "httpStatus": 200,
+      "latencyMs": 3127,
+      "attempts": [
+        {
+          "url": "https://docs.nebius.ai/",
+          "httpStatus": 200,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "hyperbolic",
+      "checkedAt": "2026-11-12T08:24:03.812Z",
+      "url": "https://app.hyperbolic.xyz/settings",
+      "result": "reachable",
+      "ok": true,
+      "httpStatus": 200,
+      "latencyMs": 17182,
+      "attempts": [
+        {
+          "url": "https://docs.hyperbolic.xyz/",
+          "error": "The operation was aborted due to timeout"
+        },
+        {
+          "url": "https://www.hyperbolic.xyz/pricing",
+          "httpStatus": 404,
+          "ok": false
+        },
+        {
+          "url": "https://app.hyperbolic.xyz/settings",
+          "httpStatus": 200,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "fireworks",
+      "checkedAt": "2026-11-12T08:24:04.107Z",
+      "url": "https://docs.fireworks.ai/",
+      "result": "reachable",
+      "ok": true,
+      "httpStatus": 200,
+      "latencyMs": 3955,
+      "attempts": [
+        {
+          "url": "https://docs.fireworks.ai/",
+          "httpStatus": 200,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "airforce",
+      "checkedAt": "2026-11-12T08:24:04.568Z",
+      "url": "https://airforce.ai/",
+      "result": "reachable",
+      "ok": true,
+      "httpStatus": 200,
+      "latencyMs": 1823,
+      "attempts": [
+        {
+          "url": "https://airforce.ai/",
+          "httpStatus": 200,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "voidai",
+      "checkedAt": "2026-11-12T08:24:05.792Z",
+      "url": "https://voidai.app/",
+      "result": "reachable",
+      "ok": true,
+      "httpStatus": 403,
+      "latencyMs": 2210,
+      "attempts": [
+        {
+          "url": "https://voidai.app/",
+          "httpStatus": 403,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "kilo",
+      "checkedAt": "2026-11-12T08:24:06.342Z",
+      "url": "https://kilo.ai/docs/gateway/authentication",
+      "result": "reachable",
+      "ok": true,
+      "httpStatus": 200,
+      "latencyMs": 2300,
+      "attempts": [
+        {
+          "url": "https://kilo.ai/docs/gateway/authentication",
+          "httpStatus": 200,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "ovh",
+      "checkedAt": "2026-11-12T08:24:06.387Z",
+      "url": "https://www.ovhcloud.com/en/public-cloud/ai-endpoints/catalog/",
+      "result": "reachable",
+      "ok": true,
+      "httpStatus": 200,
+      "latencyMs": 3271,
+      "attempts": [
+        {
+          "url": "https://www.ovhcloud.com/en/public-cloud/ai-endpoints/catalog/",
+          "httpStatus": 200,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "aionlabs",
+      "checkedAt": "2026-11-12T08:24:06.391Z",
+      "url": "https://www.aionlabs.ai/pricing",
+      "result": "reachable",
+      "ok": true,
+      "httpStatus": 200,
+      "latencyMs": 6270,
+      "attempts": [
+        {
+          "url": "https://docs.aionlabs.ai/",
+          "error": "fetch failed"
+        },
+        {
+          "url": "https://www.aionlabs.ai/pricing",
+          "httpStatus": 200,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "gonka",
+      "checkedAt": "2026-11-12T08:24:08.002Z",
+      "url": "https://docs.gonkabroker.com/guides/billing-and-deposits/",
+      "result": "reachable",
+      "ok": true,
+      "httpStatus": 200,
+      "latencyMs": 2491,
+      "attempts": [
+        {
+          "url": "https://docs.gonkabroker.com/guides/billing-and-deposits/",
+          "httpStatus": 200,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "opencode-zen",
+      "checkedAt": "2026-11-12T08:24:08.062Z",
+      "url": "https://opencode.ai/docs/zen/",
+      "result": "reachable",
+      "ok": true,
+      "httpStatus": 200,
+      "latencyMs": 3873,
+      "attempts": [
+        {
+          "url": "https://opencode.ai/docs/zen/",
+          "httpStatus": 200,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "ai21",
+      "checkedAt": "2026-11-12T08:24:08.474Z",
+      "url": "https://docs.ai21.com/",
+      "result": "reachable",
+      "ok": true,
+      "httpStatus": 200,
+      "latencyMs": 4626,
+      "attempts": [
+        {
+          "url": "https://docs.ai21.com/",
+          "httpStatus": 200,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "upstage",
+      "checkedAt": "2026-11-12T08:24:08.642Z",
+      "url": "https://www.upstage.ai/pricing",
+      "result": "reachable",
+      "ok": true,
+      "httpStatus": 200,
+      "latencyMs": 10637,
+      "attempts": [
+        {
+          "url": "https://developers.upstage.ai/",
+          "error": "fetch failed"
+        },
+        {
+          "url": "https://www.upstage.ai/pricing",
+          "httpStatus": 200,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "nlpcloud",
+      "checkedAt": "2026-11-12T08:24:09.658Z",
+      "url": "https://docs.nlpcloud.com/",
+      "result": "reachable",
+      "ok": true,
+      "httpStatus": 403,
+      "latencyMs": 2564,
+      "attempts": [
+        {
+          "url": "https://docs.nlpcloud.com/",
+          "httpStatus": 403,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "baseten",
+      "checkedAt": "2026-11-12T08:24:09.937Z",
+      "url": "https://www.baseten.co/pricing",
+      "result": "reachable",
+      "ok": true,
+      "httpStatus": 200,
+      "latencyMs": 8450,
+      "attempts": [
+        {
+          "url": "https://docs.baseten.co/",
+          "error": "fetch failed"
+        },
+        {
+          "url": "https://www.baseten.co/pricing",
+          "httpStatus": 200,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "modal",
+      "checkedAt": "2026-11-12T08:24:10.493Z",
+      "url": "https://modal.com/docs",
+      "result": "reachable",
+      "ok": true,
+      "httpStatus": 200,
+      "latencyMs": 3291,
+      "attempts": [
+        {
+          "url": "https://modal.com/docs",
+          "httpStatus": 200,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "inference-net",
+      "checkedAt": "2026-11-12T08:24:11.935Z",
+      "url": "https://docs.inference.net/",
+      "result": "reachable",
+      "ok": true,
+      "httpStatus": 200,
+      "latencyMs": 5380,
+      "attempts": [
+        {
+          "url": "https://docs.inference.net/",
+          "httpStatus": 200,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "scaleway",
+      "checkedAt": "2026-11-12T08:24:12.222Z",
+      "url": "https://www.scaleway.com/en/docs/generative-apis/",
+      "result": "reachable",
+      "ok": true,
+      "httpStatus": 200,
+      "latencyMs": 2607,
+      "attempts": [
+        {
+          "url": "https://www.scaleway.com/en/docs/generative-apis/",
+          "httpStatus": 200,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "alibaba-intl",
+      "checkedAt": "2026-11-12T08:24:12.661Z",
+      "url": "https://www.alibabacloud.com/help/en/model-studio/models",
+      "result": "reachable",
+      "ok": true,
+      "httpStatus": 200,
+      "latencyMs": 3273,
+      "attempts": [
+        {
+          "url": "https://www.alibabacloud.com/help/en/model-studio/",
+          "error": "fetch failed"
+        },
+        {
+          "url": "https://www.alibabacloud.com/help/en/model-studio/models",
+          "httpStatus": 200,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "baidu-qianfan",
+      "checkedAt": "2026-11-12T08:24:13.100Z",
+      "url": "https://cloud.baidu.com/doc/WENXINWORKSHOP/s/hlrk4akp7",
+      "result": "reachable",
+      "ok": true,
+      "httpStatus": 200,
+      "latencyMs": 7094,
+      "attempts": [
+        {
+          "url": "https://cloud.baidu.com/doc/WENXINWORKSHOP/s/Wm7fll3np",
+          "error": "fetch failed"
+        },
+        {
+          "url": "https://cloud.baidu.com/doc/WENXINWORKSHOP/s/hlrk4akp7",
+          "httpStatus": 200,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "xfyun-spark",
+      "checkedAt": "2026-11-12T08:24:13.784Z",
+      "url": "https://www.xfyun.cn/doc/spark/",
+      "result": "reachable",
+      "ok": true,
+      "httpStatus": 403,
+      "latencyMs": 3954,
+      "attempts": [
+        {
+          "url": "https://www.xfyun.cn/doc/spark/",
+          "httpStatus": 403,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "volcengine-ark",
+      "checkedAt": "2026-11-12T08:24:14.829Z",
+      "url": "https://www.volcengine.com/docs/82379",
+      "result": "reachable",
+      "ok": true,
+      "httpStatus": 200,
+      "latencyMs": 9050,
+      "attempts": [
+        {
+          "url": "https://www.volcengine.com/docs/82379",
+          "httpStatus": 200,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "qiniu-ai",
+      "checkedAt": "2026-11-12T08:24:15.934Z",
+      "url": "https://developer.qiniu.com/aitokenapi/",
+      "result": "reachable",
+      "ok": true,
+      "httpStatus": 200,
+      "latencyMs": 4174,
+      "attempts": [
+        {
+          "url": "https://developer.qiniu.com/aitokenapi/",
+          "httpStatus": 200,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "minimax",
+      "checkedAt": "2026-11-12T08:24:17.315Z",
+      "url": "https://platform.minimaxi.com/",
+      "result": "reachable",
+      "ok": true,
+      "httpStatus": 307,
+      "latencyMs": 16900,
+      "attempts": [
+        {
+          "url": "https://platform.minimaxi.com/document/",
+          "httpStatus": 404,
+          "ok": false
+        },
+        {
+          "url": "https://platform.minimaxi.com/document/price",
+          "error": "The operation was aborted due to timeout"
+        },
+        {
+          "url": "https://platform.minimaxi.com/",
+          "httpStatus": 307,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "tencent-tokenhub",
+      "checkedAt": "2026-11-12T08:24:17.738Z",
+      "url": "https://cloud.tencent.com/document/product/1729",
+      "result": "reachable",
+      "ok": true,
+      "httpStatus": 200,
+      "latencyMs": 2417,
+      "attempts": [
+        {
+          "url": "https://cloud.tencent.com/document/product/1729",
+          "httpStatus": 200,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "mobile-moma",
+      "checkedAt": "2026-11-12T08:24:18.387Z",
+      "url": "https://www.10086.cn/",
+      "result": "reachable",
+      "ok": true,
+      "httpStatus": 200,
+      "latencyMs": 2855,
+      "attempts": [
+        {
+          "url": "https://www.10086.cn/",
+          "httpStatus": 200,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "scnet",
+      "checkedAt": "2026-11-12T08:24:19.279Z",
+      "url": "https://www.scnet.cn/ui/mall/",
+      "result": "reachable",
+      "ok": true,
+      "httpStatus": 200,
+      "latencyMs": 2779,
+      "attempts": [
+        {
+          "url": "https://www.scnet.cn/ui/mall/",
+          "httpStatus": 200,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "yi-lightning",
+      "checkedAt": "2026-11-12T08:24:20.108Z",
+      "url": "https://platform.lingyiwanwu.com/docs",
+      "result": "reachable",
+      "ok": true,
+      "httpStatus": 200,
+      "latencyMs": 2479,
+      "attempts": [
+        {
+          "url": "https://platform.lingyiwanwu.com/docs",
+          "httpStatus": 200,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "jina-ai",
+      "checkedAt": "2026-11-12T08:24:20.155Z",
+      "url": "https://docs.jina.ai/",
+      "result": "reachable",
+      "ok": true,
+      "httpStatus": 200,
+      "latencyMs": 1562,
+      "attempts": [
+        {
+          "url": "https://docs.jina.ai/",
+          "httpStatus": 200,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "longcat",
+      "checkedAt": "2026-11-12T08:24:20.194Z",
+      "url": "https://longcat.ai/platform/docs",
+      "result": "reachable",
+      "ok": true,
+      "httpStatus": 200,
+      "latencyMs": 1681,
+      "attempts": [
+        {
+          "url": "https://longcat.ai/platform/docs",
+          "httpStatus": 200,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "xiaomi-mimo",
+      "checkedAt": "2026-11-12T08:24:20.994Z",
+      "url": "https://mimo.ai.xiaomi.com/docs",
+      "result": "http-error",
+      "ok": false,
+      "httpStatus": 404,
+      "latencyMs": 5936,
+      "error": "all 4 probe URLs returned non-ok",
+      "attempts": [
+        {
+          "url": "https://mimo.ai.xiaomi.com/docs",
+          "error": "fetch failed"
+        },
+        {
+          "url": "https://mimo.ai.xiaomi.com/pricing",
+          "error": "fetch failed"
+        },
+        {
+          "url": "https://mimo.ai.xiaomi.com/",
+          "error": "fetch failed"
+        },
+        {
+          "url": "https://api.xiaomimimo.com/v1",
+          "httpStatus": 404,
+          "ok": false
+        }
+      ]
+    },
+    {
+      "id": "deepseek-trial",
+      "checkedAt": "2026-11-12T08:24:21.242Z",
+      "url": "https://api-docs.deepseek.com/",
+      "result": "reachable",
+      "ok": true,
+      "httpStatus": 200,
+      "latencyMs": 3403,
+      "attempts": [
+        {
+          "url": "https://api-docs.deepseek.com/",
+          "httpStatus": 200,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "xai-grok",
+      "checkedAt": "2026-11-12T08:24:21.717Z",
+      "url": "https://docs.x.ai/",
+      "result": "reachable",
+      "ok": true,
+      "httpStatus": 200,
+      "latencyMs": 4517,
+      "attempts": [
+        {
+          "url": "https://docs.x.ai/",
+          "httpStatus": 200,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "openai-trial",
+      "checkedAt": "2026-11-12T08:24:21.875Z",
+      "url": "https://platform.openai.com/docs/",
+      "result": "reachable",
+      "ok": true,
+      "httpStatus": 200,
+      "latencyMs": 4912,
+      "attempts": [
+        {
+          "url": "https://platform.openai.com/docs/",
+          "httpStatus": 200,
+          "ok": true
+        }
+      ]
+    },
+    {
+      "id": "local-openai-compatible",
+      "checkedAt": "2026-11-12T08:24:22.058Z",
+      "url": "",
+      "result": "skipped",
+      "ok": true,
+      "reason": "local source"
+    }
+  ]
+}

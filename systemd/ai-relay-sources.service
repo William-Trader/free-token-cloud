@@ -1,0 +1,17 @@
+[Unit]
+Description=free-token-cloud daily free-source maintenance (discover/verify/dedupe/prune/report)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/ai-relay
+ExecStart=/opt/ai-relay/scripts/sources-cron.sh
+TimeoutStartSec=900
+NoNewPrivileges=true
+PrivateTmp=true
+StandardOutput=append:/opt/ai-relay/logs/sources.log
+StandardError=append:/opt/ai-relay/logs/sources.log
+
+[Install]
+WantedBy=multi-user.target

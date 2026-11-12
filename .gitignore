@@ -15,3 +15,6 @@ node_modules/
 logs/
 .DS_Store
 __pycache__/
+
+# 服务器视角只读复核快照（各机自行生成，不入库，权威数据在 data/sources.json）
+data/runtime-health.json

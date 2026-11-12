@@ -20,6 +20,10 @@ const crypto = require('crypto');
 const tls = require('tls');
 const { StringDecoder } = require('string_decoder');
 
+// 与 package.json 保持同步；npm run check 与 CI 会校验一致性。
+// 不直接 require('./package.json')：deploy.sh 不上传 package.json，线上只有 router.js。
+const APP_VERSION = '6.0.0';
+
 const DASHBOARD_FILE = path.join(__dirname, 'dashboard.html');
 const PROVIDER_SETUP_FILE = path.join(__dirname, 'provider-setup.html');
 let dashboardHtml = null;
@@ -221,7 +225,11 @@ let scoreSaveTimer = null;
 const reasoningUnsupported = new Set();
 
 function scoresFile() {
-  return CFG && CFG.scoresFile ? CFG.scoresFile : null;
+  if (CFG && CFG.scoresFile) return CFG.scoresFile;
+  // v6.0.0：旧配置缺少 scoresFile 时，评分 EWMA 从不落盘、进程重启即丢。
+  // 这里回退到 usageStateFile 同目录，保证升级前后行为连续。
+  const base = CFG && CFG.usageStateFile ? path.dirname(CFG.usageStateFile) : null;
+  return base ? path.join(base, 'scores.json') : null;
 }
 
 function ensureScores() {
@@ -3858,7 +3866,7 @@ function healthView() {
     ok: ready,
     live: true,
     service: 'ai-relay',
-    version: 3,
+    version: APP_VERSION,
     uptime_s: Math.floor((Date.now() - STARTED_AT) / 1000),
     routes: Object.keys(routes),
     upstreams
@@ -3996,8 +4004,17 @@ function startHealthProbes() {
     if (running) return;
     running = true;
     try {
-      for (const provider of providers) {
-        if (provider.healthUrl) await probeProvider(provider);
+      // v6.0.0：此前 56 个源串行探测，单个 30s 超时会拖长整轮；
+      // 改为与 /api/score/run 一致的并发 6 分批探测，单轮最坏时间从 N×T 降到 ceil(N/6)×T。
+      const targets = providers.filter(provider => provider.healthUrl);
+      const concurrency = Math.max(1, Number(CFG.healthProbeConcurrency || 6));
+      for (let i = 0; i < targets.length; i += concurrency) {
+        await Promise.all(targets.slice(i, i + concurrency).map(provider =>
+          probeProvider(provider).catch(error => log({
+            ev: 'probe_unhandled', provider: provider.id,
+            error: String(error && error.message ? error.message : error)
+          }))
+        ));
       }
     } finally {
       running = false;
@@ -4176,8 +4193,8 @@ async function handleRequest(req, res) {
     if (pathname === '/api/info' && req.method === 'GET') {
       return writeJson(res, 200, {
         service: 'ai-relay',
-        version: 3,
-        endpoints: ['/health', '/ready', '/v1/models', '/v1/chat/completions', '/v1/messages', '/v1/responses', '/dashboard', '/setup']
+        version: APP_VERSION,
+        endpoints: ['/health', '/ready', '/api/info', '/api/public', '/api/provider-catalog', '/v1/models', '/v1/chat/completions', '/v1/messages', '/v1/responses', '/api/metrics', '/metrics', '/dashboard', '/setup']
       });
     }
     if (pathname === '/favicon.ico' || pathname === '/apple-touch-icon.png' || pathname === '/apple-touch-icon-precomposed.png') {

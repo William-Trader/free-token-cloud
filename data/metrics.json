@@ -1,0 +1,76 @@
+{
+  "generatedAt": "2026-11-12T08:25:40.791Z",
+  "coverage": {
+    "totalSources": 64,
+    "totalCandidates": 40,
+    "newCandidates": 0,
+    "activeSources": 46,
+    "degradedSources": 0,
+    "unverifiedSources": 15,
+    "deprecatedSources": 1,
+    "removedSources": 2,
+    "officialConfidence": 25,
+    "communityReport": 16,
+    "aggregatorConfidence": 23,
+    "distinctCategories": 8,
+    "categoryCounts": {
+      "permanent-free": 12,
+      "open-quota": 5,
+      "gateway": 6,
+      "free-model": 4,
+      "trial-credit": 27,
+      "local": 2,
+      "anonymous": 4,
+      "subscription": 4
+    },
+    "distinctModels": 97,
+    "mappedRelaySlots": 56,
+    "declaredRelaySlots": 58,
+    "slotConsolidation": {
+      "multiSlotSources": 5,
+      "totalSlotRefs": 58,
+      "distinctSources": 64,
+      "note": "多个 config.json 槽位收敛到同一独立计划（如 14 个 kilo-* → 1 个 Kilo Gateway）"
+    },
+    "configuredRelayProviders": 56,
+    "enabledRelayProviders": 47,
+    "duplicatesMerged": 0
+  },
+  "availability": {
+    "checked": 60,
+    "reachable": 59,
+    "endpointReachableRate": 98.3,
+    "officialVerifiedRate": 35.9,
+    "avgLatencyMs": 4557
+  },
+  "maintenance": {
+    "checkFrequency": "每日 1 次（GitHub Actions cron + systemd timer）",
+    "discoveryFrequency": "每日 1 次（3 个公开清单 + 官方证据链接）",
+    "dedupeStrategy": "id / 名称别名 / 显式别名表三键合并 + 多槽位收敛映射（不按 host 自动合并不同计划）",
+    "lifecycle": {
+      "degradeAfterConsecutiveFailures": 2,
+      "deprecateAfterConsecutiveFailures": 3,
+      "staleAfterDays": 14,
+      "removeAfterDays": 30,
+      "keepTombstones": true,
+      "note": "失效剔除不删除记录：置 status=removed 并保留 removedAt/原因，保证审计可追溯。"
+    },
+    "removedKeptAsTombstone": true
+  },
+  "documents": {
+    "readme": true,
+    "architecture": true,
+    "sourcesList": true,
+    "sourceAudit": true,
+    "maintenance": true,
+    "benchmark": true,
+    "changelog": true,
+    "contributing": true,
+    "ci": true,
+    "sourceAutomation": true,
+    "perSourceEvidence": true,
+    "perSourceTimestamp": true,
+    "perSourceStatus": true,
+    "score": 100
+  }
+}

@@ -1,101 +1,231 @@
 {
-  "version": 1,
+  "version": 2,
+  "generatedAt": "2026-11-12T08:24:34.228Z",
+  "generatedBy": "scripts/sources.mjs sync",
+  "sourceRegistry": "data/sources.json",
   "providers": [
     {
       "id": "gemini",
-      "name": "Google Gemini",
+      "name": "Google AI Studio / Gemini API",
       "kind": "api-key",
       "pool": "chat",
       "loginUrl": "https://aistudio.google.com/app/apikey",
       "docsUrl": "https://ai.google.dev/gemini-api/docs",
       "models": [
+        "gemini-2.5-flash",
         "gemini-2.5-flash-lite",
-        "gemini-2.5-flash"
+        "gemini-3.5-flash",
+        "gemini-3.5-flash-lite"
       ],
-      "quota": "Free API tier",
-      "note": "Use an AI Studio key. Free-tier data handling may differ from paid tiers."
+      "quota": "永久免费层，无需信用卡；Google 已不再公布逐模型 RPD，需在 AI Studio 查看账号配额。免费层 prompt 可能用于改进产品（EEA/CH/UK 除外）",
+      "note": "免费层地区限制与数据处理条款见官方 available-regions / terms 页。",
+      "sourceId": "gemini",
+      "category": "permanent-free",
+      "status": "active",
+      "confidence": "official",
+      "evidence": [
+        {
+          "url": "https://ai.google.dev/gemini-api/docs/pricing",
+          "kind": "official",
+          "retrievedAt": "2026-11-12"
+        },
+        {
+          "url": "https://github.com/mnfst/awesome-free-llm-apis",
+          "kind": "aggregator-list",
+          "retrievedAt": "2026-11-12"
+        }
+      ],
+      "lastCheckedAt": "2026-11-12T08:23:42.339Z"
     },
     {
       "id": "groq",
-      "name": "Groq",
+      "name": "Groq Free Plan",
       "kind": "api-key",
       "pool": "chat",
       "loginUrl": "https://console.groq.com/keys",
-      "docsUrl": "https://console.groq.com/docs",
+      "docsUrl": "https://console.groq.com/docs/rate-limits",
       "models": [
         "openai/gpt-oss-120b",
-        "openai/gpt-oss-20b"
+        "openai/gpt-oss-20b",
+        "qwen/qwen3.8-27b"
       ],
-      "quota": "Free daily request and token limits",
-      "note": "Fast inference. Verify the model IDs in the console before saving."
+      "quota": "Free Plan：30 RPM / 1,000 RPD / 8,000 TPM / 200,000 TPD（聊天模型，逐模型可能不同）",
+      "note": "permanent-free · official · 核查 2026-11-12T08:23:42.339Z",
+      "sourceId": "groq",
+      "category": "permanent-free",
+      "status": "active",
+      "confidence": "official",
+      "evidence": [
+        {
+          "url": "https://console.groq.com/docs/rate-limits",
+          "kind": "official",
+          "retrievedAt": "2026-11-12"
+        },
+        {
+          "url": "https://github.com/mnfst/awesome-free-llm-apis",
+          "kind": "aggregator-list",
+          "retrievedAt": "2026-11-12"
+        }
+      ],
+      "lastCheckedAt": "2026-11-12T08:23:42.339Z"
     },
     {
       "id": "nvidia",
-      "name": "NVIDIA NIM",
+      "name": "NVIDIA NIM / Developer Program",
       "kind": "api-key",
       "pool": "chat",
-      "loginUrl": "https://build.nvidia.com/explore/discover",
+      "loginUrl": "https://build.nvidia.com/",
       "docsUrl": "https://docs.nvidia.com/nim/",
       "models": [
-        "openai/gpt-oss-20b"
+        "openai/gpt-oss-20b",
+        "google/gemma-4-31b-it"
       ],
-      "quota": "Developer free tier",
-      "note": "Requires an NVIDIA developer account and may require phone verification."
+      "quota": "NVIDIA Developer Program 会员免费，100+ 托管模型；官方不公开统一 RPM/RPD 表，按模型与并发动态调整；仅限原型/研究/开发/测试",
+      "note": "托管端点为试用性质，条款要求不提交个人或机密数据；生产需 AI Enterprise 许可。",
+      "sourceId": "nvidia",
+      "category": "open-quota",
+      "status": "active",
+      "confidence": "official",
+      "evidence": [
+        {
+          "url": "https://build.nvidia.com/explore/discover",
+          "kind": "official",
+          "retrievedAt": "2026-11-12"
+        },
+        {
+          "url": "https://github.com/mnfst/awesome-free-llm-apis",
+          "kind": "aggregator-list",
+          "retrievedAt": "2026-11-12"
+        }
+      ],
+      "lastCheckedAt": "2026-11-12T08:23:42.339Z"
     },
     {
       "id": "mistral",
-      "name": "Mistral",
+      "name": "Mistral AI La Plateforme / Codestral",
       "kind": "api-key",
       "pool": "chat",
       "loginUrl": "https://console.mistral.ai/api-keys",
-      "docsUrl": "https://docs.mistral.ai/",
+      "docsUrl": "https://docs.mistral.ai/deployment/laplateforme/overview",
       "models": [
         "mistral-small-latest",
-        "ministral-8b-latest"
+        "codestral-latest",
+        "open-mistral-nemo"
       ],
-      "quota": "Free experiment tier",
-      "note": "Free prompts may be used for training unless your account opts out."
+      "quota": "La Plateforme 免费层（Experiment plan），需手机号验证；Codestral 另有独立免费入口",
+      "note": "permanent-free · official · 核查 2026-11-12T08:23:42.339Z",
+      "sourceId": "mistral",
+      "category": "permanent-free",
+      "status": "active",
+      "confidence": "official",
+      "evidence": [
+        {
+          "url": "https://docs.mistral.ai/deployment/laplateforme/overview",
+          "kind": "official",
+          "retrievedAt": "2026-11-12"
+        },
+        {
+          "url": "https://github.com/steelburn/free-llm-api-resources",
+          "kind": "aggregator-list",
+          "retrievedAt": "2026-11-12"
+        }
+      ],
+      "lastCheckedAt": "2026-11-12T08:23:42.339Z"
     },
     {
       "id": "openrouter",
-      "name": "OpenRouter",
+      "name": "OpenRouter :free models",
       "kind": "api-key",
       "pool": "chat",
       "loginUrl": "https://openrouter.ai/keys",
-      "docsUrl": "https://openrouter.ai/docs",
+      "docsUrl": "https://openrouter.ai/docs/api-reference/limits",
       "models": [
-        "openai/gpt-oss-120b:free",
-        "liquid/lfm-2.5-2.6b:free"
+        "google/gemma-4-26b-a4b-it:free",
+        "nvidia/nemotron-3-ultra-550b-a55b:free",
+        "openrouter/free"
       ],
-      "quota": "Free models with daily request cap",
-      "note": "Use models ending in :free to avoid paid routes."
+      "quota": "免费模型 20 RPM / 50 RPD（所有 :free 模型共享）；一次性充值 ≥ $10 后提升到 1,000 RPD",
+      "note": "gateway · official · 核查 2026-11-12T08:23:42.339Z",
+      "sourceId": "openrouter",
+      "category": "gateway",
+      "status": "active",
+      "confidence": "official",
+      "evidence": [
+        {
+          "url": "https://openrouter.ai/docs/api-reference/limits",
+          "kind": "official",
+          "retrievedAt": "2026-11-12"
+        },
+        {
+          "url": "https://github.com/mnfst/awesome-free-llm-apis",
+          "kind": "aggregator-list",
+          "retrievedAt": "2026-11-12"
+        }
+      ],
+      "lastCheckedAt": "2026-11-12T08:23:42.339Z"
     },
     {
       "id": "cohere",
-      "name": "Cohere",
+      "name": "Cohere Trial API key",
       "kind": "api-key",
       "pool": "chat",
       "loginUrl": "https://dashboard.cohere.com/api-keys",
-      "docsUrl": "https://docs.cohere.com/",
+      "docsUrl": "https://docs.cohere.com/docs/rate-limits",
       "models": [
-        "command-r7b-12-2024",
-        "command-r-plus-08-2024"
+        "command-a-03-2025",
+        "command-r-plus",
+        "command-r7b-12-2024"
       ],
-      "quota": "Trial API key, monthly call cap",
-      "note": "Trial keys are non-commercial and model availability can change."
+      "quota": "Trial key：1,000 次调用/月、20 RPM，仅限非商业用途，无需信用卡",
+      "note": "permanent-free · official · 核查 2026-11-12T08:23:42.339Z",
+      "sourceId": "cohere",
+      "category": "permanent-free",
+      "status": "active",
+      "confidence": "official",
+      "evidence": [
+        {
+          "url": "https://docs.cohere.com/docs/rate-limits",
+          "kind": "official",
+          "retrievedAt": "2026-11-12"
+        },
+        {
+          "url": "https://github.com/mnfst/awesome-free-llm-apis",
+          "kind": "aggregator-list",
+          "retrievedAt": "2026-11-12"
+        }
+      ],
+      "lastCheckedAt": "2026-11-12T08:23:42.339Z"
     },
     {
       "id": "modelscope",
-      "name": "ModelScope",
+      "name": "ModelScope API-Inference",
       "kind": "api-key",
       "pool": "chat",
       "loginUrl": "https://modelscope.cn/my/myaccesstoken",
-      "docsUrl": "https://modelscope.cn/docs",
+      "docsUrl": "https://modelscope.cn/docs/model-service/API-Inference/intro",
       "models": [
+        "Qwen/Qwen3.5-35B-A3B",
         "Qwen/Qwen3.5-27B"
       ],
-      "quota": "Free API inference with daily limits",
-      "note": "Usually requires Alibaba Cloud binding or real-name verification."
+      "quota": "注册用户免费：2,000 次/天（总量），单模型动态配额上限 500 次/天；需绑定阿里云账号并实名",
+      "note": "open-quota · official · 核查 2026-11-12T08:23:42.339Z",
+      "sourceId": "modelscope",
+      "category": "open-quota",
+      "status": "active",
+      "confidence": "official",
+      "evidence": [
+        {
+          "url": "https://modelscope.cn/docs/model-service/API-Inference/limits",
+          "kind": "official",
+          "retrievedAt": "2026-11-12"
+        },
+        {
+          "url": "https://github.com/mnfst/awesome-free-llm-apis",
+          "kind": "aggregator-list",
+          "retrievedAt": "2026-11-12"
+        }
+      ],
+      "lastCheckedAt": "2026-11-12T08:23:42.339Z"
     },
     {
       "id": "ollama-cloud",
@@ -105,50 +235,122 @@
       "loginUrl": "https://ollama.com/settings/keys",
       "docsUrl": "https://docs.ollama.com/cloud",
       "models": [
-        "gpt-oss:20b"
+        "gpt-oss:120b-cloud",
+        "glm-4.7:cloud"
       ],
-      "quota": "Monthly starter allowance",
-      "note": "Free allowance is limited to starter models."
+      "quota": "提供免费层模型，按官方定价页为准；账号自有 key",
+      "note": "permanent-free · aggregator · 核查 2026-11-12T08:23:42.339Z",
+      "sourceId": "ollama-cloud",
+      "category": "permanent-free",
+      "status": "active",
+      "confidence": "aggregator",
+      "evidence": [
+        {
+          "url": "https://docs.ollama.com/cloud",
+          "kind": "official",
+          "retrievedAt": "2026-11-12"
+        },
+        {
+          "url": "https://github.com/tashfeenahmed/freellmapi",
+          "kind": "aggregator-list",
+          "retrievedAt": "2026-11-12"
+        }
+      ],
+      "lastCheckedAt": "2026-11-12T08:23:42.339Z"
     },
     {
       "id": "siliconflow",
-      "name": "SiliconFlow",
+      "name": "SiliconFlow 硅基流动（零价模型）",
       "kind": "api-key",
       "pool": "chat",
       "loginUrl": "https://cloud.siliconflow.cn/account/ak",
       "docsUrl": "https://docs.siliconflow.cn/",
       "models": [
-        "Qwen/Qwen3-8B"
+        "tencent/Hunyuan-MT-7B",
+        "Qwen/Qwen2.5-7B-Instruct"
       ],
-      "quota": "Free model quota",
-      "note": "Identity verification may be required."
+      "quota": "部分模型永久零价；2026-05-15 起使用免费模型需实名认证（仅支持中国大陆证件，海外用户需联系支持）",
+      "note": "free-model · official · 核查 2026-11-12T08:23:42.339Z",
+      "sourceId": "siliconflow",
+      "category": "free-model",
+      "status": "active",
+      "confidence": "official",
+      "evidence": [
+        {
+          "url": "https://siliconflow.cn/pricing",
+          "kind": "official",
+          "retrievedAt": "2026-11-12"
+        },
+        {
+          "url": "https://github.com/mnfst/awesome-free-llm-apis",
+          "kind": "aggregator-list",
+          "retrievedAt": "2026-11-12"
+        }
+      ],
+      "lastCheckedAt": "2026-11-12T08:23:42.339Z"
     },
     {
       "id": "huggingface",
-      "name": "Hugging Face",
+      "name": "Hugging Face Inference Providers",
       "kind": "api-key",
       "pool": "chat",
       "loginUrl": "https://huggingface.co/settings/tokens",
-      "docsUrl": "https://huggingface.co/docs/inference-providers",
+      "docsUrl": "https://huggingface.co/docs/inference-providers/index",
       "models": [
-        "meta-llama/Llama-3.1-8B-Instruct"
+        "deepseek-ai/DeepSeek-V4",
+        "Qwen/Qwen3"
       ],
-      "quota": "BYOK; current Free accounts may have no monthly inference credit",
-      "note": "Enable only when the account has active inference credit. Cold starts and shared queues are common."
+      "quota": "注册账号每月有小额推理额度，PRO 与组织账号额度更高；免费账号月度额度曾调整，需以账号页为准",
+      "note": "2026-10-27 审计曾记录「Free 账号可能无月度额度」，故降级为 open-quota 并标注波动。",
+      "sourceId": "huggingface",
+      "category": "open-quota",
+      "status": "active",
+      "confidence": "aggregator",
+      "evidence": [
+        {
+          "url": "https://huggingface.co/docs/inference-providers/pricing",
+          "kind": "official",
+          "retrievedAt": "2026-11-12"
+        },
+        {
+          "url": "https://github.com/steelburn/free-llm-api-resources",
+          "kind": "aggregator-list",
+          "retrievedAt": "2026-11-12"
+        }
+      ],
+      "lastCheckedAt": "2026-11-12T08:23:42.339Z"
     },
     {
       "id": "qwen",
-      "name": "Qwen / Alibaba Bailian",
+      "name": "阿里云百炼 / DashScope (Qwen)",
       "kind": "api-key",
       "pool": "chat",
       "loginUrl": "https://bailian.console.aliyun.com/",
-      "docsUrl": "https://help.aliyun.com/zh/model-studio/new-free-quota",
+      "docsUrl": "https://help.aliyun.com/zh/model-studio/",
       "models": [
-        "qwen3.8-max",
-        "qwen3.8-flash"
+        "qwen-plus",
+        "qwen-flash",
+        "qwen3-8b"
       ],
-      "quota": "New-user free quota, often 1M tokens per model for 90 days",
-      "note": "Use the domestic compatible-mode endpoint. Enable free-quota stop protection in the console."
+      "quota": "新用户各模型独立免费额度（常见 100 万 Token / 90 天），有效期与模型范围以控制台为准；部分模型另有永久免费额度",
+      "note": "trial-credit · official · 核查 2026-11-12T08:23:42.339Z",
+      "sourceId": "qwen",
+      "category": "trial-credit",
+      "status": "active",
+      "confidence": "official",
+      "evidence": [
+        {
+          "url": "https://help.aliyun.com/zh/model-studio/",
+          "kind": "official",
+          "retrievedAt": "2026-11-12"
+        },
+        {
+          "url": "https://github.com/William-Trader/free-token-cloud/blob/main/docs/PROVIDER-SOURCES.md",
+          "kind": "project-audit",
+          "retrievedAt": "2026-11-12"
+        }
+      ],
+      "lastCheckedAt": "2026-11-12T08:23:42.339Z"
     },
     {
       "id": "cerebras",
@@ -156,28 +358,61 @@
       "kind": "api-key",
       "pool": "tools",
       "loginUrl": "https://cloud.cerebras.ai/",
-      "docsUrl": "https://inference-docs.cerebras.ai/quickstart",
+      "docsUrl": "https://inference-docs.cerebras.ai/",
       "models": [
-        "gpt-oss-120b",
-        "qwen-3.8-27b"
+        "qwen-3-235b-a22b",
+        "llama-3.3-70b"
       ],
-      "quota": "$5 promotional credit, expires 30 days after activation",
-      "note": "Official OpenAI-compatible inference with tool calling. Credit eligibility varies by account."
+      "quota": "免费开发者层；另有符合条件账号的推广赠金（约 $5 / 30 天，历史上曾提供，以控制台为准）",
+      "note": "permanent-free · aggregator · 核查 2026-11-12T08:23:42.339Z",
+      "sourceId": "cerebras",
+      "category": "permanent-free",
+      "status": "active",
+      "confidence": "aggregator",
+      "evidence": [
+        {
+          "url": "https://inference-docs.cerebras.ai/",
+          "kind": "official",
+          "retrievedAt": "2026-11-12"
+        },
+        {
+          "url": "https://github.com/William-Trader/free-token-cloud/blob/main/docs/PROVIDER-SOURCES.md",
+          "kind": "project-audit",
+          "retrievedAt": "2026-11-12"
+        }
+      ],
+      "lastCheckedAt": "2026-11-12T08:23:42.339Z"
     },
     {
       "id": "sambanova",
       "name": "SambaNova Cloud",
       "kind": "api-key",
       "pool": "chat",
-      "loginUrl": "https://cloud.sambanova.ai/",
-      "docsUrl": "https://docs.sambanova.ai/cloud/docs/get-started/overview",
+      "loginUrl": "https://cloud.sambanova.ai/apis",
+      "docsUrl": "https://docs.sambanova.ai/cloud/",
       "models": [
-        "gpt-oss-120b",
         "Meta-Llama-3.3-70B-Instruct",
-        "gemma-4-31B-it"
+        "DeepSeek-V3"
       ],
-      "quota": "$5 signup credit, no credit card required",
-      "note": "Developer tier has limited rate limits. Free credit is consumed at list price."
+      "quota": "注册赠金（历史约 $5）与有限的 Developer tier；额度随账号政策变化",
+      "note": "trial-credit · aggregator · 核查 2026-11-12T08:23:42.339Z",
+      "sourceId": "sambanova",
+      "category": "trial-credit",
+      "status": "active",
+      "confidence": "aggregator",
+      "evidence": [
+        {
+          "url": "https://docs.sambanova.ai/cloud/",
+          "kind": "official",
+          "retrievedAt": "2026-11-12"
+        },
+        {
+          "url": "https://github.com/William-Trader/free-token-cloud/blob/main/docs/PROVIDER-SOURCES.md",
+          "kind": "project-audit",
+          "retrievedAt": "2026-11-12"
+        }
+      ],
+      "lastCheckedAt": "2026-11-12T08:23:42.339Z"
     },
     {
       "id": "deepinfra",
@@ -185,14 +420,29 @@
       "kind": "api-key",
       "pool": "chat",
       "loginUrl": "https://deepinfra.com/dash/api_keys",
-      "docsUrl": "https://deepinfra.com/docs/openai_api",
+      "docsUrl": "https://deepinfra.com/docs",
       "models": [
-        "Qwen/Qwen3.8-Flash",
-        "Qwen/Qwen3.7-Max",
-        "zai-org/GLM-5.3-Flash"
+        "meta-llama/Llama-3.3-70B-Instruct"
       ],
-      "quota": "BYOK; promotional and program credits vary by account",
-      "note": "Not a universal perpetual free tier. Enable only when the account has usable credit."
+      "quota": "BYOK/推广赠金随账号而异，无统一永久免费层",
+      "note": "trial-credit · aggregator · 核查 2026-11-12T08:23:42.339Z",
+      "sourceId": "deepinfra",
+      "category": "trial-credit",
+      "status": "active",
+      "confidence": "aggregator",
+      "evidence": [
+        {
+          "url": "https://deepinfra.com/docs",
+          "kind": "official",
+          "retrievedAt": "2026-11-12"
+        },
+        {
+          "url": "https://github.com/William-Trader/free-token-cloud/blob/main/docs/PROVIDER-SOURCES.md",
+          "kind": "project-audit",
+          "retrievedAt": "2026-11-12"
+        }
+      ],
+      "lastCheckedAt": "2026-11-12T08:23:42.339Z"
     },
     {
       "id": "novita",
@@ -200,54 +450,117 @@
       "kind": "api-key",
       "pool": "chat",
       "loginUrl": "https://novita.ai/settings/key-management",
-      "docsUrl": "https://novita.ai/docs/api-reference/model-apis-llm-introduction",
+      "docsUrl": "https://novita.ai/docs",
       "models": [
-        "qwen/qwen3.8-flash",
-        "zai-org/glm-5.3-flash",
-        "openai/gpt-oss-120b"
+        "deepseek/deepseek-v3"
       ],
-      "quota": "Free models and promotional credits vary by account",
-      "note": "Confirm the current model has a Free or zero-price tag before enabling."
+      "quota": "免费模型与推广赠金随账号而异，以模型目录标价为准",
+      "note": "trial-credit · aggregator · 核查 2026-11-12T08:23:42.339Z",
+      "sourceId": "novita",
+      "category": "trial-credit",
+      "status": "active",
+      "confidence": "aggregator",
+      "evidence": [
+        {
+          "url": "https://novita.ai/docs",
+          "kind": "official",
+          "retrievedAt": "2026-11-12"
+        },
+        {
+          "url": "https://github.com/William-Trader/free-token-cloud/blob/main/docs/PROVIDER-SOURCES.md",
+          "kind": "project-audit",
+          "retrievedAt": "2026-11-12"
+        }
+      ],
+      "lastCheckedAt": "2026-11-12T08:23:42.339Z"
     },
     {
       "id": "piagent",
-      "name": "Pi Agent",
-      "kind": "agent-bridge",
+      "name": "PiAgent 本地桥",
+      "kind": "guide",
       "pool": "agent",
-      "loginUrl": "http://127.0.0.1:38471",
-      "docsUrl": "https://github.com/abcwyc/pi-agent-desktop",
+      "loginUrl": "https://github.com/William-Trader/free-token-cloud",
+      "docsUrl": "https://github.com/William-Trader/free-token-cloud",
       "models": [
-        "piagent"
+        "pi-agent"
       ],
-      "quota": "Local agent execution bridge",
-      "note": "Only available while Pi Agent Desktop and its SSH interface tunnel are running. Inside Pi Agent, the sole configured model is ai-relay/tools."
+      "quota": "本地进程，不消耗外部额度",
+      "note": "属于本项目的本地 agent 桥，不是外部免费源；保留在目录中以便池视图完整。",
+      "sourceId": "piagent",
+      "category": "local",
+      "status": "active",
+      "confidence": "official",
+      "evidence": [
+        {
+          "url": "https://github.com/William-Trader/free-token-cloud",
+          "kind": "aggregator-list",
+          "retrievedAt": "2026-11-12"
+        }
+      ],
+      "lastCheckedAt": "2026-11-12T08:23:42.339Z"
     },
     {
       "id": "llm7",
-      "name": "LLM7 token",
-      "kind": "optional-token",
+      "name": "LLM7.io",
+      "kind": "api-key",
       "pool": "chat",
       "loginUrl": "https://token.llm7.io",
-      "docsUrl": "https://llm7.io",
+      "docsUrl": "https://docs.llm7.io/guides/models-api",
       "models": [
         "gpt-oss:20b",
-        "nemotron-3-nano:30b"
+        "mistral-Nemo-Instruct-2407",
+        "codestral-latest"
       ],
-      "quota": "Higher anonymous limits",
-      "note": "The anonymous endpoint also works without this token."
+      "quota": "匿名可达 turbo 模型；免费 token 上限 1 RPS / 60 RPM / 250 请求每小时 / 100,000 tokens 每 24 小时，额度可能无预告下调",
+      "note": "anonymous · official · 核查 2026-11-12T08:23:42.339Z",
+      "sourceId": "llm7",
+      "category": "anonymous",
+      "status": "active",
+      "confidence": "official",
+      "evidence": [
+        {
+          "url": "https://docs.llm7.io/limits",
+          "kind": "official",
+          "retrievedAt": "2026-11-12"
+        },
+        {
+          "url": "https://github.com/mnfst/awesome-free-llm-apis",
+          "kind": "aggregator-list",
+          "retrievedAt": "2026-11-12"
+        }
+      ],
+      "lastCheckedAt": "2026-11-12T08:23:42.339Z"
     },
     {
       "id": "pollinations",
-      "name": "Pollinations token",
+      "name": "Pollinations.AI",
       "kind": "optional-token",
       "pool": "chat",
-      "loginUrl": "https://enter.pollinations.ai/",
-      "docsUrl": "https://github.com/pollinations/pollinations",
+      "loginUrl": "https://github.com/pollinations/pollinations/blob/master/APIDOCS.md",
+      "docsUrl": "https://github.com/pollinations/pollinations/blob/master/APIDOCS.md",
       "models": [
-        "openai-fast"
+        "openai",
+        "mistral"
       ],
-      "quota": "Higher free limits",
-      "note": "The legacy anonymous endpoint is rate limited."
+      "quota": "匿名文本/图像生成端点，无需 key；速率限制按 IP 动态调整",
+      "note": "anonymous · official · 核查 2026-11-12T08:23:42.339Z",
+      "sourceId": "pollinations",
+      "category": "anonymous",
+      "status": "active",
+      "confidence": "official",
+      "evidence": [
+        {
+          "url": "https://github.com/pollinations/pollinations/blob/master/APIDOCS.md",
+          "kind": "aggregator-list",
+          "retrievedAt": "2026-11-12"
+        },
+        {
+          "url": "https://github.com/tashfeenahmed/freellmapi",
+          "kind": "aggregator-list",
+          "retrievedAt": "2026-11-12"
+        }
+      ],
+      "lastCheckedAt": "2026-11-12T08:23:42.339Z"
     },
     {
       "id": "cloudflare-workers-ai",
@@ -257,116 +570,253 @@
       "loginUrl": "https://dash.cloudflare.com/profile/api-tokens",
       "docsUrl": "https://developers.cloudflare.com/workers-ai/",
       "models": [
-        "@cf/openai/gpt-oss-120b",
-        "@cf/zai-org/glm-4.7-flash"
+        "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+        "@cf/openai/gpt-oss-120b"
       ],
-      "quota": "Daily neuron allowance",
-      "note": "格式：<account_id>:<api_token>（冒号拼接）；地址含 account id，直接用 Workers AI 的 OpenAI 兼容端点"
+      "quota": "10,000 Neurons/天免费（全部 Workers AI 用量共享），00:00 UTC 重置；超额不计费而是请求失败；7 个模型需付费计划",
+      "note": "permanent-free · official · 核查 2026-11-12T08:23:42.339Z",
+      "sourceId": "cloudflare-workers-ai",
+      "category": "permanent-free",
+      "status": "active",
+      "confidence": "official",
+      "evidence": [
+        {
+          "url": "https://developers.cloudflare.com/workers-ai/platform/pricing/",
+          "kind": "official",
+          "retrievedAt": "2026-11-12"
+        },
+        {
+          "url": "https://github.com/mnfst/awesome-free-llm-apis",
+          "kind": "aggregator-list",
+          "retrievedAt": "2026-11-12"
+        }
+      ],
+      "lastCheckedAt": "2026-11-12T08:23:42.339Z"
     },
     {
       "id": "requesty",
-      "name": "Requesty",
-      "kind": "guide",
+      "name": "Requesty Router",
+      "kind": "api-key",
       "pool": "chat",
-      "loginUrl": "https://requesty.ai/",
+      "loginUrl": "https://app.requesty.ai/",
       "docsUrl": "https://docs.requesty.ai/",
       "models": [
-        "free model catalog"
+        "openai/gpt-oss-120b"
       ],
-      "quota": "New organization free requests",
-      "note": "Add after confirming the current free-model IDs in the dashboard."
+      "quota": "聚合路由，免费额度随活动变动；需以账号控制台为准",
+      "note": "gateway · aggregator · 核查 2026-11-12T08:23:42.339Z",
+      "sourceId": "requesty",
+      "category": "gateway",
+      "status": "active",
+      "confidence": "aggregator",
+      "evidence": [
+        {
+          "url": "https://docs.requesty.ai/",
+          "kind": "official",
+          "retrievedAt": "2026-11-12"
+        },
+        {
+          "url": "https://github.com/William-Trader/free-token-cloud/blob/main/docs/PROVIDER-SOURCES.md",
+          "kind": "project-audit",
+          "retrievedAt": "2026-11-12"
+        }
+      ],
+      "lastCheckedAt": "2026-11-12T08:23:42.339Z"
     },
     {
       "id": "vercel-ai-gateway",
       "name": "Vercel AI Gateway",
-      "kind": "guide",
+      "kind": "api-key",
       "pool": "chat",
-      "loginUrl": "https://vercel.com/ai-gateway",
+      "loginUrl": "https://vercel.com/dashboard",
       "docsUrl": "https://vercel.com/docs/ai-gateway",
       "models": [
-        "catalog dependent"
+        "openai/gpt-oss-120b"
       ],
-      "quota": "Monthly trial credit",
-      "note": "Credits are time-limited. Add a custom adapter and budget guard."
+      "quota": "提供免费额度/免费模型路由，额度与模型范围以官方定价页为准",
+      "note": "gateway · aggregator · 核查 2026-11-12T08:23:42.339Z",
+      "sourceId": "vercel-ai-gateway",
+      "category": "gateway",
+      "status": "active",
+      "confidence": "aggregator",
+      "evidence": [
+        {
+          "url": "https://vercel.com/docs/ai-gateway/pricing",
+          "kind": "official",
+          "retrievedAt": "2026-11-12"
+        },
+        {
+          "url": "https://github.com/steelburn/free-llm-api-resources",
+          "kind": "aggregator-list",
+          "retrievedAt": "2026-11-12"
+        }
+      ],
+      "lastCheckedAt": "2026-11-12T08:23:42.339Z"
     },
     {
       "id": "github-copilot",
-      "name": "GitHub Copilot",
+      "name": "GitHub Copilot（自有订阅）",
       "kind": "subscription-oauth",
       "pool": "tools",
-      "loginUrl": "https://github.com/features/copilot",
-      "docsUrl": "https://docs.github.com/copilot",
+      "loginUrl": "https://docs.github.com/en/copilot",
+      "docsUrl": "https://docs.github.com/en/copilot",
       "models": [
-        "subscription dependent"
+        "gpt-4o",
+        "claude-sonnet"
       ],
-      "quota": "Uses an existing Copilot subscription",
-      "note": "Requires a dedicated OAuth/CLI bridge. Not enabled by the generic API-key vault."
+      "quota": "用户自有订阅附带的请求额度；免费版有月度补全/聊天次数上限",
+      "note": "只允许账号本人 OAuth；共享/租借账号属排除项。",
+      "sourceId": "github-copilot",
+      "category": "subscription",
+      "status": "active",
+      "confidence": "official",
+      "evidence": [
+        {
+          "url": "https://docs.github.com/en/copilot",
+          "kind": "official",
+          "retrievedAt": "2026-11-12"
+        }
+      ],
+      "lastCheckedAt": "2026-11-12T08:23:42.339Z"
     },
     {
       "id": "claude-code",
-      "name": "Claude Code",
+      "name": "Claude Code（自有订阅）",
       "kind": "subscription-oauth",
       "pool": "tools",
-      "loginUrl": "https://claude.ai/",
-      "docsUrl": "https://docs.anthropic.com/en/docs/claude-code",
+      "loginUrl": "https://docs.anthropic.com/en/docs/claude-code/overview",
+      "docsUrl": "https://docs.anthropic.com/en/docs/claude-code/overview",
       "models": [
-        "subscription dependent"
+        "claude-sonnet",
+        "claude-opus"
       ],
-      "quota": "Uses a Claude subscription",
-      "note": "Requires a dedicated Claude Code CLI OAuth bridge."
+      "quota": "用户自有订阅，按订阅等级分配用量",
+      "note": "subscription · official · 核查 2026-11-12T08:23:42.339Z",
+      "sourceId": "claude-code",
+      "category": "subscription",
+      "status": "active",
+      "confidence": "official",
+      "evidence": [
+        {
+          "url": "https://docs.anthropic.com/en/docs/claude-code/overview",
+          "kind": "official",
+          "retrievedAt": "2026-11-12"
+        }
+      ],
+      "lastCheckedAt": "2026-11-12T08:23:42.339Z"
     },
     {
       "id": "codex-chatgpt",
-      "name": "Codex / ChatGPT",
+      "name": "Codex / ChatGPT（自有订阅）",
       "kind": "subscription-oauth",
       "pool": "tools",
-      "loginUrl": "https://chatgpt.com/",
+      "loginUrl": "https://developers.openai.com/codex/",
       "docsUrl": "https://developers.openai.com/codex/",
       "models": [
-        "subscription dependent"
+        "gpt-5-codex"
       ],
-      "quota": "Uses an existing ChatGPT plan",
-      "note": "Requires a dedicated Codex CLI OAuth bridge."
+      "quota": "用户自有 ChatGPT 订阅，按订阅等级分配用量",
+      "note": "subscription · official · 核查 2026-11-12T08:23:42.339Z",
+      "sourceId": "codex-chatgpt",
+      "category": "subscription",
+      "status": "active",
+      "confidence": "official",
+      "evidence": [
+        {
+          "url": "https://developers.openai.com/codex/",
+          "kind": "official",
+          "retrievedAt": "2026-11-12"
+        }
+      ],
+      "lastCheckedAt": "2026-11-12T08:23:42.339Z"
     },
     {
       "id": "kimi-code",
-      "name": "Kimi Code",
-      "kind": "subscription-oauth",
+      "name": "Kimi Code（自有订阅）",
+      "kind": "api-key",
       "pool": "tools",
-      "loginUrl": "https://www.kimi.ai/code",
-      "docsUrl": "https://platform.kimi.ai/docs",
+      "loginUrl": "https://platform.moonshot.cn/docs/",
+      "docsUrl": "https://platform.moonshot.cn/docs/",
       "models": [
-        "subscription dependent"
+        "kimi-k2"
       ],
-      "quota": "Uses a Kimi Code plan",
-      "note": "Requires a dedicated Kimi CLI or OAuth adapter."
+      "quota": "用户自有订阅/账号额度",
+      "note": "subscription · official · 核查 2026-11-12T08:23:42.339Z",
+      "sourceId": "kimi-code",
+      "category": "subscription",
+      "status": "active",
+      "confidence": "official",
+      "evidence": [
+        {
+          "url": "https://platform.moonshot.cn/docs/",
+          "kind": "official",
+          "retrievedAt": "2026-11-12"
+        }
+      ],
+      "lastCheckedAt": "2026-11-12T08:23:42.339Z"
     },
     {
       "id": "zhipu",
-      "name": "智谱 GLM",
+      "name": "智谱 AI / Z.ai（GLM Flash 免费模型）",
       "kind": "api-key",
       "pool": "chat",
       "loginUrl": "https://open.bigmodel.cn/usercenter/apikeys",
-      "docsUrl": "https://open.bigmodel.cn/dev/api",
+      "docsUrl": "https://docs.bigmodel.cn/cn/guide/models/free/glm-4.7-flash",
       "models": [
         "glm-4.7-flash",
-        "glm-4.6"
+        "glm-4.6v-flash",
+        "glm-4.5-flash"
       ],
-      "quota": "免费额度/按量",
-      "note": "GLM-4.7-Flash 免费档，原生工具调用"
+      "quota": "GLM-4.7-Flash / GLM-4.6V-Flash 等标记 Free 的模型永久零价，单并发；国际站 https://api.z.ai/api/paas/v4 提供同款免费模型",
+      "note": "GLM-4.5-Flash 官方已公告退役并将自动路由到 4.7-Flash，属观察项。去重：Z.ai / GLM 国际站与本条为同一计划，合并记录。",
+      "sourceId": "zhipu",
+      "category": "free-model",
+      "status": "active",
+      "confidence": "official",
+      "evidence": [
+        {
+          "url": "https://docs.bigmodel.cn/cn/guide/models/free/glm-4.7-flash",
+          "kind": "official",
+          "retrievedAt": "2026-11-12"
+        },
+        {
+          "url": "https://github.com/mnfst/awesome-free-llm-apis",
+          "kind": "aggregator-list",
+          "retrievedAt": "2026-11-12"
+        }
+      ],
+      "lastCheckedAt": "2026-11-12T08:23:42.339Z"
     },
     {
       "id": "moonshot",
-      "name": "Moonshot Kimi",
+      "name": "Moonshot AI 开放平台",
       "kind": "api-key",
       "pool": "chat",
       "loginUrl": "https://platform.moonshot.cn/console/api-keys",
-      "docsUrl": "https://platform.moonshot.cn/docs",
+      "docsUrl": "https://platform.moonshot.cn/docs/",
       "models": [
-        "kimi-k2-0905-preview"
+        "moonshot-v1-8k",
+        "kimi-k2"
       ],
-      "quota": "新用户额度",
-      "note": "长上下文，原生工具"
+      "quota": "新用户赠金（社区汇总为 ¥15 代金券），需以控制台为准",
+      "note": "trial-credit · community · 核查 2026-11-12T08:23:42.339Z",
+      "sourceId": "moonshot",
+      "category": "trial-credit",
+      "status": "unverified",
+      "confidence": "community",
+      "evidence": [
+        {
+          "url": "https://platform.moonshot.cn/docs/",
+          "kind": "official",
+          "retrievedAt": "2026-11-12"
+        },
+        {
+          "url": "https://blog.51cto.com/u_15404184/14598592",
+          "kind": "community-report",
+          "retrievedAt": "2026-11-12"
+        }
+      ],
+      "lastCheckedAt": "2026-11-12T08:23:42.339Z"
     },
     {
       "id": "together",
@@ -374,25 +824,59 @@
       "kind": "api-key",
       "pool": "chat",
       "loginUrl": "https://api.together.ai/settings/api-keys",
-      "docsUrl": "https://docs.together.ai/docs/openai-api-compatibility",
+      "docsUrl": "https://docs.together.ai/docs/",
       "models": [
         "meta-llama/Llama-3.3-70B-Instruct-Turbo"
       ],
-      "quota": "免费模型/试用额度",
-      "note": "OpenAI 兼容，原生工具"
+      "quota": "新用户赠金/部分免费端点，额度随账号政策变化",
+      "note": "trial-credit · aggregator · 核查 2026-11-12T08:23:42.339Z",
+      "sourceId": "together",
+      "category": "trial-credit",
+      "status": "active",
+      "confidence": "aggregator",
+      "evidence": [
+        {
+          "url": "https://docs.together.ai/docs/",
+          "kind": "official",
+          "retrievedAt": "2026-11-12"
+        },
+        {
+          "url": "https://github.com/steelburn/free-llm-api-resources",
+          "kind": "aggregator-list",
+          "retrievedAt": "2026-11-12"
+        }
+      ],
+      "lastCheckedAt": "2026-11-12T08:23:42.339Z"
     },
     {
       "id": "nebius",
       "name": "Nebius AI Studio",
       "kind": "api-key",
       "pool": "chat",
-      "loginUrl": "https://studio.nebius.ai/settings/api-keys",
-      "docsUrl": "https://docs.nebius.com/studio/inference/api",
+      "loginUrl": "https://studio.nebius.ai/",
+      "docsUrl": "https://docs.nebius.ai/",
       "models": [
-        "meta-llama/Meta-Llama-3.1-70B-Instruct"
+        "Qwen/Qwen3-235B-A22B"
       ],
-      "quota": "免费额度",
-      "note": "OpenAI 兼容"
+      "quota": "新用户推广赠金，以控制台为准",
+      "note": "trial-credit · aggregator · 核查 2026-11-12T08:23:42.339Z",
+      "sourceId": "nebius",
+      "category": "trial-credit",
+      "status": "active",
+      "confidence": "aggregator",
+      "evidence": [
+        {
+          "url": "https://docs.nebius.ai/",
+          "kind": "official",
+          "retrievedAt": "2026-11-12"
+        },
+        {
+          "url": "https://github.com/steelburn/free-llm-api-resources",
+          "kind": "aggregator-list",
+          "retrievedAt": "2026-11-12"
+        }
+      ],
+      "lastCheckedAt": "2026-11-12T08:23:42.339Z"
     },
     {
       "id": "hyperbolic",
@@ -400,12 +884,29 @@
       "kind": "api-key",
       "pool": "chat",
       "loginUrl": "https://app.hyperbolic.xyz/settings",
-      "docsUrl": "https://docs.hyperbolic.xyz/docs/getting-started",
+      "docsUrl": "https://docs.hyperbolic.xyz/",
       "models": [
         "meta-llama/Llama-3.3-70B-Instruct"
       ],
-      "quota": "试用额度",
-      "note": "OpenAI 兼容"
+      "quota": "注册赠金/部分零价模型，以官方定价页为准",
+      "note": "trial-credit · aggregator · 核查 2026-11-12T08:23:42.339Z",
+      "sourceId": "hyperbolic",
+      "category": "trial-credit",
+      "status": "active",
+      "confidence": "aggregator",
+      "evidence": [
+        {
+          "url": "https://docs.hyperbolic.xyz/",
+          "kind": "official",
+          "retrievedAt": "2026-11-12"
+        },
+        {
+          "url": "https://github.com/steelburn/free-llm-api-resources",
+          "kind": "aggregator-list",
+          "retrievedAt": "2026-11-12"
+        }
+      ],
+      "lastCheckedAt": "2026-11-12T08:23:42.339Z"
     },
     {
       "id": "fireworks",
@@ -413,39 +914,57 @@
       "kind": "api-key",
       "pool": "chat",
       "loginUrl": "https://fireworks.ai/account/api-keys",
-      "docsUrl": "https://docs.fireworks.ai/api-reference/introduction",
+      "docsUrl": "https://docs.fireworks.ai/",
       "models": [
         "accounts/fireworks/models/llama-v3p3-70b-instruct"
       ],
-      "quota": "赠送额度",
-      "note": "OpenAI 兼容"
-    },
-    {
-      "id": "chutes",
-      "name": "Chutes AI",
-      "kind": "api-key",
-      "pool": "chat",
-      "loginUrl": "https://chutes.ai/app/api",
-      "docsUrl": "https://docs.chutes.ai/",
-      "models": [
-        "google/gemma-4-31B-turbo-TEE"
+      "quota": "新用户赠金（社区汇总约 $1 起），以控制台为准",
+      "note": "trial-credit · aggregator · 核查 2026-11-12T08:23:42.339Z",
+      "sourceId": "fireworks",
+      "category": "trial-credit",
+      "status": "active",
+      "confidence": "aggregator",
+      "evidence": [
+        {
+          "url": "https://docs.fireworks.ai/",
+          "kind": "official",
+          "retrievedAt": "2026-11-12"
+        },
+        {
+          "url": "https://github.com/steelburn/free-llm-api-resources",
+          "kind": "aggregator-list",
+          "retrievedAt": "2026-11-12"
+        }
       ],
-      "quota": "按量",
-      "note": "OpenAI 兼容"
+      "lastCheckedAt": "2026-11-12T08:23:42.339Z"
     },
     {
       "id": "airforce",
       "name": "Airforce",
       "kind": "api-key",
       "pool": "chat",
-      "loginUrl": "https://api.airforce/",
-      "docsUrl": "https://api.airforce/",
-      "models": [
-        "gpt-oss-120b",
-        "mistral-large-latest"
+      "loginUrl": "https://airforce.ai/",
+      "docsUrl": "https://airforce.ai/",
+      "models": [],
+      "quota": "keyed 免费/推广槽位，额度随账号政策变化",
+      "note": "gateway · aggregator · 核查 2026-11-12T08:23:42.339Z",
+      "sourceId": "airforce",
+      "category": "gateway",
+      "status": "active",
+      "confidence": "aggregator",
+      "evidence": [
+        {
+          "url": "https://airforce.ai/",
+          "kind": "official",
+          "retrievedAt": "2026-11-12"
+        },
+        {
+          "url": "https://github.com/William-Trader/free-token-cloud",
+          "kind": "aggregator-list",
+          "retrievedAt": "2026-11-12"
+        }
       ],
-      "quota": "free tier",
-      "note": "多人合租式网关，匿名 chat 需 key"
+      "lastCheckedAt": "2026-11-12T08:23:42.339Z"
     },
     {
       "id": "voidai",
@@ -454,12 +973,916 @@
       "pool": "chat",
       "loginUrl": "https://voidai.app/",
       "docsUrl": "https://voidai.app/",
-      "models": [
-        "gpt-oss-120b",
-        "mistral-large-latest"
+      "models": [],
+      "quota": "keyed 免费/推广槽位，额度随账号政策变化",
+      "note": "gateway · aggregator · 核查 2026-11-12T08:23:42.339Z",
+      "sourceId": "voidai",
+      "category": "gateway",
+      "status": "active",
+      "confidence": "aggregator",
+      "evidence": [
+        {
+          "url": "https://voidai.app/",
+          "kind": "official",
+          "retrievedAt": "2026-11-12"
+        },
+        {
+          "url": "https://github.com/William-Trader/free-token-cloud",
+          "kind": "aggregator-list",
+          "retrievedAt": "2026-11-12"
+        }
       ],
-      "quota": "free tier",
-      "note": "匿名 chat 会 500，需 key"
+      "lastCheckedAt": "2026-11-12T08:23:42.339Z"
+    },
+    {
+      "id": "kilo",
+      "name": "Kilo Gateway（Kilo Code free pool）",
+      "kind": "optional-token",
+      "pool": "chat",
+      "loginUrl": "https://app.kilo.ai/profile",
+      "docsUrl": "https://kilo.ai/docs/gateway/authentication",
+      "models": [
+        "kilo-auto/free",
+        "openrouter/free",
+        "cohere/north-mini-code:free"
+      ],
+      "quota": "免费模型无需信用卡、无需 API key：200 请求/小时/IP；kilo-auto/free 自动路由，目录可能滞后于实际可用模型",
+      "note": "config.json 里 14 个 kilo-* 槽位此前没有 catalog 条目，本次合并为一个独立源并映射全部槽位（去重实证）。",
+      "sourceId": "kilo",
+      "category": "anonymous",
+      "status": "active",
+      "confidence": "official",
+      "evidence": [
+        {
+          "url": "https://kilo.ai/docs/gateway/authentication",
+          "kind": "official",
+          "retrievedAt": "2026-11-12"
+        },
+        {
+          "url": "https://github.com/mnfst/awesome-free-llm-apis",
+          "kind": "aggregator-list",
+          "retrievedAt": "2026-11-12"
+        },
+        {
+          "url": "https://github.com/steelburn/free-llm-api-resources",
+          "kind": "aggregator-list",
+          "retrievedAt": "2026-11-12"
+        }
+      ],
+      "lastCheckedAt": "2026-11-12T08:23:42.339Z"
+    },
+    {
+      "id": "ovh",
+      "name": "OVHcloud AI Endpoints（匿名层）",
+      "kind": "optional-token",
+      "pool": "chat",
+      "loginUrl": "https://www.ovhcloud.com/en/public-cloud/ai-endpoints/catalog/",
+      "docsUrl": "https://www.ovhcloud.com/en/public-cloud/ai-endpoints/catalog/",
+      "models": [
+        "Qwen3.5-397B-A17B",
+        "gpt-oss-120b",
+        "gpt-oss-20b",
+        "Meta-Llama-3_3-70B-Instruct"
+      ],
+      "quota": "永久匿名免费层：2 RPM / IP / 模型，无需注册或 key；带 key 的付费层 400 RPM/项目/模型；新 Public Cloud 账号另有最高 $200 试用金",
+      "note": "config.json 里 10 个 ovh-* 槽位此前无 catalog 条目，本次合并映射。目录标注部分模型 2026-11-04 EOL，需周期性复核。",
+      "sourceId": "ovh",
+      "category": "anonymous",
+      "status": "active",
+      "confidence": "official",
+      "evidence": [
+        {
+          "url": "https://www.ovhcloud.com/en/public-cloud/ai-endpoints/catalog/",
+          "kind": "official",
+          "retrievedAt": "2026-11-12"
+        },
+        {
+          "url": "https://github.com/mnfst/awesome-free-llm-apis",
+          "kind": "aggregator-list",
+          "retrievedAt": "2026-11-12"
+        }
+      ],
+      "lastCheckedAt": "2026-11-12T08:23:42.339Z"
+    },
+    {
+      "id": "aionlabs",
+      "name": "Aion Labs",
+      "kind": "api-key",
+      "pool": "chat",
+      "loginUrl": "https://www.aionlabs.ai/app/api-keys/",
+      "docsUrl": "https://docs.aionlabs.ai/",
+      "models": [
+        "aion-labs/aion-2.0",
+        "aion-labs/aion-3.0-mini"
+      ],
+      "quota": "永久免费层，无需信用卡：15 RPM / 20,000 tokens/天；偏角色扮演与叙事",
+      "note": "permanent-free · official · 核查 2026-11-12T08:23:42.339Z",
+      "sourceId": "aionlabs",
+      "category": "permanent-free",
+      "status": "active",
+      "confidence": "official",
+      "evidence": [
+        {
+          "url": "https://www.aionlabs.ai/app/api-keys/",
+          "kind": "official",
+          "retrievedAt": "2026-11-12"
+        },
+        {
+          "url": "https://github.com/mnfst/awesome-free-llm-apis",
+          "kind": "aggregator-list",
+          "retrievedAt": "2026-11-12"
+        }
+      ],
+      "lastCheckedAt": "2026-11-12T08:23:42.339Z"
+    },
+    {
+      "id": "gonka",
+      "name": "Gonka Broker",
+      "kind": "api-key",
+      "pool": "chat",
+      "loginUrl": "https://app.gonkabroker.com/signup",
+      "docsUrl": "https://docs.gonkabroker.com/guides/billing-and-deposits/",
+      "models": [
+        "MiniMaxAI/MiniMax-M2.7",
+        "deepseek-ai/DeepSeek-V4-Flash-0731"
+      ],
+      "quota": "永久免费层：短信（非 VoIP）验证后每月至少 1M tokens（按最贵模型计），不结转；仅免费额度时限速更低，模型随网络治理轮换",
+      "note": "open-quota · official · 核查 2026-11-12T08:23:42.339Z",
+      "sourceId": "gonka",
+      "category": "open-quota",
+      "status": "active",
+      "confidence": "official",
+      "evidence": [
+        {
+          "url": "https://gonkabroker.com/free-llm-api/",
+          "kind": "official",
+          "retrievedAt": "2026-11-12"
+        },
+        {
+          "url": "https://github.com/mnfst/awesome-free-llm-apis",
+          "kind": "aggregator-list",
+          "retrievedAt": "2026-11-12"
+        }
+      ],
+      "lastCheckedAt": "2026-11-12T08:23:42.339Z"
+    },
+    {
+      "id": "opencode-zen",
+      "name": "OpenCode Zen",
+      "kind": "api-key",
+      "pool": "chat",
+      "loginUrl": "https://opencode.ai/zen",
+      "docsUrl": "https://opencode.ai/docs/zen/",
+      "models": [
+        "deepseek-v4-flash",
+        "nemotron"
+      ],
+      "quota": "推广期免费模型路由（DeepSeek V4 Flash / Nemotron 等），以官方 Zen 页面为准",
+      "note": "gateway · aggregator · 核查 2026-11-12T08:23:42.339Z",
+      "sourceId": "opencode-zen",
+      "category": "gateway",
+      "status": "active",
+      "confidence": "aggregator",
+      "evidence": [
+        {
+          "url": "https://opencode.ai/docs/zen/",
+          "kind": "official",
+          "retrievedAt": "2026-11-12"
+        },
+        {
+          "url": "https://github.com/steelburn/free-llm-api-resources",
+          "kind": "aggregator-list",
+          "retrievedAt": "2026-11-12"
+        }
+      ],
+      "lastCheckedAt": "2026-11-12T08:23:42.339Z"
+    },
+    {
+      "id": "ai21",
+      "name": "AI21 Labs",
+      "kind": "api-key",
+      "pool": "chat",
+      "loginUrl": "https://studio.ai21.com/",
+      "docsUrl": "https://docs.ai21.com/",
+      "models": [
+        "jamba-large"
+      ],
+      "quota": "注册试用赠金，以控制台为准",
+      "note": "trial-credit · aggregator · 核查 2026-11-12T08:23:42.339Z",
+      "sourceId": "ai21",
+      "category": "trial-credit",
+      "status": "active",
+      "confidence": "aggregator",
+      "evidence": [
+        {
+          "url": "https://docs.ai21.com/",
+          "kind": "official",
+          "retrievedAt": "2026-11-12"
+        },
+        {
+          "url": "https://github.com/steelburn/free-llm-api-resources",
+          "kind": "aggregator-list",
+          "retrievedAt": "2026-11-12"
+        }
+      ],
+      "lastCheckedAt": "2026-11-12T08:23:42.339Z"
+    },
+    {
+      "id": "upstage",
+      "name": "Upstage",
+      "kind": "api-key",
+      "pool": "chat",
+      "loginUrl": "https://console.upstage.ai/",
+      "docsUrl": "https://developers.upstage.ai/",
+      "models": [
+        "solar-pro2"
+      ],
+      "quota": "注册试用赠金，以控制台为准",
+      "note": "trial-credit · aggregator · 核查 2026-11-12T08:23:42.339Z",
+      "sourceId": "upstage",
+      "category": "trial-credit",
+      "status": "active",
+      "confidence": "aggregator",
+      "evidence": [
+        {
+          "url": "https://developers.upstage.ai/",
+          "kind": "official",
+          "retrievedAt": "2026-11-12"
+        },
+        {
+          "url": "https://github.com/steelburn/free-llm-api-resources",
+          "kind": "aggregator-list",
+          "retrievedAt": "2026-11-12"
+        }
+      ],
+      "lastCheckedAt": "2026-11-12T08:23:42.339Z"
+    },
+    {
+      "id": "nlpcloud",
+      "name": "NLP Cloud",
+      "kind": "api-key",
+      "pool": "chat",
+      "loginUrl": "https://nlpcloud.io/",
+      "docsUrl": "https://docs.nlpcloud.com/",
+      "models": [
+        "finetuned-llama-3.1-70b"
+      ],
+      "quota": "注册试用赠金，以控制台为准",
+      "note": "trial-credit · aggregator · 核查 2026-11-12T08:23:42.339Z",
+      "sourceId": "nlpcloud",
+      "category": "trial-credit",
+      "status": "active",
+      "confidence": "aggregator",
+      "evidence": [
+        {
+          "url": "https://docs.nlpcloud.com/",
+          "kind": "official",
+          "retrievedAt": "2026-11-12"
+        },
+        {
+          "url": "https://github.com/steelburn/free-llm-api-resources",
+          "kind": "aggregator-list",
+          "retrievedAt": "2026-11-12"
+        }
+      ],
+      "lastCheckedAt": "2026-11-12T08:23:42.339Z"
+    },
+    {
+      "id": "baseten",
+      "name": "Baseten",
+      "kind": "api-key",
+      "pool": "chat",
+      "loginUrl": "https://www.baseten.co/",
+      "docsUrl": "https://docs.baseten.co/",
+      "models": [
+        "deepseek-v3"
+      ],
+      "quota": "注册试用赠金，以控制台为准",
+      "note": "trial-credit · aggregator · 核查 2026-11-12T08:23:42.339Z",
+      "sourceId": "baseten",
+      "category": "trial-credit",
+      "status": "active",
+      "confidence": "aggregator",
+      "evidence": [
+        {
+          "url": "https://docs.baseten.co/",
+          "kind": "official",
+          "retrievedAt": "2026-11-12"
+        },
+        {
+          "url": "https://github.com/steelburn/free-llm-api-resources",
+          "kind": "aggregator-list",
+          "retrievedAt": "2026-11-12"
+        }
+      ],
+      "lastCheckedAt": "2026-11-12T08:23:42.339Z"
+    },
+    {
+      "id": "modal",
+      "name": "Modal",
+      "kind": "api-key",
+      "pool": "chat",
+      "loginUrl": "https://modal.com/signup",
+      "docsUrl": "https://modal.com/docs",
+      "models": [
+        "self-hosted"
+      ],
+      "quota": "每月免费计算额度（可用于自托管推理），以官方定价页为准",
+      "note": "trial-credit · aggregator · 核查 2026-11-12T08:23:42.339Z",
+      "sourceId": "modal",
+      "category": "trial-credit",
+      "status": "active",
+      "confidence": "aggregator",
+      "evidence": [
+        {
+          "url": "https://modal.com/pricing",
+          "kind": "official",
+          "retrievedAt": "2026-11-12"
+        },
+        {
+          "url": "https://github.com/steelburn/free-llm-api-resources",
+          "kind": "aggregator-list",
+          "retrievedAt": "2026-11-12"
+        }
+      ],
+      "lastCheckedAt": "2026-11-12T08:23:42.339Z"
+    },
+    {
+      "id": "inference-net",
+      "name": "Inference.net",
+      "kind": "api-key",
+      "pool": "chat",
+      "loginUrl": "https://inference.net/",
+      "docsUrl": "https://docs.inference.net/",
+      "models": [
+        "llama-3.3-70b"
+      ],
+      "quota": "注册试用赠金，以控制台为准",
+      "note": "trial-credit · aggregator · 核查 2026-11-12T08:23:42.339Z",
+      "sourceId": "inference-net",
+      "category": "trial-credit",
+      "status": "active",
+      "confidence": "aggregator",
+      "evidence": [
+        {
+          "url": "https://docs.inference.net/",
+          "kind": "official",
+          "retrievedAt": "2026-11-12"
+        },
+        {
+          "url": "https://github.com/steelburn/free-llm-api-resources",
+          "kind": "aggregator-list",
+          "retrievedAt": "2026-11-12"
+        }
+      ],
+      "lastCheckedAt": "2026-11-12T08:23:42.339Z"
+    },
+    {
+      "id": "scaleway",
+      "name": "Scaleway Generative APIs",
+      "kind": "api-key",
+      "pool": "chat",
+      "loginUrl": "https://console.scaleway.com/",
+      "docsUrl": "https://www.scaleway.com/en/docs/generative-apis/",
+      "models": [
+        "llama-3.3-70b-instruct"
+      ],
+      "quota": "免费层/试用额度，以官方定价页为准",
+      "note": "trial-credit · aggregator · 核查 2026-11-12T08:23:42.339Z",
+      "sourceId": "scaleway",
+      "category": "trial-credit",
+      "status": "active",
+      "confidence": "aggregator",
+      "evidence": [
+        {
+          "url": "https://www.scaleway.com/en/docs/generative-apis/",
+          "kind": "official",
+          "retrievedAt": "2026-11-12"
+        },
+        {
+          "url": "https://github.com/steelburn/free-llm-api-resources",
+          "kind": "aggregator-list",
+          "retrievedAt": "2026-11-12"
+        }
+      ],
+      "lastCheckedAt": "2026-11-12T08:23:42.339Z"
+    },
+    {
+      "id": "alibaba-intl",
+      "name": "Alibaba Cloud Model Studio (International)",
+      "kind": "api-key",
+      "pool": "chat",
+      "loginUrl": "https://modelstudio.console.alibabacloud.com/",
+      "docsUrl": "https://www.alibabacloud.com/help/en/model-studio/",
+      "models": [
+        "qwen-plus",
+        "qwen-flash"
+      ],
+      "quota": "国际站新用户各模型免费额度（常见 90 天有效期），以控制台为准",
+      "note": "与 qwen（国内百炼）为不同区域计划，分别记录但共享厂商映射。",
+      "sourceId": "alibaba-intl",
+      "category": "trial-credit",
+      "status": "active",
+      "confidence": "aggregator",
+      "evidence": [
+        {
+          "url": "https://www.alibabacloud.com/help/en/model-studio/",
+          "kind": "official",
+          "retrievedAt": "2026-11-12"
+        },
+        {
+          "url": "https://github.com/steelburn/free-llm-api-resources",
+          "kind": "aggregator-list",
+          "retrievedAt": "2026-11-12"
+        }
+      ],
+      "lastCheckedAt": "2026-11-12T08:23:42.339Z"
+    },
+    {
+      "id": "baidu-qianfan",
+      "name": "百度智能云千帆（ERNIE 免费模型）",
+      "kind": "api-key",
+      "pool": "chat",
+      "loginUrl": "https://console.bce.baidu.com/qianfan/ais/console/applicationConsole/application",
+      "docsUrl": "https://cloud.baidu.com/doc/WENXINWORKSHOP/s/Wm7fll3np",
+      "models": [
+        "ernie-speed-8k",
+        "ernie-lite-8k",
+        "ernie-4.5-turbo"
+      ],
+      "quota": "ERNIE-Speed / ERNIE-Lite 等部分模型永久零价（按 QPS 限速）；另有 ERNIE-4.5 系列每模型约 100 万 Token / 90 天的免费额度（社区汇总，待官方复核）",
+      "note": "free-model · community · 核查 2026-11-12T08:23:42.339Z",
+      "sourceId": "baidu-qianfan",
+      "category": "free-model",
+      "status": "unverified",
+      "confidence": "community",
+      "evidence": [
+        {
+          "url": "https://cloud.baidu.com/doc/WENXINWORKSHOP/",
+          "kind": "official",
+          "retrievedAt": "2026-11-12"
+        },
+        {
+          "url": "https://blog.51cto.com/u_15404184/14598592",
+          "kind": "community-report",
+          "retrievedAt": "2026-11-12"
+        }
+      ],
+      "lastCheckedAt": "2026-11-12T08:23:42.339Z"
+    },
+    {
+      "id": "xfyun-spark",
+      "name": "讯飞星火 Spark-Lite",
+      "kind": "api-key",
+      "pool": "chat",
+      "loginUrl": "https://console.xfyun.cn/",
+      "docsUrl": "https://www.xfyun.cn/doc/spark/",
+      "models": [
+        "spark-lite",
+        "spark-x2-flash"
+      ],
+      "quota": "Spark-Lite 永久免费（社区汇总为不限 token / 2 QPS），另有新用户赠金；以官方定价页为准",
+      "note": "free-model · community · 核查 2026-11-12T08:23:42.339Z",
+      "sourceId": "xfyun-spark",
+      "category": "free-model",
+      "status": "unverified",
+      "confidence": "community",
+      "evidence": [
+        {
+          "url": "https://www.xfyun.cn/doc/spark/",
+          "kind": "official",
+          "retrievedAt": "2026-11-12"
+        },
+        {
+          "url": "https://hefeng.chat/blog/1",
+          "kind": "community-report",
+          "retrievedAt": "2026-11-12"
+        }
+      ],
+      "lastCheckedAt": "2026-11-12T08:23:42.339Z"
+    },
+    {
+      "id": "volcengine-ark",
+      "name": "火山引擎方舟（协作奖励计划）",
+      "kind": "api-key",
+      "pool": "chat",
+      "loginUrl": "https://console.volcengine.com/ark",
+      "docsUrl": "https://www.volcengine.com/docs/82379",
+      "models": [
+        "doubao-lite-32k",
+        "doubao-seed"
+      ],
+      "quota": "安心体验模式每模型一次性免费 Token；「协作奖励计划」社区汇总为每天 200 万 Token 按天重置（待官方复核）",
+      "note": "trial-credit · community · 核查 2026-11-12T08:23:42.339Z",
+      "sourceId": "volcengine-ark",
+      "category": "trial-credit",
+      "status": "unverified",
+      "confidence": "community",
+      "evidence": [
+        {
+          "url": "https://www.volcengine.com/docs/82379",
+          "kind": "official",
+          "retrievedAt": "2026-11-12"
+        },
+        {
+          "url": "https://blog.51cto.com/u_15404184/14598592",
+          "kind": "community-report",
+          "retrievedAt": "2026-11-12"
+        }
+      ],
+      "lastCheckedAt": "2026-11-12T08:23:42.339Z"
+    },
+    {
+      "id": "qiniu-ai",
+      "name": "七牛云 AI 大模型 API",
+      "kind": "api-key",
+      "pool": "chat",
+      "loginUrl": "https://portal.qiniu.com/ai",
+      "docsUrl": "https://developer.qiniu.com/aitokenapi/",
+      "models": [
+        "deepseek-v3",
+        "qwen3"
+      ],
+      "quota": "社区汇总为 600 万 Token 免费额度、无时效限制（待官方复核）",
+      "note": "trial-credit · community · 核查 2026-11-12T08:23:42.339Z",
+      "sourceId": "qiniu-ai",
+      "category": "trial-credit",
+      "status": "unverified",
+      "confidence": "community",
+      "evidence": [
+        {
+          "url": "https://developer.qiniu.com/aitokenapi/",
+          "kind": "official",
+          "retrievedAt": "2026-11-12"
+        },
+        {
+          "url": "https://hefeng.chat/blog/1",
+          "kind": "community-report",
+          "retrievedAt": "2026-11-12"
+        }
+      ],
+      "lastCheckedAt": "2026-11-12T08:23:42.339Z"
+    },
+    {
+      "id": "minimax",
+      "name": "MiniMax 开放平台",
+      "kind": "api-key",
+      "pool": "chat",
+      "loginUrl": "https://platform.minimaxi.com/",
+      "docsUrl": "https://platform.minimaxi.com/document/",
+      "models": [
+        "MiniMax-M2",
+        "abab6.5s"
+      ],
+      "quota": "新用户赠金，以控制台为准（社区汇总）",
+      "note": "trial-credit · community · 核查 2026-11-12T08:23:42.339Z",
+      "sourceId": "minimax",
+      "category": "trial-credit",
+      "status": "unverified",
+      "confidence": "community",
+      "evidence": [
+        {
+          "url": "https://platform.minimaxi.com/document/",
+          "kind": "official",
+          "retrievedAt": "2026-11-12"
+        },
+        {
+          "url": "https://www.51cos.com/?p=3741/",
+          "kind": "community-report",
+          "retrievedAt": "2026-11-12"
+        }
+      ],
+      "lastCheckedAt": "2026-11-12T08:23:42.339Z"
+    },
+    {
+      "id": "tencent-tokenhub",
+      "name": "腾讯云混元 / TokenHub",
+      "kind": "api-key",
+      "pool": "chat",
+      "loginUrl": "https://console.cloud.tencent.com/hunyuan",
+      "docsUrl": "https://cloud.tencent.com/document/product/1729",
+      "models": [
+        "hunyuan",
+        "deepseek-v4"
+      ],
+      "quota": "新用户免费体验额度，每个主账号限领一次（社区汇总，待官方复核）",
+      "note": "trial-credit · community · 核查 2026-11-12T08:23:42.339Z",
+      "sourceId": "tencent-tokenhub",
+      "category": "trial-credit",
+      "status": "unverified",
+      "confidence": "community",
+      "evidence": [
+        {
+          "url": "https://cloud.tencent.com/document/product/1729",
+          "kind": "official",
+          "retrievedAt": "2026-11-12"
+        },
+        {
+          "url": "https://hefeng.chat/blog/1",
+          "kind": "community-report",
+          "retrievedAt": "2026-11-12"
+        }
+      ],
+      "lastCheckedAt": "2026-11-12T08:23:42.339Z"
+    },
+    {
+      "id": "mobile-moma",
+      "name": "中国移动 MoMA",
+      "kind": "api-key",
+      "pool": "chat",
+      "loginUrl": "https://www.10086.cn/",
+      "docsUrl": "https://www.10086.cn/",
+      "models": [
+        "multi-model-router"
+      ],
+      "quota": "社区汇总为 9000 万 Token 免费额度、整合 300+ 模型（待官方复核）",
+      "note": "trial-credit · community · 核查 2026-11-12T08:23:42.339Z",
+      "sourceId": "mobile-moma",
+      "category": "trial-credit",
+      "status": "unverified",
+      "confidence": "community",
+      "evidence": [
+        {
+          "url": "https://www.10086.cn/",
+          "kind": "official",
+          "retrievedAt": "2026-11-12"
+        },
+        {
+          "url": "http://mp.weixin.qq.com/s?__biz=MzIyOTM0MDgwNQ==&mid=2247484095&idx=1",
+          "kind": "community-report",
+          "retrievedAt": "2026-11-12"
+        }
+      ],
+      "lastCheckedAt": "2026-11-12T08:23:42.339Z"
+    },
+    {
+      "id": "scnet",
+      "name": "国家超算互联网（SCNet）",
+      "kind": "api-key",
+      "pool": "chat",
+      "loginUrl": "https://www.scnet.cn/",
+      "docsUrl": "https://www.scnet.cn/ui/mall/",
+      "models": [
+        "deepseek-v4"
+      ],
+      "quota": "限时免费 DeepSeek 对话服务与算力配额（社区汇总，待官方复核）",
+      "note": "open-quota · community · 核查 2026-11-12T08:23:42.339Z",
+      "sourceId": "scnet",
+      "category": "open-quota",
+      "status": "unverified",
+      "confidence": "community",
+      "evidence": [
+        {
+          "url": "https://www.scnet.cn/",
+          "kind": "official",
+          "retrievedAt": "2026-11-12"
+        },
+        {
+          "url": "https://hefeng.chat/blog/1",
+          "kind": "community-report",
+          "retrievedAt": "2026-11-12"
+        }
+      ],
+      "lastCheckedAt": "2026-11-12T08:23:42.339Z"
+    },
+    {
+      "id": "yi-lightning",
+      "name": "零一万物 Yi-Lightning",
+      "kind": "api-key",
+      "pool": "chat",
+      "loginUrl": "https://platform.lingyiwanwu.com/",
+      "docsUrl": "https://platform.lingyiwanwu.com/docs",
+      "models": [
+        "yi-lightning"
+      ],
+      "quota": "社区汇总为 Yi-Lightning 免费、5 RPM 限速（待官方复核）",
+      "note": "permanent-free · community · 核查 2026-11-12T08:23:42.339Z",
+      "sourceId": "yi-lightning",
+      "category": "permanent-free",
+      "status": "unverified",
+      "confidence": "community",
+      "evidence": [
+        {
+          "url": "https://platform.lingyiwanwu.com/docs",
+          "kind": "official",
+          "retrievedAt": "2026-11-12"
+        },
+        {
+          "url": "http://mp.weixin.qq.com/s?__biz=MzIyOTM0MDgwNQ==&mid=2247484095&idx=1",
+          "kind": "community-report",
+          "retrievedAt": "2026-11-12"
+        }
+      ],
+      "lastCheckedAt": "2026-11-12T08:23:42.339Z"
+    },
+    {
+      "id": "jina-ai",
+      "name": "Jina AI（Embedding / Reranker）",
+      "kind": "api-key",
+      "pool": "chat",
+      "loginUrl": "https://jina.ai/",
+      "docsUrl": "https://docs.jina.ai/",
+      "models": [
+        "jina-embeddings-v3",
+        "jina-reranker-v2"
+      ],
+      "quota": "免费层含 100 万 token 额度（社区汇总），官方定价页为准；专精 embedding / reranker，非对话模型",
+      "note": "permanent-free · community · 核查 2026-11-12T08:23:42.339Z",
+      "sourceId": "jina-ai",
+      "category": "permanent-free",
+      "status": "unverified",
+      "confidence": "community",
+      "evidence": [
+        {
+          "url": "https://jina.ai/pricing",
+          "kind": "official",
+          "retrievedAt": "2026-11-12"
+        },
+        {
+          "url": "http://mp.weixin.qq.com/s?__biz=MzIyOTM0MDgwNQ==&mid=2247484095&idx=1",
+          "kind": "community-report",
+          "retrievedAt": "2026-11-12"
+        }
+      ],
+      "lastCheckedAt": "2026-11-12T08:23:42.339Z"
+    },
+    {
+      "id": "longcat",
+      "name": "美团 LongCat 开放平台",
+      "kind": "api-key",
+      "pool": "chat",
+      "loginUrl": "https://longcat.ai/platform",
+      "docsUrl": "https://longcat.ai/platform/docs",
+      "models": [
+        "LongCat-Flash-Lite",
+        "LongCat-Flash-Chat"
+      ],
+      "quota": "社区汇总 Flash-Lite 系列 5 亿 Token/天、Chat/Thinking 系列 500 万 Token/天，按天重置（待官方复核，数字异常大，仅作线索）",
+      "note": "permanent-free · community · 核查 2026-11-12T08:23:42.339Z",
+      "sourceId": "longcat",
+      "category": "permanent-free",
+      "status": "unverified",
+      "confidence": "community",
+      "evidence": [
+        {
+          "url": "https://longcat.ai/platform/docs",
+          "kind": "official",
+          "retrievedAt": "2026-11-12"
+        },
+        {
+          "url": "http://mp.weixin.qq.com/s?__biz=MzIyOTM0MDgwNQ==&mid=2247484095&idx=1",
+          "kind": "community-report",
+          "retrievedAt": "2026-11-12"
+        }
+      ],
+      "lastCheckedAt": "2026-11-12T08:23:42.339Z"
+    },
+    {
+      "id": "xiaomi-mimo",
+      "name": "小米 MiMo 开发者平台",
+      "kind": "api-key",
+      "pool": "chat",
+      "loginUrl": "https://mimo.ai.xiaomi.com/",
+      "docsUrl": "https://mimo.ai.xiaomi.com/docs",
+      "models": [
+        "MiMo-7B-RL"
+      ],
+      "quota": "社区汇总新用户 7 亿+ Token、30 天有效（待官方复核，数字异常大，仅作线索）",
+      "note": "trial-credit · community · 核查 2026-11-12T08:23:42.339Z",
+      "sourceId": "xiaomi-mimo",
+      "category": "trial-credit",
+      "status": "deprecated",
+      "confidence": "community",
+      "evidence": [
+        {
+          "url": "https://mimo.ai.xiaomi.com/",
+          "kind": "official",
+          "retrievedAt": "2026-11-12"
+        },
+        {
+          "url": "http://mp.weixin.qq.com/s?__biz=MzIyOTM0MDgwNQ==&mid=2247484095&idx=1",
+          "kind": "community-report",
+          "retrievedAt": "2026-11-12"
+        }
+      ],
+      "lastCheckedAt": "2026-11-12T08:23:42.339Z"
+    },
+    {
+      "id": "deepseek-trial",
+      "name": "DeepSeek 开放平台（新用户赠金）",
+      "kind": "api-key",
+      "pool": "chat",
+      "loginUrl": "https://platform.deepseek.com/api_keys",
+      "docsUrl": "https://api-docs.deepseek.com/",
+      "models": [
+        "deepseek-chat",
+        "deepseek-reasoner"
+      ],
+      "quota": "社区汇总新注册赠送 500 万 Token（待官方复核）；本项目云端池主动排除 DeepSeek，仅本地直连用",
+      "note": "按 docs/PROVIDER-SOURCES.md 的合规决定，不接入云端池；保留为线索并标注。",
+      "sourceId": "deepseek-trial",
+      "category": "trial-credit",
+      "status": "unverified",
+      "confidence": "community",
+      "evidence": [
+        {
+          "url": "https://api-docs.deepseek.com/",
+          "kind": "official",
+          "retrievedAt": "2026-11-12"
+        },
+        {
+          "url": "https://hefeng.chat/blog/1",
+          "kind": "community-report",
+          "retrievedAt": "2026-11-12"
+        }
+      ],
+      "lastCheckedAt": "2026-11-12T08:23:42.339Z"
+    },
+    {
+      "id": "xai-grok",
+      "name": "xAI Grok（免费额度线索）",
+      "kind": "api-key",
+      "pool": "chat",
+      "loginUrl": "https://console.x.ai/",
+      "docsUrl": "https://docs.x.ai/",
+      "models": [
+        "grok-4"
+      ],
+      "quota": "社区汇总 $25/月免费额度（2026 年营销文章口径，未在官方页复核）",
+      "note": "trial-credit · community · 核查 2026-11-12T08:23:42.339Z",
+      "sourceId": "xai-grok",
+      "category": "trial-credit",
+      "status": "unverified",
+      "confidence": "community",
+      "evidence": [
+        {
+          "url": "https://docs.x.ai/",
+          "kind": "official",
+          "retrievedAt": "2026-11-12"
+        },
+        {
+          "url": "http://mp.weixin.qq.com/s?__biz=MzIyOTM0MDgwNQ==&mid=2247484095&idx=1",
+          "kind": "community-report",
+          "retrievedAt": "2026-11-12"
+        }
+      ],
+      "lastCheckedAt": "2026-11-12T08:23:42.339Z"
+    },
+    {
+      "id": "openai-trial",
+      "name": "OpenAI 新用户试用金（线索）",
+      "kind": "api-key",
+      "pool": "chat",
+      "loginUrl": "https://platform.openai.com/api-keys",
+      "docsUrl": "https://platform.openai.com/docs/",
+      "models": [
+        "gpt-5-mini"
+      ],
+      "quota": "社区汇总 $5 / 1 个月过期（未在官方页复核，历史上多次调整）",
+      "note": "trial-credit · community · 核查 2026-11-12T08:23:42.339Z",
+      "sourceId": "openai-trial",
+      "category": "trial-credit",
+      "status": "unverified",
+      "confidence": "community",
+      "evidence": [
+        {
+          "url": "https://openai.com/api/pricing/",
+          "kind": "official",
+          "retrievedAt": "2026-11-12"
+        },
+        {
+          "url": "http://mp.weixin.qq.com/s?__biz=MzIyOTM0MDgwNQ==&mid=2247484095&idx=1",
+          "kind": "community-report",
+          "retrievedAt": "2026-11-12"
+        }
+      ],
+      "lastCheckedAt": "2026-11-12T08:23:42.339Z"
+    },
+    {
+      "id": "local-openai-compatible",
+      "name": "本地 OpenAI 兼容推理（Ollama / LM Studio / vLLM）",
+      "kind": "guide",
+      "pool": "agent",
+      "loginUrl": "https://github.com/ollama/ollama/blob/main/docs/api.md",
+      "docsUrl": "https://github.com/ollama/ollama/blob/main/docs/api.md",
+      "models": [
+        "qwen3:8b",
+        "gpt-oss:20b"
+      ],
+      "quota": "本机算力，零外部额度；作为所有云源失效时的最后兜底",
+      "note": "local · official · 核查 2026-11-12T08:23:42.339Z",
+      "sourceId": "local-openai-compatible",
+      "category": "local",
+      "status": "active",
+      "confidence": "official",
+      "evidence": [
+        {
+          "url": "https://github.com/ollama/ollama/blob/main/docs/api.md",
+          "kind": "aggregator-list",
+          "retrievedAt": "2026-11-12"
+        }
+      ],
+      "lastCheckedAt": "2026-11-12T08:23:42.339Z"
     }
   ]
 }

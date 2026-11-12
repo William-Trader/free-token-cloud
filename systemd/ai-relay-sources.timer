@@ -1,0 +1,11 @@
+[Unit]
+Description=Daily free-source maintenance for free-token-cloud
+
+[Timer]
+OnCalendar=*-*-* 03:17:00
+Persistent=true
+AccuracySec=5m
+Unit=ai-relay-sources.service
+
+[Install]
+WantedBy=timers.target
