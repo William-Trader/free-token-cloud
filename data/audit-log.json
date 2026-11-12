@@ -263,6 +263,34 @@
       "feeds": 3,
       "candidates": 40,
       "newLeads": 0
+    },
+    {
+      "at": "2026-11-12T08:53:36.243Z",
+      "type": "discovery",
+      "feeds": 3,
+      "candidates": 40,
+      "newLeads": 0
+    },
+    {
+      "at": "2026-11-12T08:53:36.243Z",
+      "type": "verification",
+      "checked": 62,
+      "reachable": 61,
+      "changes": []
+    },
+    {
+      "at": "2026-11-12T08:53:36.243Z",
+      "type": "reconcile",
+      "before": 64,
+      "after": 64,
+      "duplicates": [],
+      "lifecycle": []
+    },
+    {
+      "at": "2026-11-12T08:53:36.243Z",
+      "type": "catalog-sync",
+      "from": 62,
+      "to": 62
     }
   ]
 }

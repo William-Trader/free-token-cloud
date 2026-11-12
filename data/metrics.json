@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-12T08:25:40.791Z",
+  "generatedAt": "2026-11-12T08:53:55.449Z",
   "coverage": {
     "totalSources": 64,
     "totalCandidates": 40,
@@ -41,7 +41,7 @@
     "reachable": 59,
     "endpointReachableRate": 98.3,
     "officialVerifiedRate": 35.9,
-    "avgLatencyMs": 4557
+    "avgLatencyMs": 1649
   },
   "maintenance": {
     "checkFrequency": "每日 1 次（GitHub Actions cron + systemd timer）",
