@@ -54,7 +54,10 @@
 git clone <repo> && cd free-token-cloud
 printf 'RELAY_HOST=<你的域名或IP>\nRELAY_REMOTE_DIR=/opt/ai-relay\n' > .env.local
 chmod 600 .env.local
-sudo RELAY_TOKEN="$(openssl rand -hex 24)" bash scripts/install-server.sh   # 或按 README 手工装
+# 仓库没有 scripts/install-server.sh；用 deploy.sh（内含备份、上传、systemd、健康检查与自动回滚）
+printf 'RELAY_HOST=<ssh 别名或 IP>\nRELAY_REMOTE_DIR=/opt/ai-relay\n' > .env.local
+chmod 600 .env.local
+./deploy.sh
 ```
 
 本机自用（不装 nginx）时：
@@ -78,7 +81,7 @@ node router.js            # 直接听 127.0.0.1:8801
 | systemd timer（watchdog） | 任务计划程序每 5 分钟跑 `watchdog` 等价 PowerShell |
 | launchd（本机 Codex 桥） | 任务计划程序常驻，或 NSSM；端口同样只绑 `127.0.0.1` |
 | `/opt/ai-relay` | `C:\free-token-cloud\relay`（不要写进 `Program Files`） |
-| bash `install-server.sh` | 逐条翻译成 PowerShell（建目录、写 token 文件、设 ACL） |
+| bash `deploy.sh` | 逐条翻译成 PowerShell（建目录、写 token 文件、设 ACL、注册服务） |
 | nginx :8080 | 可选：Caddy / IIS ARR / 或不装边缘层，直接暴露 127.0.0.1 并只给本机 agent 用 |
 | `chmod 600` | `icacls <file> /inheritance:r /grant:r "%USERNAME%:R"` |
 | `curl -N` 流式 | PowerShell `Invoke-WebRequest` 或直接用 Node 脚本，注意不要缓冲 |

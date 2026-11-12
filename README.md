@@ -3,6 +3,28 @@
 一台 **2 核 1G** 的服务器（或者只要你的 PC），就能把一堆免费模型聚合成**你自己的** OpenAI / Anthropic 兼容入口，
 给远程设备、Agent、手机发 token 用——限流、超时、报错时自动换上游，客户端只认一个地址。
 
+> **v6.0.0（2026-11-12）**：免费源从「两张手工清单」升级为**可持续维护的注册体系**——
+> 全网发现、每日可用性校验、去重分类、状态更新、失效剔除、逐源官方出处标注与变更审计。
+> 快速入口：[免费源清单](docs/SOURCES.md) · [变更记录](docs/SOURCE-AUDIT.md) ·
+> [维护手册](docs/MAINTENANCE.md) · [对标报告](docs/BENCHMARK.md) · [CHANGELOG](CHANGELOG.md) ·
+> [贡献指南](CONTRIBUTING.md)
+
+## v6.0 免费源持续维护
+
+| 能力 | 落地 | 证据 |
+|---|---|---|
+| 单一数据源 | `data/sources.json`：逐源带额度原文、分类、认证、状态、时间戳、证据链接 | [SOURCES.md](docs/SOURCES.md) |
+| 来源发现 | 3 个公开清单 + 官方证据链接，每日抓取，候选保留 feed 出处 | `data/candidates.json` |
+| 可用性校验 | 并发 HTTP 探测，多 URL 回退，401/403/405/429 视为在线 | `data/history/` |
+| 去重分类 | id / 别名 / 显式别名三键；8 类标签；多槽位收敛到独立计划 | `data/sources-policy.json` |
+| 状态与失效剔除 | 连续失败降级、14 天老化、30 天剔除，剔除保留墓碑 | [SOURCE-AUDIT.md](docs/SOURCE-AUDIT.md) |
+| 更新频率 | GitHub Actions 每日 UTC 01:17 **权威全流程** + 服务器 timer 每日 03:17 **只读复核**；CI 每次 push 校验 | `.github/workflows/` |
+| 文档 | 逐源清单、审计流水、维护手册、对标报告、CHANGELOG、贡献指南 | `docs/` |
+
+**口径说明**：`data/sources.json` 计的是**独立免费计划/渠道**；`config.json` 计的是**运行时路由槽位**。
+同一家厂商的多个模型槽位（如 14 个 `kilo-*`）在注册表里是 1 个源，在路由里是 14 个槽位，两者不可混用。
+完整逐源清单见下方自动刷新的表格与 [docs/SOURCES.md](docs/SOURCES.md)。
+
 ## v5.2 质量优化
 
 | 能力 | 说明 |
@@ -39,7 +61,7 @@
 |---|---|
 | 只有一台 2 核 1G 小机器或自己的 PC | 单进程 Node，无数据库、无 Redis，常驻内存几十 MB；nginx 开一个 8080 端口，其余端口只监听 `127.0.0.1` |
 | 想给远程设备／朋友发 token，而不是发 key | 服务器上 `token` 单文件 Bearer 鉴权，任何 OpenAI 兼容客户端填两行配置就能接入 |
-| 免费额度分散、随时 429 | 19 个免费/匿名工具槽位、29 个对话槽位，按池排队，熔断 + 冷却 + 半开探测自动切 |
+| 免费额度分散、随时 429 | `config.json` 共 **56 个 provider 条目、47 个启用**，覆盖 **46 个 chat / 25 个 tools 槽位**（两池有重叠），按池排队、熔断 + 冷却 + 半开探测自动切；注册表另收录 64 个独立免费计划 |
 | 想按自己的路子"白嫖"更多 token | **可改造框架**：provider、池、路由链、超时、并发、冷却全在 `config.json`，改完调 `/api/reload` 热加载，不用改代码 |
 | 源码开放但**禁止商用** | **PolyForm Noncommercial 1.0.0**：个人、教育、研究、非营利可自由使用/修改/分发；**任何商业用途需单独授权** |
 
@@ -56,8 +78,9 @@ Free Token Cloud 是独立自有组合产品：
 | `provider-setup` | `/setup` | 登录链接、Key 粘贴、校验、自动启用 |
 | `edge` | nginx `:8080` | Bearer 鉴权入口、限流、流式反代 |
 
-统一组合根目录部署在 `/opt/free-token-cloud`，包含组件清单、Provider 登录策略、
-Docker Compose、架构文档和 `stackctl`。
+统一组合根目录部署在 `/opt/free-token-cloud`，包含组件清单（`stack/MANIFEST.json`）、
+Provider 登录策略、架构文档和 `stackctl` 状态/启停工具。**本项目不使用 Docker Compose**，
+生产部署走 `deploy.sh` + systemd（见下方「部署」章节）。
 
 ```bash
 npm run stack:deploy
@@ -113,7 +136,9 @@ DSH Desktop / DeepSeek Harness 接入说明见 `docs/HARNESS.md`；Harness 默�
 | OVH AI Endpoints | `Qwen3.8-27B` | 不需要 | 是 | 文本桥 | 独立 2 RPM 配额 |
 | Pollinations | `openai-fast` | 可选 | 是 | 原生 | 最终兜底，匿名约 30 秒一次 |
 
-当前配置共 **54 个 provider 条目**（含需要 key 的扩展槽，缺 key 自动禁用、不占重试时间）；匿名池实际可用 **30 个对话槽位、20 个工具槽位**：
+当前配置共 **56 个 provider 条目 / 47 个启用**（含需要 key 的扩展槽，缺 key 自动禁用、不占重试时间）；
+按 `pools` 统计为 **46 个 chat 槽位、25 个 tools 槽位**（`['tools','chat']` 的条目同时计入两池）。
+下表的 id 清单是槽位口径，与注册表里「独立免费计划」口径不同：
 
 ```text
 # Kilo（共享账号额度，group=kilo）
@@ -156,6 +181,51 @@ Kilo 的多个模型共享账号级额度，路由器用 provider group 统一�
 `ai-relay` 的 tool-call 自测后，才应提升到 `tools` 池。
 
 Zhipu/ChatGLM 网页链路已从运行时删除。原 systemd 单元停在 `/opt/ai-relay/backups/zhipu-20261027/`，不再启动，也不参与路由。
+
+## 免费源清单与来源标注
+
+完整清单在 [docs/SOURCES.md](docs/SOURCES.md)（按 8 类分组、逐条给出官方出处、额度原文摘要、
+认证方式、证据等级、状态与最后核查时间）。下面是**自动生成**的覆盖汇总，每日由源维护流程刷新：
+
+<!-- SOURCES:START -->
+
+| 分类 | 源数 | 已核实可用 | 待官方核实 |
+|---|---:|---:|---:|
+| 永久免费层 | 11 | 8 | 3 |
+| 永久免费模型 | 4 | 2 | 2 |
+| 匿名免费（无需 key） | 4 | 4 | 0 |
+| 试用 / 注册赠金 | 26 | 16 | 9 |
+| 开发者计划 / 开源配额 | 5 | 4 | 1 |
+| 聚合网关免费路由 | 6 | 6 | 0 |
+| 自有订阅额度 | 4 | 4 | 0 |
+| 本地自托管兜底 | 2 | 2 | 0 |
+
+**合计 64 个独立免费源**（含 2 个已剔除墓碑）；端点可达率 **98.3%**（59/60 探测）；覆盖 97 个模型标识，映射 56 个运行时槽位。
+完整逐源清单（含官方出处、额度原文摘要、最后核查时间、失效原因）见 [docs/SOURCES.md](docs/SOURCES.md)，变更流水见 [docs/SOURCE-AUDIT.md](docs/SOURCE-AUDIT.md)。
+清单由 `npm run sources:all` 自动生成，每日经 GitHub Actions 与服务器 timer 复核；生成时间 2026-11-12T08:25:40.785Z。
+
+<!-- SOURCES:END -->
+
+### 来源标注规则
+
+| 标记 | 含义 | 使用规则 |
+|---|---|---|
+| `官方` | 厂商文档 / 定价页 / 控制台 | 额度数字必须能在此查到，是唯一事实来源 |
+| `清单` | 公开 awesome list / 聚合器 | 用于交叉验证覆盖面，不作为额度承诺 |
+| `审计` | 本项目 `docs/PROVIDER-SOURCES.md` 历史结论 | 记录人工核实与剔除决定 |
+| `社区` | 社区汇总文章 | 只作线索，`confidence=community`、`status=unverified`，**不进路由、不承诺数字** |
+
+**合规红线**：只收录厂商官方免费层、官方试用赠金、官方匿名端点与用户自有订阅；
+不收逆向聊天网页、共享/倒卖的 key、浏览器会话导出、CAPTCHA 绕过与多账号刷额度。
+
+**状态与更新**：✅ active / ⚠️ degraded / 🔎 unverified / ⏸ deprecated / ❌ removed（保留墓碑）。
+每日 01:17 UTC 由 GitHub Actions 跑**权威全流程**（更新注册表、目录与文档），结果写入
+`data/history/YYYY-MM-DD.json` 与 [变更流水](docs/SOURCE-AUDIT.md)；
+03:17 由服务器 timer 跑**只读复核**，只写 `data/runtime-health.json` 记录「从 101 服务器看是否可达」，
+不回写注册表——避免机房出网受限被误判成源失效（详见 [维护手册](docs/MAINTENANCE.md)）。
+连续 2 次探测失败降级、3 次停用、14 天未验证老化、30 天不可用剔除。
+
+想补源？看 [CONTRIBUTING.md](CONTRIBUTING.md)：必须给官方证据链接、额度原文、分类与认证方式。
 
 ## 自动切换
 
@@ -231,6 +301,9 @@ kilo -> llm7 -> ovh-oss20 -> ovh-oss120 -> ovh-llama70
 - `include: ["reasoning.encrypted_content"]` 会被忽略：免费池没有加密推理可回传，但对话上下文不丢。
 
 ## 更新日志
+
+> 完整版本记录见 [CHANGELOG.md](CHANGELOG.md)（v6.0.0 及全部历史）；逐日源变更见
+> [docs/SOURCE-AUDIT.md](docs/SOURCE-AUDIT.md)。以下保留 README 内的历史原文，供离线查阅。
 
 - **v5.2.0**：API 质量优化——① `reasoning_effort` 被上游 400 拒绝时自动剥离并持久化记忆，OVH / LLM7 一类“不支持推理参数”的源不再每次失败；② 单次尝试超时按剩余预算封顶，坏源不再突破 `budgetMs`（实测从 29s 收敛到 20s 内）；③ 巡检把 429 记为 `rate_limited` 而非失败，避免把被限流的可用源打到 5 分；④ tools 路由原生 function calling +0.22、桥接 -0.08、高 rpm +0.04；⑤ 桥接与思考提示并入首条 system，修掉 OVH `System message must be at the beginning`；⑥ 限流冷却 30s→10s、全候选冷却时按最近 retry 窗口等待，503 显著减少；⑦ 链路剪枝（ovh-nemo / kilo-laguna / llm7-minimax）并按实测重排 tools/chat。回归：chat 10/10 @2.8s，tools 10/10 @4.3s。
 - **v5.1.0**：Agent 接入修复——① chat / tools 两个池都接受 `reasoning_effort` 并注入推理指令，`chat` 不再被强制剥离思维链；② `reasoning_effort` 进入转发字段，上游能真正提高推理档位；③ 透传流的每个 chunk 把 `model` 改回逻辑名，修掉 OpenClaw「Model route changed」与模型归属错乱；④ 合成流补发 `reasoning_content`，深度思考在客户端可见；⑤ 带工具调用时把上游写进 `content` 的思维链降级到 `reasoning`，正文不再出现大段思考；⑥ Responses 侧 `reasoning.effort` 同时设置 `reasoning_effort`，仅显式 `stripReasoning` 才隐藏。实测 OpenClaw `ai-relay/chat` 5s 出结论、`ai-relay/tools` 20s 完成 `exec`，工具 3/3 成功且正文为空、思维链独立。
@@ -389,12 +462,17 @@ kilo -> llm7 -> ovh-oss20 -> ovh-oss120 -> ovh-llama70
 
 ## 接口
 
-鉴权：`Authorization: Bearer <token>` 或 `x-api-key`。
+鉴权：`Authorization: Bearer <token>` 或 `x-api-key`。**除特别标注外，所有 `/api/*`、`/v1/*`、`/metrics` 均需鉴权**。
 
 | 方法 | 路径 | 用途 |
 |---|---|---|
-| GET | `/health` | 存活和上游熔断状态，免鉴权 |
-| GET | `/ready` | 是否有可用上游 |
+| GET | `/` `/dashboard` | 公开只读控制台，**免鉴权** |
+| GET | `/setup` | Provider Key 接入页，**免鉴权**（保存 Key 时填 master token） |
+| GET | `/health` | 存活、版本、上游熔断状态，**免鉴权** |
+| GET | `/ready` | 是否有可用上游，**免鉴权** |
+| GET | `/api/info` | 服务版本与端点清单，**免鉴权** |
+| GET | `/api/public` | 控制台公开指标，**免鉴权** |
+| GET | `/api/provider-catalog` | Provider 目录（含来源标注/状态），**免鉴权** |
 | GET | `/v1/models` | 逻辑模型列表 |
 | POST | `/v1/chat/completions` | OpenAI 兼容对话 |
 | POST | `/v1/responses` | OpenAI Responses API（Codex CLI / Codex App 直接用这个） |
@@ -404,13 +482,15 @@ kilo -> llm7 -> ovh-oss20 -> ovh-oss120 -> ovh-llama70
 | GET | `/api/provider-setup` | Provider 目录、Key 状态与接入说明，需 master token |
 | POST | `/api/provider-credentials` | 加密保存并校验 Provider Key |
 | DELETE | `/api/provider-credentials/:id` | 删除加密 Provider Key |
+| PATCH | `/api/provider-settings/:id` | 启停单个 provider 并热加载 |
+| POST | `/api/score/run` | 手动触发上游评分巡检（每日 09:00 自动调用） |
 | GET | `/api/logs?n=50` | 最近请求日志 |
 | GET | `/api/metrics` | JSON 指标 |
 | GET | `/metrics` | Prometheus 文本指标 |
 | POST | `/api/reset` | 手动清熔断 |
 | POST | `/api/reload` | 热加载 config |
 
-响应头包含 `x-request-id`、`x-relay-upstream`、`x-relay-attempts`。
+响应头包含 `x-request-id`、`x-relay-upstream`、`x-relay-attempts`、`x-relay-dedupe`（缓存/单飞命中）。
 
 ## 接 Codex
 
@@ -475,9 +555,10 @@ Pi Agent 的配置在 `~/.pi/agent/`，`models.json` 里只保留我们的 provi
 ## 本地验证
 
 ```bash
-cd ~/openclaw资产库/openclaw/workspace/projects/ai-relay
-npm test
-npm run check
+cd <本仓库目录>
+npm test            # 28 个用例（路由 / Responses / 源管道）
+npm run check       # JS 语法 + 全部 JSON 可解析
+npm run sources:all # 源发现 → 校验 → 去重 → 剔除 → 同步 → 报告
 RELAY_URL=http://<RELAY_HOST>:8080 RELAY_TEST_MODEL=chat ./smoke.mjs
 RELAY_URL=http://<RELAY_HOST>:8080 RELAY_TEST_MODEL=tools ./smoke.mjs --tools
 ```
@@ -491,30 +572,39 @@ openclaw agent exec --model ai-relay/tools --timeout 180 --json '只回答四个
 ## 部署
 
 ```bash
-cd ~/openclaw资产库/openclaw/workspace/projects/ai-relay
+cd <本仓库目录>
+printf 'RELAY_HOST=<ssh 别名或 IP>\nRELAY_REMOTE_DIR=/opt/ai-relay\n' > .env.local
+chmod 600 .env.local
 ./deploy.sh
 ```
 
-部署脚本会：
+部署脚本会（**原地升级，保留现有部署**）：
 
 1. 本地做 JS 语法与 JSON 校验。
-2. 远端备份 `server.js`、`config.json`、systemd unit。
-3. 上传 `router.js`、`config.json`、`watchdog.sh`。
-4. 重启 `ai-relay.service`。
-5. 30 秒内健康检查失败则自动回滚。
+2. 远端备份 `router.js`、`server.js`、`config.json`、页面与 systemd unit 到 `backups/<timestamp>/`。
+3. 上传运行时文件；再用 tar 整体同步 `scripts/`、`data/`、`docs/`（源维护管道），**不触碰** `token`、`secrets/`、`state/`、`logs/`。
+4. 安装 4 组 systemd timer（watchdog / score / sources + 主服务），`daemon-reload` 后重启 `ai-relay.service`。
+5. 30 秒内 `/health` 必须 200，并额外校验 `/api/info` 返回 version；失败自动回滚。
 
-远端回滚目录：`/opt/ai-relay/backups/<timestamp>/`。
+远端回滚目录：`/opt/ai-relay/backups/<timestamp>/`。源维护文件是新增文件，回滚时不删除，不影响服务运行。
 
 ## 运维
 
 ```bash
 systemctl status ai-relay ai-relay-watchdog.timer
+systemctl list-timers 'ai-relay-*' --no-pager       # watchdog / score 09:00 / sources 03:17
 systemctl restart ai-relay
 journalctl -u ai-relay -n 100 --no-pager
+journalctl -u ai-relay-score.service -n 20 --no-pager  # v6.0.0 修复后应为 200 而非 401
 tail -f /opt/ai-relay/logs/service.log
 tail -f /opt/ai-relay/logs/relay.jsonl
 tail -f /opt/ai-relay/logs/watchdog.log
+tail -f /opt/ai-relay/logs/sources.log                 # 每日源维护输出
+state/scores.json                                      # v6.0.0 起评分 EWMA 持久化
 ```
+
+源维护可单独跑（不重启服务）：`npm run sources:verify`、`npm run sources:all`。
+维护细节、状态机与故障排查见 [docs/MAINTENANCE.md](docs/MAINTENANCE.md)。
 
 Nginx 配置模板在 `nginx/`，systemd 模板在 `systemd/`。公网入口是 HTTP Bearer；对不受信任网络应改用 HTTPS。
 
