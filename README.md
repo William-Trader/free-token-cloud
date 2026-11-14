@@ -200,9 +200,9 @@ Zhipu/ChatGLM 网页链路已从运行时删除。原 systemd 单元停在 `/opt
 | 自有订阅额度 | 4 | 4 | 0 |
 | 本地自托管兜底 | 2 | 2 | 0 |
 
-**合计 64 个独立免费源**（含 2 个已剔除墓碑）；端点可达率 **98.3%**（59/60 探测）；覆盖 97 个模型标识，映射 56 个运行时槽位。
+**合计 64 个独立免费源**（含 2 个已剔除墓碑）；端点可达率 **96.7%**（58/60 探测）；覆盖 97 个模型标识，映射 56 个运行时槽位。
 完整逐源清单（含官方出处、额度原文摘要、最后核查时间、失效原因）见 [docs/SOURCES.md](docs/SOURCES.md)，变更流水见 [docs/SOURCE-AUDIT.md](docs/SOURCE-AUDIT.md)。
-清单由 `npm run sources:all` 自动生成，每日经 GitHub Actions 与服务器 timer 复核；生成时间 2026-11-13T08:04:41.135Z。
+清单由 `npm run sources:all` 自动生成，每日经 GitHub Actions 与服务器 timer 复核；生成时间 2026-11-14T07:38:14.041Z。
 
 <!-- SOURCES:END -->
 

@@ -319,6 +319,34 @@
       "type": "catalog-sync",
       "from": 62,
       "to": 62
+    },
+    {
+      "at": "2026-11-14T07:38:14.041Z",
+      "type": "discovery",
+      "feeds": 3,
+      "candidates": 40,
+      "newLeads": 0
+    },
+    {
+      "at": "2026-11-14T07:38:14.041Z",
+      "type": "verification",
+      "checked": 62,
+      "reachable": 60,
+      "changes": []
+    },
+    {
+      "at": "2026-11-14T07:38:14.041Z",
+      "type": "reconcile",
+      "before": 64,
+      "after": 64,
+      "duplicates": [],
+      "lifecycle": []
+    },
+    {
+      "at": "2026-11-14T07:38:14.041Z",
+      "type": "catalog-sync",
+      "from": 62,
+      "to": 62
     }
   ]
 }
