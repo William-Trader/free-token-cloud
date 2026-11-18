@@ -431,6 +431,34 @@
       "type": "catalog-sync",
       "from": 62,
       "to": 62
+    },
+    {
+      "at": "2026-11-18T08:36:10.848Z",
+      "type": "discovery",
+      "feeds": 3,
+      "candidates": 41,
+      "newLeads": 1
+    },
+    {
+      "at": "2026-11-18T08:36:10.848Z",
+      "type": "verification",
+      "checked": 62,
+      "reachable": 60,
+      "changes": []
+    },
+    {
+      "at": "2026-11-18T08:36:10.848Z",
+      "type": "reconcile",
+      "before": 64,
+      "after": 64,
+      "duplicates": [],
+      "lifecycle": []
+    },
+    {
+      "at": "2026-11-18T08:36:10.848Z",
+      "type": "catalog-sync",
+      "from": 62,
+      "to": 62
     }
   ]
 }
