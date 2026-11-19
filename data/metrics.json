@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-11-18T08:36:30.579Z",
+  "generatedAt": "2026-11-19T08:51:57.591Z",
   "coverage": {
     "totalSources": 64,
     "totalCandidates": 41,
     "newCandidates": 1,
     "activeSources": 46,
-    "degradedSources": 0,
-    "unverifiedSources": 15,
+    "degradedSources": 1,
+    "unverifiedSources": 14,
     "deprecatedSources": 1,
     "removedSources": 2,
     "officialConfidence": 25,
@@ -41,7 +41,7 @@
     "reachable": 58,
     "endpointReachableRate": 96.7,
     "officialVerifiedRate": 35.9,
-    "avgLatencyMs": 1388
+    "avgLatencyMs": 1345
   },
   "maintenance": {
     "checkFrequency": "每日 1 次（GitHub Actions cron + systemd timer）",
