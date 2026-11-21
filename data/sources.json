@@ -1,7 +1,7 @@
 {
   "version": "6.0.0",
   "schema": "free-token-cloud/sources@1",
-  "updatedAt": "2026-11-20T08:38:11.784Z",
+  "updatedAt": "2026-11-21T08:20:07.411Z",
   "seedDate": "2026-11-12",
   "policy": "data/sources-policy.json",
   "note": "单一数据源（SSOT）。status/verification 由 verify+reconcile 自动更新，请勿手工编辑这两组字段。",
@@ -55,14 +55,14 @@
       "addedBy": "existing-catalog",
       "status": "active",
       "verification": {
-        "lastCheckedAt": "2026-11-20T08:38:11.784Z",
+        "lastCheckedAt": "2026-11-21T08:20:07.411Z",
         "lastResult": "reachable",
         "httpStatus": 200,
-        "latencyMs": 453,
+        "latencyMs": 1044,
         "checkedUrl": "https://ai.google.dev/gemini-api/docs",
         "checkMethod": "HTTP GET on official docs/pricing URL",
         "consecutiveFailures": 0,
-        "lastOkAt": "2026-11-20T08:38:11.784Z",
+        "lastOkAt": "2026-11-21T08:20:07.411Z",
         "endpointReachable": true
       },
       "dedupeKeys": [
@@ -119,14 +119,14 @@
       "addedBy": "existing-catalog",
       "status": "active",
       "verification": {
-        "lastCheckedAt": "2026-11-20T08:38:11.784Z",
+        "lastCheckedAt": "2026-11-21T08:20:07.411Z",
         "lastResult": "reachable",
         "httpStatus": 200,
-        "latencyMs": 146,
+        "latencyMs": 248,
         "checkedUrl": "https://console.groq.com/docs/rate-limits",
         "checkMethod": "HTTP GET on official docs/pricing URL",
         "consecutiveFailures": 0,
-        "lastOkAt": "2026-11-20T08:38:11.784Z",
+        "lastOkAt": "2026-11-21T08:20:07.411Z",
         "endpointReachable": true
       },
       "dedupeKeys": [
@@ -180,15 +180,15 @@
       "addedBy": "existing-catalog",
       "status": "active",
       "verification": {
-        "lastCheckedAt": "2026-11-20T08:38:11.784Z",
+        "lastCheckedAt": "2026-11-21T08:20:07.411Z",
         "lastResult": "reachable",
         "httpStatus": 200,
-        "latencyMs": 155,
+        "latencyMs": 160,
         "checkedUrl": "https://docs.nvidia.com/nim/",
         "checkMethod": "HTTP GET on official docs/pricing URL",
         "consecutiveFailures": 0,
         "endpointReachable": true,
-        "lastOkAt": "2026-11-20T08:38:11.784Z"
+        "lastOkAt": "2026-11-21T08:20:07.411Z"
       },
       "dedupeKeys": [
         "id:nvidia",
@@ -241,14 +241,14 @@
       "addedBy": "existing-catalog",
       "status": "active",
       "verification": {
-        "lastCheckedAt": "2026-11-20T08:38:11.784Z",
+        "lastCheckedAt": "2026-11-21T08:20:07.411Z",
         "lastResult": "reachable",
         "httpStatus": 200,
-        "latencyMs": 861,
+        "latencyMs": 1110,
         "checkedUrl": "https://mistral.ai/pricing",
         "checkMethod": "HTTP GET on official docs/pricing URL",
         "consecutiveFailures": 0,
-        "lastOkAt": "2026-11-20T08:38:11.784Z",
+        "lastOkAt": "2026-11-21T08:20:07.411Z",
         "endpointReachable": true
       },
       "dedupeKeys": [
@@ -302,14 +302,14 @@
       "addedBy": "existing-catalog",
       "status": "active",
       "verification": {
-        "lastCheckedAt": "2026-11-20T08:38:11.784Z",
+        "lastCheckedAt": "2026-11-21T08:20:07.411Z",
         "lastResult": "reachable",
         "httpStatus": 200,
-        "latencyMs": 735,
+        "latencyMs": 1141,
         "checkedUrl": "https://openrouter.ai/docs/api-reference/limits",
         "checkMethod": "HTTP GET on official docs/pricing URL",
         "consecutiveFailures": 0,
-        "lastOkAt": "2026-11-20T08:38:11.784Z",
+        "lastOkAt": "2026-11-21T08:20:07.411Z",
         "endpointReachable": true
       },
       "dedupeKeys": [
@@ -364,14 +364,14 @@
       "addedBy": "existing-catalog",
       "status": "active",
       "verification": {
-        "lastCheckedAt": "2026-11-20T08:38:11.784Z",
+        "lastCheckedAt": "2026-11-21T08:20:07.411Z",
         "lastResult": "reachable",
         "httpStatus": 200,
-        "latencyMs": 400,
+        "latencyMs": 369,
         "checkedUrl": "https://docs.cohere.com/docs/rate-limits",
         "checkMethod": "HTTP GET on official docs/pricing URL",
         "consecutiveFailures": 0,
-        "lastOkAt": "2026-11-20T08:38:11.784Z",
+        "lastOkAt": "2026-11-21T08:20:07.411Z",
         "endpointReachable": true
       },
       "dedupeKeys": [
@@ -425,14 +425,14 @@
       "addedBy": "existing-catalog",
       "status": "active",
       "verification": {
-        "lastCheckedAt": "2026-11-20T08:38:11.784Z",
+        "lastCheckedAt": "2026-11-21T08:20:07.411Z",
         "lastResult": "reachable",
         "httpStatus": 200,
-        "latencyMs": 908,
+        "latencyMs": 2197,
         "checkedUrl": "https://modelscope.cn/docs/model-service/API-Inference/intro",
         "checkMethod": "HTTP GET on official docs/pricing URL",
         "consecutiveFailures": 0,
-        "lastOkAt": "2026-11-20T08:38:11.784Z",
+        "lastOkAt": "2026-11-21T08:20:07.411Z",
         "endpointReachable": true
       },
       "dedupeKeys": [
@@ -486,14 +486,14 @@
       "addedBy": "existing-catalog",
       "status": "active",
       "verification": {
-        "lastCheckedAt": "2026-11-20T08:38:11.784Z",
+        "lastCheckedAt": "2026-11-21T08:20:07.411Z",
         "lastResult": "reachable",
         "httpStatus": 200,
-        "latencyMs": 323,
+        "latencyMs": 421,
         "checkedUrl": "https://docs.ollama.com/cloud",
         "checkMethod": "HTTP GET on official docs/pricing URL",
         "consecutiveFailures": 0,
-        "lastOkAt": "2026-11-20T08:38:11.784Z",
+        "lastOkAt": "2026-11-21T08:20:07.411Z",
         "endpointReachable": true
       },
       "dedupeKeys": [
@@ -546,14 +546,14 @@
       "addedBy": "existing-catalog",
       "status": "active",
       "verification": {
-        "lastCheckedAt": "2026-11-20T08:38:11.784Z",
+        "lastCheckedAt": "2026-11-21T08:20:07.411Z",
         "lastResult": "reachable",
         "httpStatus": 200,
-        "latencyMs": 2028,
+        "latencyMs": 2682,
         "checkedUrl": "https://docs.siliconflow.cn/",
         "checkMethod": "HTTP GET on official docs/pricing URL",
         "consecutiveFailures": 0,
-        "lastOkAt": "2026-11-20T08:38:11.784Z",
+        "lastOkAt": "2026-11-21T08:20:07.411Z",
         "endpointReachable": true
       },
       "dedupeKeys": [
@@ -608,14 +608,14 @@
       "addedBy": "existing-catalog",
       "status": "active",
       "verification": {
-        "lastCheckedAt": "2026-11-20T08:38:11.784Z",
+        "lastCheckedAt": "2026-11-21T08:20:07.411Z",
         "lastResult": "reachable",
         "httpStatus": 200,
-        "latencyMs": 340,
+        "latencyMs": 790,
         "checkedUrl": "https://huggingface.co/docs/inference-providers/index",
         "checkMethod": "HTTP GET on official docs/pricing URL",
         "consecutiveFailures": 0,
-        "lastOkAt": "2026-11-20T08:38:11.784Z",
+        "lastOkAt": "2026-11-21T08:20:07.411Z",
         "endpointReachable": true
       },
       "dedupeKeys": [
@@ -672,14 +672,14 @@
       "addedBy": "existing-catalog",
       "status": "active",
       "verification": {
-        "lastCheckedAt": "2026-11-20T08:38:11.784Z",
+        "lastCheckedAt": "2026-11-21T08:20:07.411Z",
         "lastResult": "reachable",
         "httpStatus": 200,
-        "latencyMs": 2193,
+        "latencyMs": 2936,
         "checkedUrl": "https://help.aliyun.com/zh/model-studio/",
         "checkMethod": "HTTP GET on official docs/pricing URL",
         "consecutiveFailures": 0,
-        "lastOkAt": "2026-11-20T08:38:11.784Z",
+        "lastOkAt": "2026-11-21T08:20:07.411Z",
         "endpointReachable": true
       },
       "dedupeKeys": [
@@ -733,14 +733,14 @@
       "addedBy": "existing-catalog",
       "status": "active",
       "verification": {
-        "lastCheckedAt": "2026-11-20T08:38:11.784Z",
+        "lastCheckedAt": "2026-11-21T08:20:07.411Z",
         "lastResult": "reachable",
         "httpStatus": 200,
-        "latencyMs": 184,
+        "latencyMs": 702,
         "checkedUrl": "https://inference-docs.cerebras.ai/",
         "checkMethod": "HTTP GET on official docs/pricing URL",
         "consecutiveFailures": 0,
-        "lastOkAt": "2026-11-20T08:38:11.784Z",
+        "lastOkAt": "2026-11-21T08:20:07.411Z",
         "endpointReachable": true
       },
       "dedupeKeys": [
@@ -793,14 +793,14 @@
       "addedBy": "existing-catalog",
       "status": "active",
       "verification": {
-        "lastCheckedAt": "2026-11-20T08:38:11.784Z",
+        "lastCheckedAt": "2026-11-21T08:20:07.411Z",
         "lastResult": "reachable",
         "httpStatus": 200,
-        "latencyMs": 303,
+        "latencyMs": 637,
         "checkedUrl": "https://docs.sambanova.ai/cloud/",
         "checkMethod": "HTTP GET on official docs/pricing URL",
         "consecutiveFailures": 0,
-        "lastOkAt": "2026-11-20T08:38:11.784Z",
+        "lastOkAt": "2026-11-21T08:20:07.411Z",
         "endpointReachable": true
       },
       "dedupeKeys": [
@@ -853,14 +853,14 @@
       "addedBy": "existing-catalog",
       "status": "active",
       "verification": {
-        "lastCheckedAt": "2026-11-20T08:38:11.784Z",
+        "lastCheckedAt": "2026-11-21T08:20:07.411Z",
         "lastResult": "reachable",
         "httpStatus": 200,
-        "latencyMs": 412,
+        "latencyMs": 674,
         "checkedUrl": "https://deepinfra.com/docs",
         "checkMethod": "HTTP GET on official docs/pricing URL",
         "consecutiveFailures": 0,
-        "lastOkAt": "2026-11-20T08:38:11.784Z",
+        "lastOkAt": "2026-11-21T08:20:07.411Z",
         "endpointReachable": true
       },
       "dedupeKeys": [
@@ -912,14 +912,14 @@
       "addedBy": "existing-catalog",
       "status": "active",
       "verification": {
-        "lastCheckedAt": "2026-11-20T08:38:11.784Z",
+        "lastCheckedAt": "2026-11-21T08:20:07.411Z",
         "lastResult": "reachable",
         "httpStatus": 200,
-        "latencyMs": 221,
+        "latencyMs": 595,
         "checkedUrl": "https://novita.ai/docs",
         "checkMethod": "HTTP GET on official docs/pricing URL",
         "consecutiveFailures": 0,
-        "lastOkAt": "2026-11-20T08:38:11.784Z",
+        "lastOkAt": "2026-11-21T08:20:07.411Z",
         "endpointReachable": true
       },
       "dedupeKeys": [
@@ -965,7 +965,7 @@
       "addedBy": "existing-catalog",
       "status": "active",
       "verification": {
-        "lastCheckedAt": "2026-11-20T08:38:11.784Z",
+        "lastCheckedAt": "2026-11-21T08:20:07.411Z",
         "lastResult": "skipped"
       },
       "dedupeKeys": [
@@ -1022,14 +1022,14 @@
       "addedBy": "existing-catalog",
       "status": "active",
       "verification": {
-        "lastCheckedAt": "2026-11-20T08:38:11.784Z",
+        "lastCheckedAt": "2026-11-21T08:20:07.411Z",
         "lastResult": "reachable",
         "httpStatus": 200,
-        "latencyMs": 276,
+        "latencyMs": 370,
         "checkedUrl": "https://docs.llm7.io/guides/models-api",
         "checkMethod": "HTTP GET on official docs/pricing URL",
         "consecutiveFailures": 0,
-        "lastOkAt": "2026-11-20T08:38:11.784Z",
+        "lastOkAt": "2026-11-21T08:20:07.411Z",
         "endpointReachable": true
       },
       "dedupeKeys": [
@@ -1080,14 +1080,14 @@
       "addedBy": "existing-catalog",
       "status": "active",
       "verification": {
-        "lastCheckedAt": "2026-11-20T08:38:11.784Z",
+        "lastCheckedAt": "2026-11-21T08:20:07.411Z",
         "lastResult": "reachable",
         "httpStatus": 200,
-        "latencyMs": 505,
+        "latencyMs": 577,
         "checkedUrl": "https://github.com/pollinations/pollinations/blob/master/APIDOCS.md",
         "checkMethod": "HTTP GET on official docs/pricing URL",
         "consecutiveFailures": 0,
-        "lastOkAt": "2026-11-20T08:38:11.784Z",
+        "lastOkAt": "2026-11-21T08:20:07.411Z",
         "endpointReachable": true
       },
       "dedupeKeys": [
@@ -1140,14 +1140,14 @@
       "addedBy": "existing-catalog",
       "status": "active",
       "verification": {
-        "lastCheckedAt": "2026-11-20T08:38:11.784Z",
+        "lastCheckedAt": "2026-11-21T08:20:07.411Z",
         "lastResult": "reachable",
         "httpStatus": 200,
-        "latencyMs": 107,
+        "latencyMs": 218,
         "checkedUrl": "https://developers.cloudflare.com/workers-ai/",
         "checkMethod": "HTTP GET on official docs/pricing URL",
         "consecutiveFailures": 0,
-        "lastOkAt": "2026-11-20T08:38:11.784Z",
+        "lastOkAt": "2026-11-21T08:20:07.411Z",
         "endpointReachable": true
       },
       "dedupeKeys": [
@@ -1199,14 +1199,14 @@
       "addedBy": "existing-catalog",
       "status": "active",
       "verification": {
-        "lastCheckedAt": "2026-11-20T08:38:11.784Z",
+        "lastCheckedAt": "2026-11-21T08:20:07.411Z",
         "lastResult": "reachable",
         "httpStatus": 200,
-        "latencyMs": 548,
+        "latencyMs": 715,
         "checkedUrl": "https://docs.requesty.ai/",
         "checkMethod": "HTTP GET on official docs/pricing URL",
         "consecutiveFailures": 0,
-        "lastOkAt": "2026-11-20T08:38:11.784Z",
+        "lastOkAt": "2026-11-21T08:20:07.411Z",
         "endpointReachable": true
       },
       "dedupeKeys": [
@@ -1256,14 +1256,14 @@
       "addedBy": "existing-catalog",
       "status": "active",
       "verification": {
-        "lastCheckedAt": "2026-11-20T08:38:11.784Z",
+        "lastCheckedAt": "2026-11-21T08:20:07.411Z",
         "lastResult": "reachable",
         "httpStatus": 200,
-        "latencyMs": 112,
+        "latencyMs": 250,
         "checkedUrl": "https://vercel.com/docs/ai-gateway",
         "checkMethod": "HTTP GET on official docs/pricing URL",
         "consecutiveFailures": 0,
-        "lastOkAt": "2026-11-20T08:38:11.784Z",
+        "lastOkAt": "2026-11-21T08:20:07.411Z",
         "endpointReachable": true
       },
       "dedupeKeys": [
@@ -1309,14 +1309,14 @@
       "addedBy": "existing-catalog",
       "status": "active",
       "verification": {
-        "lastCheckedAt": "2026-11-20T08:38:11.784Z",
+        "lastCheckedAt": "2026-11-21T08:20:07.411Z",
         "lastResult": "reachable",
         "httpStatus": 200,
-        "latencyMs": 4327,
+        "latencyMs": 3118,
         "checkedUrl": "https://docs.github.com/en/copilot",
         "checkMethod": "HTTP GET on official docs/pricing URL",
         "consecutiveFailures": 0,
-        "lastOkAt": "2026-11-20T08:38:11.784Z",
+        "lastOkAt": "2026-11-21T08:20:07.411Z",
         "endpointReachable": true
       },
       "dedupeKeys": [
@@ -1361,14 +1361,14 @@
       "addedBy": "existing-catalog",
       "status": "active",
       "verification": {
-        "lastCheckedAt": "2026-11-20T08:38:11.784Z",
+        "lastCheckedAt": "2026-11-21T08:20:07.411Z",
         "lastResult": "reachable",
         "httpStatus": 200,
-        "latencyMs": 168,
+        "latencyMs": 202,
         "checkedUrl": "https://docs.anthropic.com/en/docs/claude-code/overview",
         "checkMethod": "HTTP GET on official docs/pricing URL",
         "consecutiveFailures": 0,
-        "lastOkAt": "2026-11-20T08:38:11.784Z",
+        "lastOkAt": "2026-11-21T08:20:07.411Z",
         "endpointReachable": true
       },
       "dedupeKeys": [
@@ -1412,14 +1412,14 @@
       "addedBy": "existing-catalog",
       "status": "active",
       "verification": {
-        "lastCheckedAt": "2026-11-20T08:38:11.784Z",
+        "lastCheckedAt": "2026-11-21T08:20:07.411Z",
         "lastResult": "reachable",
         "httpStatus": 200,
-        "latencyMs": 271,
+        "latencyMs": 643,
         "checkedUrl": "https://developers.openai.com/codex/",
         "checkMethod": "HTTP GET on official docs/pricing URL",
         "consecutiveFailures": 0,
-        "lastOkAt": "2026-11-20T08:38:11.784Z",
+        "lastOkAt": "2026-11-21T08:20:07.411Z",
         "endpointReachable": true
       },
       "dedupeKeys": [
@@ -1462,14 +1462,14 @@
       "addedBy": "existing-catalog",
       "status": "active",
       "verification": {
-        "lastCheckedAt": "2026-11-20T08:38:11.784Z",
+        "lastCheckedAt": "2026-11-21T08:20:07.411Z",
         "lastResult": "reachable",
         "httpStatus": 200,
-        "latencyMs": 3136,
+        "latencyMs": 4507,
         "checkedUrl": "https://platform.moonshot.cn/docs/",
         "checkMethod": "HTTP GET on official docs/pricing URL",
         "consecutiveFailures": 0,
-        "lastOkAt": "2026-11-20T08:38:11.784Z",
+        "lastOkAt": "2026-11-21T08:20:07.411Z",
         "endpointReachable": true
       },
       "dedupeKeys": [
@@ -1524,14 +1524,14 @@
       "addedBy": "existing-catalog",
       "status": "active",
       "verification": {
-        "lastCheckedAt": "2026-11-20T08:38:11.784Z",
+        "lastCheckedAt": "2026-11-21T08:20:07.411Z",
         "lastResult": "reachable",
         "httpStatus": 200,
-        "latencyMs": 282,
+        "latencyMs": 625,
         "checkedUrl": "https://docs.bigmodel.cn/cn/guide/models/free/glm-4.7-flash",
         "checkMethod": "HTTP GET on official docs/pricing URL",
         "consecutiveFailures": 0,
-        "lastOkAt": "2026-11-20T08:38:11.784Z",
+        "lastOkAt": "2026-11-21T08:20:07.411Z",
         "endpointReachable": true
       },
       "dedupeKeys": [
@@ -1590,14 +1590,14 @@
       "addedBy": "existing-catalog",
       "status": "unverified",
       "verification": {
-        "lastCheckedAt": "2026-11-20T08:38:11.784Z",
+        "lastCheckedAt": "2026-11-21T08:20:07.411Z",
         "lastResult": "reachable",
         "httpStatus": 200,
-        "latencyMs": 4974,
+        "latencyMs": 6863,
         "checkedUrl": "https://platform.moonshot.cn/docs/",
         "checkMethod": "HTTP GET on official docs/pricing URL",
         "consecutiveFailures": 0,
-        "lastOkAt": "2026-11-20T08:38:11.784Z",
+        "lastOkAt": "2026-11-21T08:20:07.411Z",
         "endpointReachable": true
       },
       "dedupeKeys": [
@@ -1649,14 +1649,14 @@
       "addedBy": "existing-catalog",
       "status": "active",
       "verification": {
-        "lastCheckedAt": "2026-11-20T08:38:11.784Z",
+        "lastCheckedAt": "2026-11-21T08:20:07.411Z",
         "lastResult": "reachable",
         "httpStatus": 200,
-        "latencyMs": 581,
+        "latencyMs": 626,
         "checkedUrl": "https://docs.together.ai/docs/",
         "checkMethod": "HTTP GET on official docs/pricing URL",
         "consecutiveFailures": 0,
-        "lastOkAt": "2026-11-20T08:38:11.784Z",
+        "lastOkAt": "2026-11-21T08:20:07.411Z",
         "endpointReachable": true
       },
       "dedupeKeys": [
@@ -1708,14 +1708,14 @@
       "addedBy": "existing-catalog",
       "status": "active",
       "verification": {
-        "lastCheckedAt": "2026-11-20T08:38:11.784Z",
+        "lastCheckedAt": "2026-11-21T08:20:07.411Z",
         "lastResult": "reachable",
         "httpStatus": 200,
-        "latencyMs": 507,
+        "latencyMs": 444,
         "checkedUrl": "https://docs.nebius.ai/",
         "checkMethod": "HTTP GET on official docs/pricing URL",
         "consecutiveFailures": 0,
-        "lastOkAt": "2026-11-20T08:38:11.784Z",
+        "lastOkAt": "2026-11-21T08:20:07.411Z",
         "endpointReachable": true
       },
       "dedupeKeys": [
@@ -1767,14 +1767,14 @@
       "addedBy": "existing-catalog",
       "status": "active",
       "verification": {
-        "lastCheckedAt": "2026-11-20T08:38:11.784Z",
+        "lastCheckedAt": "2026-11-21T08:20:07.411Z",
         "lastResult": "reachable",
         "httpStatus": 200,
-        "latencyMs": 881,
+        "latencyMs": 903,
         "checkedUrl": "https://docs.hyperbolic.xyz/",
         "checkMethod": "HTTP GET on official docs/pricing URL",
         "consecutiveFailures": 0,
-        "lastOkAt": "2026-11-20T08:38:11.784Z",
+        "lastOkAt": "2026-11-21T08:20:07.411Z",
         "endpointReachable": true
       },
       "dedupeKeys": [
@@ -1826,14 +1826,14 @@
       "addedBy": "existing-catalog",
       "status": "active",
       "verification": {
-        "lastCheckedAt": "2026-11-20T08:38:11.784Z",
+        "lastCheckedAt": "2026-11-21T08:20:07.411Z",
         "lastResult": "reachable",
         "httpStatus": 200,
-        "latencyMs": 149,
+        "latencyMs": 190,
         "checkedUrl": "https://docs.fireworks.ai/",
         "checkMethod": "HTTP GET on official docs/pricing URL",
         "consecutiveFailures": 0,
-        "lastOkAt": "2026-11-20T08:38:11.784Z",
+        "lastOkAt": "2026-11-21T08:20:07.411Z",
         "endpointReachable": true
       },
       "dedupeKeys": [
@@ -1929,14 +1929,14 @@
       "addedBy": "existing-catalog",
       "status": "active",
       "verification": {
-        "lastCheckedAt": "2026-11-20T08:38:11.784Z",
+        "lastCheckedAt": "2026-11-21T08:20:07.411Z",
         "lastResult": "reachable",
         "httpStatus": 200,
-        "latencyMs": 296,
+        "latencyMs": 408,
         "checkedUrl": "https://airforce.ai/",
         "checkMethod": "HTTP GET on official docs/pricing URL",
         "consecutiveFailures": 0,
-        "lastOkAt": "2026-11-20T08:38:11.784Z",
+        "lastOkAt": "2026-11-21T08:20:07.411Z",
         "endpointReachable": true
       },
       "dedupeKeys": [
@@ -1984,14 +1984,14 @@
       "addedBy": "existing-catalog",
       "status": "active",
       "verification": {
-        "lastCheckedAt": "2026-11-20T08:38:11.784Z",
+        "lastCheckedAt": "2026-11-21T08:20:07.411Z",
         "lastResult": "reachable",
         "httpStatus": 403,
-        "latencyMs": 82,
+        "latencyMs": 134,
         "checkedUrl": "https://voidai.app/",
         "checkMethod": "HTTP GET on official docs/pricing URL",
         "consecutiveFailures": 0,
-        "lastOkAt": "2026-11-20T08:38:11.784Z",
+        "lastOkAt": "2026-11-21T08:20:07.411Z",
         "endpointReachable": true
       },
       "dedupeKeys": [
@@ -2062,14 +2062,14 @@
       "addedBy": "discovery-2026-11-12",
       "status": "active",
       "verification": {
-        "lastCheckedAt": "2026-11-20T08:38:11.784Z",
+        "lastCheckedAt": "2026-11-21T08:20:07.411Z",
         "lastResult": "reachable",
         "httpStatus": 200,
-        "latencyMs": 178,
+        "latencyMs": 195,
         "checkedUrl": "https://kilo.ai/docs/gateway/authentication",
         "checkMethod": "HTTP GET on official docs/pricing URL",
         "consecutiveFailures": 0,
-        "lastOkAt": "2026-11-20T08:38:11.784Z",
+        "lastOkAt": "2026-11-21T08:20:07.411Z",
         "endpointReachable": true
       },
       "dedupeKeys": [
@@ -2134,16 +2134,15 @@
       "addedBy": "discovery-2026-11-12",
       "status": "active",
       "verification": {
-        "lastCheckedAt": "2026-11-20T08:38:11.784Z",
-        "lastResult": "http-error",
-        "httpStatus": 404,
-        "latencyMs": 27480,
+        "lastCheckedAt": "2026-11-21T08:20:07.411Z",
+        "lastResult": "reachable",
+        "httpStatus": 200,
+        "latencyMs": 304,
         "checkedUrl": "https://www.ovhcloud.com/en/public-cloud/ai-endpoints/catalog/",
         "checkMethod": "HTTP GET on official docs/pricing URL",
-        "consecutiveFailures": 1,
-        "lastOkAt": "2026-11-19T08:51:39.051Z",
-        "endpointReachable": false,
-        "lastError": "all 3 probe URLs returned non-ok"
+        "consecutiveFailures": 0,
+        "lastOkAt": "2026-11-21T08:20:07.411Z",
+        "endpointReachable": true
       },
       "dedupeKeys": [
         "id:ovh",
@@ -2193,14 +2192,14 @@
       "addedBy": "discovery-2026-11-12",
       "status": "active",
       "verification": {
-        "lastCheckedAt": "2026-11-20T08:38:11.784Z",
+        "lastCheckedAt": "2026-11-21T08:20:07.411Z",
         "lastResult": "reachable",
         "httpStatus": 200,
-        "latencyMs": 436,
+        "latencyMs": 838,
         "checkedUrl": "https://www.aionlabs.ai/pricing",
         "checkMethod": "HTTP GET on official docs/pricing URL",
         "consecutiveFailures": 0,
-        "lastOkAt": "2026-11-20T08:38:11.784Z",
+        "lastOkAt": "2026-11-21T08:20:07.411Z",
         "endpointReachable": true
       },
       "dedupeKeys": [
@@ -2250,14 +2249,14 @@
       "addedBy": "discovery-2026-11-12",
       "status": "active",
       "verification": {
-        "lastCheckedAt": "2026-11-20T08:38:11.784Z",
+        "lastCheckedAt": "2026-11-21T08:20:07.411Z",
         "lastResult": "reachable",
         "httpStatus": 200,
-        "latencyMs": 697,
+        "latencyMs": 847,
         "checkedUrl": "https://docs.gonkabroker.com/guides/billing-and-deposits/",
         "checkMethod": "HTTP GET on official docs/pricing URL",
         "consecutiveFailures": 0,
-        "lastOkAt": "2026-11-20T08:38:11.784Z",
+        "lastOkAt": "2026-11-21T08:20:07.411Z",
         "endpointReachable": true
       },
       "dedupeKeys": [
@@ -2306,14 +2305,14 @@
       "addedBy": "discovery-2026-11-12",
       "status": "active",
       "verification": {
-        "lastCheckedAt": "2026-11-20T08:38:11.784Z",
+        "lastCheckedAt": "2026-11-21T08:20:07.411Z",
         "lastResult": "reachable",
         "httpStatus": 200,
-        "latencyMs": 141,
+        "latencyMs": 443,
         "checkedUrl": "https://opencode.ai/docs/zen/",
         "checkMethod": "HTTP GET on official docs/pricing URL",
         "consecutiveFailures": 0,
-        "lastOkAt": "2026-11-20T08:38:11.784Z",
+        "lastOkAt": "2026-11-21T08:20:07.411Z",
         "endpointReachable": true
       },
       "dedupeKeys": [
@@ -2411,14 +2410,14 @@
       "addedBy": "discovery-2026-11-12",
       "status": "active",
       "verification": {
-        "lastCheckedAt": "2026-11-20T08:38:11.784Z",
+        "lastCheckedAt": "2026-11-21T08:20:07.411Z",
         "lastResult": "reachable",
         "httpStatus": 200,
-        "latencyMs": 461,
+        "latencyMs": 472,
         "checkedUrl": "https://docs.ai21.com/",
         "checkMethod": "HTTP GET on official docs/pricing URL",
         "consecutiveFailures": 0,
-        "lastOkAt": "2026-11-20T08:38:11.784Z",
+        "lastOkAt": "2026-11-21T08:20:07.411Z",
         "endpointReachable": true
       },
       "dedupeKeys": [
@@ -2467,14 +2466,14 @@
       "addedBy": "discovery-2026-11-12",
       "status": "active",
       "verification": {
-        "lastCheckedAt": "2026-11-20T08:38:11.784Z",
+        "lastCheckedAt": "2026-11-21T08:20:07.411Z",
         "lastResult": "reachable",
         "httpStatus": 200,
-        "latencyMs": 4368,
+        "latencyMs": 1231,
         "checkedUrl": "https://developers.upstage.ai/",
         "checkMethod": "HTTP GET on official docs/pricing URL",
         "consecutiveFailures": 0,
-        "lastOkAt": "2026-11-20T08:38:11.784Z",
+        "lastOkAt": "2026-11-21T08:20:07.411Z",
         "endpointReachable": true
       },
       "dedupeKeys": [
@@ -2523,14 +2522,14 @@
       "addedBy": "discovery-2026-11-12",
       "status": "active",
       "verification": {
-        "lastCheckedAt": "2026-11-20T08:38:11.784Z",
+        "lastCheckedAt": "2026-11-21T08:20:07.411Z",
         "lastResult": "reachable",
         "httpStatus": 403,
-        "latencyMs": 124,
+        "latencyMs": 76,
         "checkedUrl": "https://docs.nlpcloud.com/",
         "checkMethod": "HTTP GET on official docs/pricing URL",
         "consecutiveFailures": 0,
-        "lastOkAt": "2026-11-20T08:38:11.784Z",
+        "lastOkAt": "2026-11-21T08:20:07.411Z",
         "endpointReachable": true
       },
       "dedupeKeys": [
@@ -2579,14 +2578,14 @@
       "addedBy": "discovery-2026-11-12",
       "status": "active",
       "verification": {
-        "lastCheckedAt": "2026-11-20T08:38:11.784Z",
+        "lastCheckedAt": "2026-11-21T08:20:07.411Z",
         "lastResult": "reachable",
         "httpStatus": 200,
-        "latencyMs": 789,
+        "latencyMs": 630,
         "checkedUrl": "https://docs.baseten.co/",
         "checkMethod": "HTTP GET on official docs/pricing URL",
         "consecutiveFailures": 0,
-        "lastOkAt": "2026-11-20T08:38:11.784Z",
+        "lastOkAt": "2026-11-21T08:20:07.411Z",
         "endpointReachable": true
       },
       "dedupeKeys": [
@@ -2636,14 +2635,14 @@
       "addedBy": "discovery-2026-11-12",
       "status": "active",
       "verification": {
-        "lastCheckedAt": "2026-11-20T08:38:11.784Z",
+        "lastCheckedAt": "2026-11-21T08:20:07.411Z",
         "lastResult": "reachable",
         "httpStatus": 200,
-        "latencyMs": 461,
+        "latencyMs": 164,
         "checkedUrl": "https://modal.com/docs",
         "checkMethod": "HTTP GET on official docs/pricing URL",
         "consecutiveFailures": 0,
-        "lastOkAt": "2026-11-20T08:38:11.784Z",
+        "lastOkAt": "2026-11-21T08:20:07.411Z",
         "endpointReachable": true
       },
       "dedupeKeys": [
@@ -2692,14 +2691,14 @@
       "addedBy": "discovery-2026-11-12",
       "status": "active",
       "verification": {
-        "lastCheckedAt": "2026-11-20T08:38:11.784Z",
+        "lastCheckedAt": "2026-11-21T08:20:07.411Z",
         "lastResult": "reachable",
         "httpStatus": 200,
-        "latencyMs": 548,
+        "latencyMs": 495,
         "checkedUrl": "https://docs.inference.net/",
         "checkMethod": "HTTP GET on official docs/pricing URL",
         "consecutiveFailures": 0,
-        "lastOkAt": "2026-11-20T08:38:11.784Z",
+        "lastOkAt": "2026-11-21T08:20:07.411Z",
         "endpointReachable": true
       },
       "dedupeKeys": [
@@ -2749,14 +2748,14 @@
       "addedBy": "discovery-2026-11-12",
       "status": "active",
       "verification": {
-        "lastCheckedAt": "2026-11-20T08:38:11.784Z",
+        "lastCheckedAt": "2026-11-21T08:20:07.411Z",
         "lastResult": "reachable",
         "httpStatus": 200,
-        "latencyMs": 619,
+        "latencyMs": 695,
         "checkedUrl": "https://www.scaleway.com/en/docs/generative-apis/",
         "checkMethod": "HTTP GET on official docs/pricing URL",
         "consecutiveFailures": 0,
-        "lastOkAt": "2026-11-20T08:38:11.784Z",
+        "lastOkAt": "2026-11-21T08:20:07.411Z",
         "endpointReachable": true
       },
       "dedupeKeys": [
@@ -2808,14 +2807,14 @@
       "addedBy": "discovery-2026-11-12",
       "status": "active",
       "verification": {
-        "lastCheckedAt": "2026-11-20T08:38:11.784Z",
+        "lastCheckedAt": "2026-11-21T08:20:07.411Z",
         "lastResult": "reachable",
         "httpStatus": 200,
-        "latencyMs": 1194,
+        "latencyMs": 4111,
         "checkedUrl": "https://www.alibabacloud.com/help/en/model-studio/",
         "checkMethod": "HTTP GET on official docs/pricing URL",
         "consecutiveFailures": 0,
-        "lastOkAt": "2026-11-20T08:38:11.784Z",
+        "lastOkAt": "2026-11-21T08:20:07.411Z",
         "endpointReachable": true
       },
       "dedupeKeys": [
@@ -2867,14 +2866,14 @@
       "addedBy": "discovery-2026-11-12",
       "status": "unverified",
       "verification": {
-        "lastCheckedAt": "2026-11-20T08:38:11.784Z",
+        "lastCheckedAt": "2026-11-21T08:20:07.411Z",
         "lastResult": "reachable",
         "httpStatus": 200,
-        "latencyMs": 3619,
+        "latencyMs": 5318,
         "checkedUrl": "https://cloud.baidu.com/doc/WENXINWORKSHOP/s/Wm7fll3np",
         "checkMethod": "HTTP GET on official docs/pricing URL",
         "consecutiveFailures": 0,
-        "lastOkAt": "2026-11-20T08:38:11.784Z",
+        "lastOkAt": "2026-11-21T08:20:07.411Z",
         "endpointReachable": true
       },
       "dedupeKeys": [
@@ -2925,14 +2924,14 @@
       "addedBy": "discovery-2026-11-12",
       "status": "unverified",
       "verification": {
-        "lastCheckedAt": "2026-11-20T08:38:11.784Z",
+        "lastCheckedAt": "2026-11-21T08:20:07.411Z",
         "lastResult": "reachable",
         "httpStatus": 403,
-        "latencyMs": 1935,
+        "latencyMs": 2691,
         "checkedUrl": "https://www.xfyun.cn/doc/spark/",
         "checkMethod": "HTTP GET on official docs/pricing URL",
         "consecutiveFailures": 0,
-        "lastOkAt": "2026-11-20T08:38:11.784Z",
+        "lastOkAt": "2026-11-21T08:20:07.411Z",
         "endpointReachable": true
       },
       "dedupeKeys": [
@@ -2985,14 +2984,14 @@
       "addedBy": "discovery-2026-11-12",
       "status": "unverified",
       "verification": {
-        "lastCheckedAt": "2026-11-20T08:38:11.784Z",
+        "lastCheckedAt": "2026-11-21T08:20:07.411Z",
         "lastResult": "reachable",
         "httpStatus": 200,
-        "latencyMs": 4899,
+        "latencyMs": 7646,
         "checkedUrl": "https://www.volcengine.com/docs/82379",
         "checkMethod": "HTTP GET on official docs/pricing URL",
         "consecutiveFailures": 0,
-        "lastOkAt": "2026-11-20T08:38:11.784Z",
+        "lastOkAt": "2026-11-21T08:20:07.411Z",
         "endpointReachable": true
       },
       "dedupeKeys": [
@@ -3044,14 +3043,14 @@
       "addedBy": "discovery-2026-11-12",
       "status": "unverified",
       "verification": {
-        "lastCheckedAt": "2026-11-20T08:38:11.784Z",
+        "lastCheckedAt": "2026-11-21T08:20:07.411Z",
         "lastResult": "reachable",
         "httpStatus": 200,
-        "latencyMs": 3101,
+        "latencyMs": 4873,
         "checkedUrl": "https://developer.qiniu.com/aitokenapi/",
         "checkMethod": "HTTP GET on official docs/pricing URL",
         "consecutiveFailures": 0,
-        "lastOkAt": "2026-11-20T08:38:11.784Z",
+        "lastOkAt": "2026-11-21T08:20:07.411Z",
         "endpointReachable": true
       },
       "dedupeKeys": [
@@ -3103,14 +3102,14 @@
       "addedBy": "discovery-2026-11-12",
       "status": "unverified",
       "verification": {
-        "lastCheckedAt": "2026-11-20T08:38:11.784Z",
+        "lastCheckedAt": "2026-11-21T08:20:07.411Z",
         "lastResult": "reachable",
         "httpStatus": 200,
-        "latencyMs": 7642,
+        "latencyMs": 16122,
         "checkedUrl": "https://platform.minimaxi.com/document/price",
         "checkMethod": "HTTP GET on official docs/pricing URL",
         "consecutiveFailures": 0,
-        "lastOkAt": "2026-11-20T08:38:11.784Z",
+        "lastOkAt": "2026-11-21T08:20:07.411Z",
         "endpointReachable": true
       },
       "dedupeKeys": [
@@ -3162,14 +3161,14 @@
       "addedBy": "discovery-2026-11-12",
       "status": "unverified",
       "verification": {
-        "lastCheckedAt": "2026-11-20T08:38:11.784Z",
+        "lastCheckedAt": "2026-11-21T08:20:07.411Z",
         "lastResult": "reachable",
         "httpStatus": 200,
-        "latencyMs": 1235,
+        "latencyMs": 2180,
         "checkedUrl": "https://cloud.tencent.com/document/product/1729",
         "checkMethod": "HTTP GET on official docs/pricing URL",
         "consecutiveFailures": 0,
-        "lastOkAt": "2026-11-20T08:38:11.784Z",
+        "lastOkAt": "2026-11-21T08:20:07.411Z",
         "endpointReachable": true
       },
       "dedupeKeys": [
@@ -3218,13 +3217,13 @@
       "addedBy": "discovery-2026-11-12",
       "status": "deprecated",
       "verification": {
-        "lastCheckedAt": "2026-11-20T08:38:11.784Z",
+        "lastCheckedAt": "2026-11-21T08:20:07.411Z",
         "lastResult": "unreachable",
         "httpStatus": null,
-        "latencyMs": 11537,
+        "latencyMs": 13746,
         "checkedUrl": "https://www.10086.cn/",
         "checkMethod": "HTTP GET on official docs/pricing URL",
-        "consecutiveFailures": 3,
+        "consecutiveFailures": 4,
         "lastOkAt": "2026-11-17T09:16:44.037Z",
         "endpointReachable": false,
         "lastError": "The operation was aborted due to timeout"
@@ -3276,14 +3275,14 @@
       "addedBy": "discovery-2026-11-12",
       "status": "unverified",
       "verification": {
-        "lastCheckedAt": "2026-11-20T08:38:11.784Z",
+        "lastCheckedAt": "2026-11-21T08:20:07.411Z",
         "lastResult": "reachable",
         "httpStatus": 200,
-        "latencyMs": 1033,
+        "latencyMs": 1901,
         "checkedUrl": "https://www.scnet.cn/ui/mall/",
         "checkMethod": "HTTP GET on official docs/pricing URL",
         "consecutiveFailures": 0,
-        "lastOkAt": "2026-11-20T08:38:11.784Z",
+        "lastOkAt": "2026-11-21T08:20:07.411Z",
         "endpointReachable": true
       },
       "dedupeKeys": [
@@ -3333,14 +3332,14 @@
       "addedBy": "discovery-2026-11-12",
       "status": "unverified",
       "verification": {
-        "lastCheckedAt": "2026-11-20T08:38:11.784Z",
+        "lastCheckedAt": "2026-11-21T08:20:07.411Z",
         "lastResult": "reachable",
         "httpStatus": 200,
-        "latencyMs": 1465,
+        "latencyMs": 2787,
         "checkedUrl": "https://platform.lingyiwanwu.com/docs",
         "checkMethod": "HTTP GET on official docs/pricing URL",
         "consecutiveFailures": 0,
-        "lastOkAt": "2026-11-20T08:38:11.784Z",
+        "lastOkAt": "2026-11-21T08:20:07.411Z",
         "endpointReachable": true
       },
       "dedupeKeys": [
@@ -3391,14 +3390,14 @@
       "addedBy": "discovery-2026-11-12",
       "status": "unverified",
       "verification": {
-        "lastCheckedAt": "2026-11-20T08:38:11.784Z",
+        "lastCheckedAt": "2026-11-21T08:20:07.411Z",
         "lastResult": "reachable",
         "httpStatus": 200,
-        "latencyMs": 799,
+        "latencyMs": 1624,
         "checkedUrl": "https://docs.jina.ai/",
         "checkMethod": "HTTP GET on official docs/pricing URL",
         "consecutiveFailures": 0,
-        "lastOkAt": "2026-11-20T08:38:11.784Z",
+        "lastOkAt": "2026-11-21T08:20:07.411Z",
         "endpointReachable": true
       },
       "dedupeKeys": [
@@ -3449,14 +3448,14 @@
       "addedBy": "discovery-2026-11-12",
       "status": "unverified",
       "verification": {
-        "lastCheckedAt": "2026-11-20T08:38:11.784Z",
+        "lastCheckedAt": "2026-11-21T08:20:07.411Z",
         "lastResult": "reachable",
         "httpStatus": 200,
-        "latencyMs": 1145,
+        "latencyMs": 1601,
         "checkedUrl": "https://longcat.ai/platform/docs",
         "checkMethod": "HTTP GET on official docs/pricing URL",
         "consecutiveFailures": 0,
-        "lastOkAt": "2026-11-20T08:38:11.784Z",
+        "lastOkAt": "2026-11-21T08:20:07.411Z",
         "endpointReachable": true
       },
       "dedupeKeys": [
@@ -3507,14 +3506,14 @@
       "addedBy": "discovery-2026-11-12",
       "status": "deprecated",
       "verification": {
-        "lastCheckedAt": "2026-11-20T08:38:11.784Z",
+        "lastCheckedAt": "2026-11-21T08:20:07.411Z",
         "lastResult": "http-error",
         "httpStatus": 404,
-        "latencyMs": 1519,
+        "latencyMs": 2670,
         "checkedUrl": "https://mimo.ai.xiaomi.com/docs",
         "checkMethod": "HTTP GET on official docs/pricing URL",
         "lastError": "all 4 probe URLs returned non-ok",
-        "consecutiveFailures": 16,
+        "consecutiveFailures": 17,
         "endpointReachable": false
       },
       "dedupeKeys": [
@@ -3568,14 +3567,14 @@
       "addedBy": "discovery-2026-11-12",
       "status": "unverified",
       "verification": {
-        "lastCheckedAt": "2026-11-20T08:38:11.784Z",
+        "lastCheckedAt": "2026-11-21T08:20:07.411Z",
         "lastResult": "reachable",
         "httpStatus": 200,
-        "latencyMs": 846,
+        "latencyMs": 1227,
         "checkedUrl": "https://api-docs.deepseek.com/",
         "checkMethod": "HTTP GET on official docs/pricing URL",
         "consecutiveFailures": 0,
-        "lastOkAt": "2026-11-20T08:38:11.784Z",
+        "lastOkAt": "2026-11-21T08:20:07.411Z",
         "endpointReachable": true
       },
       "dedupeKeys": [
@@ -3625,14 +3624,14 @@
       "addedBy": "discovery-2026-11-12",
       "status": "unverified",
       "verification": {
-        "lastCheckedAt": "2026-11-20T08:38:11.784Z",
+        "lastCheckedAt": "2026-11-21T08:20:07.411Z",
         "lastResult": "reachable",
         "httpStatus": 200,
-        "latencyMs": 343,
+        "latencyMs": 917,
         "checkedUrl": "https://docs.x.ai/",
         "checkMethod": "HTTP GET on official docs/pricing URL",
         "consecutiveFailures": 0,
-        "lastOkAt": "2026-11-20T08:38:11.784Z",
+        "lastOkAt": "2026-11-21T08:20:07.411Z",
         "endpointReachable": true
       },
       "dedupeKeys": [
@@ -3682,14 +3681,14 @@
       "addedBy": "discovery-2026-11-12",
       "status": "unverified",
       "verification": {
-        "lastCheckedAt": "2026-11-20T08:38:11.784Z",
+        "lastCheckedAt": "2026-11-21T08:20:07.411Z",
         "lastResult": "reachable",
         "httpStatus": 200,
-        "latencyMs": 223,
+        "latencyMs": 755,
         "checkedUrl": "https://platform.openai.com/docs/",
         "checkMethod": "HTTP GET on official docs/pricing URL",
         "consecutiveFailures": 0,
-        "lastOkAt": "2026-11-20T08:38:11.784Z",
+        "lastOkAt": "2026-11-21T08:20:07.411Z",
         "endpointReachable": true
       },
       "dedupeKeys": [
@@ -3731,7 +3730,7 @@
       "addedBy": "discovery-2026-11-12",
       "status": "active",
       "verification": {
-        "lastCheckedAt": "2026-11-20T08:38:11.784Z",
+        "lastCheckedAt": "2026-11-21T08:20:07.411Z",
         "lastResult": "skipped"
       },
       "dedupeKeys": [
@@ -3740,5 +3739,5 @@
       ]
     }
   ],
-  "lastReconciledAt": "2026-11-20T08:38:11.784Z"
+  "lastReconciledAt": "2026-11-21T08:20:07.411Z"
 }
